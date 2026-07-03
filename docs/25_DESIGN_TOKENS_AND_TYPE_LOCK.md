@@ -71,7 +71,7 @@ Final font license must be checked before launch.
 - Controls: 140ms.
 - Cards: 260ms.
 - Drawers: 320ms.
-- Hero timeline: scroll-controlled, no independent endless animation except subtle video ambience.
+- Opening motion: concept-specific, purposeful, reduced-motion safe, and never harmful to commerce clarity.
 - Easing: `cubic-bezier(0.22, 1, 0.36, 1)`.
 - Respect `prefers-reduced-motion`.
 
@@ -85,4 +85,3 @@ Final font license must be checked before launch.
 - Shipping: `Özenli Teslimat`
 - Empty cart: `Seçimleriniz henüz boş. Size yakışacak parçaları birlikte bulalım.`
 - Payment success: `Siparişiniz özenle alındı. Sıradaki adımı hesabınızdan takip edebilirsiniz.`
-

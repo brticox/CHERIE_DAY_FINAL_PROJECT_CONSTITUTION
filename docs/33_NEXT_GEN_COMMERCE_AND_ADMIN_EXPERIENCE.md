@@ -45,7 +45,7 @@ Research note: Baymard's ecommerce benchmarks show many product pages still perf
 
 Sections:
 
-1. compact cinematic store hero,
+1. compact store opening,
 2. `Öne Çıkan Seçimler`,
 3. category tabs,
 4. curated product carousel,
@@ -515,4 +515,3 @@ Admin passes if:
 - every customer issue can be traced,
 - every payment/order/proof action has an audit trail,
 - role permissions prevent leaks and mistakes.
-

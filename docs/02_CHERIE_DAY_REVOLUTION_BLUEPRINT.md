@@ -2,9 +2,9 @@
 
 Project: **CHERIE DAY — Wedding, Gift & Celebration Maison**
 
-This document upgrades the whole CHERIE DAY constitution into a higher-level execution system. It combines the strongest lessons from Gielly Green, UI UX Pro Max, and the Burocratik/Lumyx agency mindset.
+This document upgrades the whole CHERIE DAY constitution into a higher-level execution system. It focuses on product, commerce, UX, content, and operations.
 
-This file does not replace `HERO_CINEMATIC_SYSTEM.md`; the hero file remains the governing hero specification. This file governs how every other public and internal section should be upgraded.
+This file does not prescribe the opening creative concept. `03_HERO_CINEMATIC_SYSTEM.md` is a neutral creative slot. This file governs how public and internal sections should be upgraded.
 
 ## 1. The Big Idea
 
@@ -12,7 +12,7 @@ CHERIE DAY should not feel like a website with pages. It should feel like a digi
 
 The final experience:
 
-> A cinematic Maison that turns love, gifts, paper, digital invitations, events, and memories into one curated world.
+> A luxury Maison that turns love, gifts, paper, digital invitations, events, and memories into one curated world.
 
 Every page must answer:
 
@@ -90,11 +90,11 @@ Drawer structure:
 
 ## 4. Homepage Revolution
 
-Homepage is not a list of blocks. It is a cinematic editorial-commerce sequence.
+Homepage is not a list of blocks. It is an editorial-commerce sequence with an approved creative opening.
 
 Final order:
 
-1. **Cinematic Hero** — governed by `HERO_CINEMATIC_SYSTEM.md`.
+1. **Approved Creative Opening** — governed by `03_HERO_CINEMATIC_SYSTEM.md` as a neutral slot.
 2. **Maison Promise** — one strong statement, no clutter.
 3. **How CHERIE DAY Works** — discover, design, produce, coordinate, deliver.
 4. **Experience Worlds** — wedding, engagement, kına, nikah, baby, corporate, private.
@@ -109,33 +109,31 @@ Final order:
 
 Homepage motion:
 
-- Hero: GSAP ScrollTrigger + Lenis.
-- Below hero: subtle scroll reveals, not constant spectacle.
-- Section transitions feel like turning pages in a Maison catalogue.
-- Product rows can use gentle horizontal drag, no frantic sliders.
+- Opening experience: created separately through an approved concept.
+- Below opening: subtle section reveals, not constant spectacle.
+- Section transitions should feel intentional and premium.
+- Product rows can use gentle interaction, no frantic sliders.
 
-## 5. Hero Upgrade
+## 5. Opening Experience Upgrade
 
-The hero is governed by `HERO_CINEMATIC_SYSTEM.md`.
+The opening experience is governed by `03_HERO_CINEMATIC_SYSTEM.md` as a neutral creative slot.
 
 Non-negotiable summary:
 
-- generated garden video = background ambience only,
-- real hero = DOM-based product layers,
-- GSAP ScrollTrigger + Lenis,
-- HTML Turkish text,
-- no logo/QR distortion,
-- no huge veil/ghost cloth,
-- reduced motion required.
+- no fixed hero scene is mandatory,
+- no old prototype is binding,
+- no external reference is binding,
+- official brand marks must remain intact,
+- HTML/CMS Turkish text must remain editable,
+- reduced motion is required,
+- commerce paths must remain clear.
 
-Hero meaning:
+Opening meaning:
 
-- garden = celebration world,
-- invitation/envelope = paper goods,
-- wax seal/ribbons = Maison craft and packaging,
-- QR = digital invitation / RSVP / website,
-- ring box = engagement/gifts/keepsakes,
-- cherries/lace/petals = CHERIE DAY romance.
+- establish CHERIE DAY as a luxury Maison,
+- create emotional memory,
+- lead naturally into store, inquiry, account, and service flows,
+- support the approved creative concept without overwhelming usability.
 
 ## 6. Experiences Upgrade
 
@@ -154,7 +152,7 @@ Experience pages:
 
 Each experience page must include:
 
-- cinematic hero image/video,
+- approved opening/collection media,
 - emotional promise,
 - what CHERIE DAY designs,
 - process timeline,
@@ -197,8 +195,8 @@ Each collection page must include:
 - hero media,
 - invitation set,
 - digital invitation / website theme,
-- QR card,
-- wax seal/ribbon/packaging,
+- digital/QR-related touchpoints where relevant,
+- packaging and material details where relevant,
 - gifts/favors/candles,
 - table stationery,
 - styling direction,
@@ -463,7 +461,7 @@ Avoid:
 
 Portfolio detail structure:
 
-- cinematic hero,
+- opening/feature media,
 - story,
 - key details,
 - gallery,
@@ -532,8 +530,7 @@ Required public components:
 
 - MaisonHeader
 - MaisonDrawer
-- CinematicHero
-- HeroLayer
+- CreativeOpening
 - EditorialSection
 - ExperienceWorldCard
 - CollectionWorldCard
@@ -588,7 +585,7 @@ Motion personality:
 Use:
 
 - Lenis for smooth scroll,
-- GSAP ScrollTrigger for hero and major story moments,
+- approved motion tooling for the opening and major story moments,
 - CSS transitions for simple controls,
 - Framer Motion optional for drawers/modals/page UI.
 
@@ -599,7 +596,7 @@ Recommended:
 - cards: 250-350ms,
 - section reveals: 500-700ms,
 - page transitions: 500-900ms,
-- hero timeline: scroll-driven.
+- opening timeline: concept-specific.
 
 Use Burocratik-level precision, but not Burocratik visual aggression.
 
@@ -682,7 +679,7 @@ Never build:
 - supplier profiles,
 - public team comparison,
 - rating stars per provider,
-- generic Shopify hero,
+- generic template opening,
 - noisy sale banners,
 - AI purple gradients,
 - childish cherry branding,
@@ -696,7 +693,7 @@ Never build:
 
 CHERIE DAY reaches the target level only if:
 
-- the hero feels cinematic and technically precise,
+- the approved opening feels premium and technically precise,
 - collections feel like worlds,
 - shop feels like a curated Maison boutique,
 - digital feels romantic and guest-centered,
@@ -709,4 +706,4 @@ CHERIE DAY reaches the target level only if:
 
 The final project should feel like:
 
-> Gielly-level editorial commerce, UI UX Pro Max-level decision discipline, and Burocratik-level motion engineering, translated into a warm cinematic wedding, gift, invitation, digital, and memory Maison.
+> Editorial commerce quality, UI/UX decision discipline, and advanced motion thinking, translated into a warm Turkish wedding, gift, invitation, digital, and memory Maison.

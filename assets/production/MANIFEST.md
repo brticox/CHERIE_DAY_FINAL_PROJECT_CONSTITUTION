@@ -1,6 +1,6 @@
 # CHERIE DAY Production Asset Manifest
 
-This folder contains the current production-candidate assets for implementation.
+This folder contains production-candidate assets for implementation.
 
 ## Brand
 
@@ -10,25 +10,26 @@ This folder contains the current production-candidate assets for implementation.
 - `brand/favicon.svg` - favicon SVG candidate.
 - `brand/og-image.jpg` - social sharing image candidate, 1200 x 800.
 
-## Hero
+## Creative Media
 
-- `hero/wedding-background-loop.mp4` - current MP4 loop candidate.
-- `hero/wedding-background-poster.jpg` - poster image, 1200 x 675.
-- `hero/layer-invitation-card.png` - transparent PNG layer.
-- `hero/layer-envelope-wax-seal-combined.png` - transparent combined envelope/seal layer.
-- `hero/layer-wax-seal.png` - transparent seal layer.
-- `hero/layer-ribbon-burgundy.png` - transparent burgundy ribbon layer.
-- `hero/layer-ribbon-champagne.png` - transparent champagne ribbon layer.
-- `hero/layer-qr-card.png` - transparent QR card layer.
-- `hero/layer-ring-box.png` - transparent ring box layer.
-- `hero/layer-still-life-cherry-ribbon-reference.png` - non-transparent reference/support image.
+No specific opening/hero media is locked by this manifest.
+
+Creative media produced later by Claude, Higgsfield, or another tool must be added only after concept approval.
+Approved media should be documented with:
+
+- source,
+- intended usage,
+- dimensions,
+- format,
+- optimization status,
+- licensing/ownership status,
+- mobile/fallback variant requirements.
 
 ## Required Before Public Launch
 
-- Export WebM video fallback.
-- Compress MP4 for web delivery.
-- Export transparent layers as WebP where supported.
 - Optimize SVG artboards.
-- Confirm final image rights and usage.
-- Verify mobile crops and reduced-motion fallback.
-
+- Confirm final image/video rights and usage.
+- Export web-ready formats for approved media.
+- Provide fallback/poster assets for motion media.
+- Verify mobile crops.
+- Verify reduced-motion fallback.

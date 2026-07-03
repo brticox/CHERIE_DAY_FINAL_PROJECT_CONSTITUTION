@@ -6,9 +6,9 @@ This file resolves the executive audit gaps that can be fixed before asset produ
 
 MVP 1 is:
 
-- cinematic public Maison website,
+- public Maison website,
 - Turkish-first public content,
-- homepage with layered hero once final hero assets are produced,
+- homepage with approved creative opening once concept assets are produced,
 - Maison, Experiences, Collections, Shop, Digital, Memory, Planning, Rehber, Contact,
 - full Turkey-only Product House commerce,
 - customer registration and login,
@@ -60,9 +60,8 @@ All implementation references must use repository-local files.
 
 Use:
 
-- `assets/hero-source/wedding-garden-background-source.mp4`
-- `assets/hero-source/*.png`
 - `assets/brand-source/*.svg`
+- approved repository-local creative/media assets after concept approval
 
 Do not use:
 
@@ -76,13 +75,11 @@ Do not use:
 
 The current `/assets` files are source/reference assets.
 
-They are not yet the final production hero kit. Before hero implementation, produce:
+They are not yet a final creative media kit. Before opening-experience implementation, produce only the assets approved by the new creative concept:
 
-- final compressed MP4 loop,
-- WebM fallback,
-- poster image,
-- transparent WebP/PNG foreground layers,
-- mobile-safe layer art direction,
+- optimized images/video/3D/canvas assets as required,
+- fallback/poster assets where motion is used,
+- mobile-safe variants,
 - optimized SVG brand exports,
 - favicon and social share image.
 

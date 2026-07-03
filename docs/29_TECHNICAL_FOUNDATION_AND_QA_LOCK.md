@@ -58,8 +58,8 @@ Required before merge:
 - Landing LCP target: under 2.5s on good 4G.
 - CLS under 0.1.
 - INP under 200ms target.
-- Hero mobile should use simplified layer set.
-- Background video must have poster.
+- Approved opening media must have a simplified mobile approach.
+- Motion media must have a fallback/poster where relevant.
 - All images need width/height or reserved aspect ratio.
 - Below-fold media lazy loads.
 

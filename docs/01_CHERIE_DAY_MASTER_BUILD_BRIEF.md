@@ -1,6 +1,6 @@
 # CHERIE DAY MASTER BUILD BRIEF
 
-Governing upgrade layer: `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` defines how all sections should be raised into a connected cinematic Maison system. `HERO_CINEMATIC_SYSTEM.md` remains the governing homepage hero specification.
+Governing upgrade layer: `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` defines how all sections should be raised into a connected Maison system. `03_HERO_CINEMATIC_SYSTEM.md` is now a neutral opening-experience creative slot, not a fixed hero specification.
 
 ## 1. Final Identity
 
@@ -43,12 +43,12 @@ Core Turkish brand copy:
 4. Collections are worlds, not random product groups.
 5. Digital tools are CHERIE DAY Digital experiences, not generic templates.
 6. Commerce is quiet luxury. No noisy sale banners, star ratings, marketplace seller labels, or aggressive urgency.
-7. The hero is governed by `HERO_CINEMATIC_SYSTEM.md`: the generated wedding garden video is a background ambience layer only; the real interactive hero is DOM-based transparent product layers controlled by GSAP ScrollTrigger and Lenis.
+7. The opening experience is governed by `03_HERO_CINEMATIC_SYSTEM.md` as a neutral creative slot. No specific hero scene, video, object list, or animation pattern is mandatory.
 8. The site can be inspired by luxury editorial commerce systems, but must not copy another brand's visual identity.
 
 ## 3. Final Website Concept
 
-The website should open like a cinematic Maison film, then become a shoppable, service-rich editorial platform.
+The website should open with an approved CHERIE DAY creative experience, then become a shoppable, service-rich editorial platform.
 
 User journey:
 
@@ -97,7 +97,7 @@ The experience should blend:
 
 | Route | Purpose |
 |---|---|
-| `/` | Cinematic brand entry and primary conversion hub. |
+| `/` | Brand entry and primary conversion hub. |
 | `/maison` | Brand story, values, design philosophy. |
 | `/maison/how-it-works` | Process: discover, design, produce, coordinate, deliver. |
 | `/experiences` | Celebration type overview. |
@@ -131,7 +131,7 @@ The experience should blend:
 
 ## 5. Homepage Structure
 
-1. Cinematic layered hero.
+1. Approved creative opening experience.
 2. Maison statement.
 3. How CHERIE DAY works.
 4. Experiences grid.
@@ -145,69 +145,29 @@ The experience should blend:
 12. FAQ teaser.
 13. Final CTA.
 
-## 6. Cinematic Hero Specification
+## 6. Opening Experience Specification
 
-The hero is a technical centerpiece and must be implemented as a layered web scene. The governing implementation file is `HERO_CINEMATIC_SYSTEM.md`; this section is only the executive summary.
+The opening experience is a creative slot, not a fixed hero recipe.
 
-Important rule: the generated hero video is a background ambience layer only. The real interactive hero is built from DOM-based transparent product layers controlled by GSAP ScrollTrigger and Lenis.
+Before implementation, the creative agent must propose:
 
-### Composition
+- concept name,
+- first viewport composition,
+- motion/interactivity approach,
+- asset list,
+- desktop/tablet/mobile behavior,
+- reduced-motion fallback,
+- performance budget,
+- connection points to store and inquiry flows.
 
-- Background: locked luxury wedding garden video, full viewport, muted, looped, warm cinematic grade; ambience only, not the full hero.
-- Middle atmosphere: optional semi-transparent light leaks, veil/lace shadow, soft gradient vignette.
-- Foreground product layers: transparent PNG/WebP/AVIF/SVG assets positioned in 3D-like depth and controlled independently.
-- Text: real HTML/CSS Turkish overlays, never burned into video.
-- Motion: GSAP ScrollTrigger timeline synced to Lenis smooth scroll.
-- Responsive layer positioning and reduced-motion fallback as defined in `HERO_CINEMATIC_SYSTEM.md`.
+Fixed requirements:
 
-### Required Layers
-
-- invitation card,
-- envelope,
-- wax seal,
-- burgundy ribbon,
-- champagne ribbon,
-- QR card,
-- cherries,
-- ring box,
-- lace,
-- petals,
-- light particles.
-
-### Scroll Behavior
-
-At page load:
-
-- background video already visible,
-- logo/header overlays softly,
-- headline fades in,
-- foreground objects rest in a balanced still-life composition.
-
-On scroll:
-
-- follow the 0-100% stage model in `HERO_CINEMATIC_SYSTEM.md`,
-- background remains locked for the opening sequence,
-- invitation and envelope drift slightly apart,
-- wax seal rotates subtly,
-- burgundy and champagne ribbons slide diagonally,
-- QR card reveals as the digital layer,
-- petals and light particles move with the least weight,
-- ring box moves slowly in opposite parallax,
-- text transitions from brand promise to CTA.
-
-Reduced motion:
-
-- replace motion timeline with static poster,
-- keep all text visible,
-- disable parallax/rotation.
-
-### Hero Copy
-
-Eyebrow: `CHERIE DAY Maison`
-
-Headline option 1: `Aşkın en zarif günü, tek bir Maison’da şekillenir.`
-
-Headline option 2: `Davetiyeden anıya, her detay aynı estetik dilde.`
+- use official CHERIE DAY brand assets correctly,
+- keep important text as editable HTML/CMS Turkish copy,
+- preserve readability and accessibility,
+- provide mobile-safe behavior,
+- avoid scroll traps,
+- do not block store/account/inquiry paths.
 
 Subcopy:
 
@@ -221,7 +181,7 @@ Secondary CTA: `Koleksiyonları Keşfet`
 
 Mood words:
 
-- cinematic,
+- memorable,
 - editorial,
 - tactile,
 - romantic,
@@ -229,17 +189,8 @@ Mood words:
 - warm,
 - accountable.
 
-Core motifs:
-
-- cherry,
-- wax seal,
-- ribbon,
-- lace,
-- velvet,
-- brass,
-- paper,
-- ring box,
-- petals.
+Material and motif choices are not locked here.
+They must be selected by the approved creative concept and must serve the brand, product, and commerce experience.
 
 Core palette:
 
@@ -380,8 +331,7 @@ Recommended:
 - Next.js App Router
 - TypeScript
 - Tailwind CSS
-- GSAP + ScrollTrigger for cinematic hero
-- Lenis for smooth scroll
+- motion tooling selected by the approved creative concept
 - Framer Motion for small UI transitions where useful
 - Supabase/Postgres/Auth/Storage
 - Zod + React Hook Form for forms
@@ -393,11 +343,11 @@ The first implementation is acceptable only if:
 
 - no Aylora public naming remains,
 - no public vendor marketplace pattern exists,
-- hero uses layered assets and real text,
+- opening experience uses approved assets and real text,
 - site feels like a luxury Maison and editorial commerce platform,
 - products are collection-led,
 - forms create leads securely,
 - admin/private data cannot leak publicly,
 - every page has clear CTA logic,
 - reduced-motion mode is respected,
-- mobile hero and nav are polished.
+- mobile opening and nav are polished.

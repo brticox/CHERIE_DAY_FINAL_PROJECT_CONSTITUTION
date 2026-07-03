@@ -1,135 +1,96 @@
-# CHERIE DAY - AI Open First Design & Build Order
+# CHERIE DAY - AI Open First General Build Order
 
 This is the first file any AI builder must open.
-Do not start by browsing random documents.
-Do not build a generic landing page.
-Do not create a static hero.
 
-Your job is to build CHERIE DAY as a cinematic Turkish luxury commerce maison.
+It is a general constitution for the product, business, commerce, language, brand, and implementation system.
+It is intentionally not a hero art-direction file.
 
-## 1. The One-Sentence Product
+## 1. What CHERIE DAY Is
 
-CHERIE DAY is a Turkey-only luxury wedding, invitation, gift, digital memory, and celebration commerce maison with a cinematic scroll experience and a serious modern store/admin system.
+CHERIE DAY is a Turkey-only luxury wedding, invitation, gift, digital memory, and celebration commerce maison.
 
-If the result feels like a normal template, it failed.
+It must function as a serious modern ecommerce and service platform with:
 
-## 2. The First Screen
+- public website,
+- store,
+- product detail pages,
+- cart,
+- checkout,
+- login/register,
+- customer account,
+- order tracking,
+- proof approval,
+- support/inquiry,
+- admin system,
+- legal pages,
+- payment provider integration surfaces.
 
-The site opens as a cinematic ceremony, not a landing page.
+## 2. What This File Must Not Do
 
-Required first-screen composition:
+This file must not prescribe a specific hero concept, scene, animation, video, object sequence, or art direction.
 
-- Full-viewport hero.
-- Centered refined CHERIE DAY identity.
-- Floating transparent top navigation with logo centered.
-- The actual CHERIE DAY hero video is the main visual world.
-- The video must be controlled by scroll progress.
-- As the user scrolls, the video timeline advances and reveals the ceremony objects already inside the film:
-  - invitation card,
-  - wax seal,
-  - burgundy ribbon,
-  - QR card,
-  - ring box,
-  - gift box,
-  - other visible keepsake/product details.
+The opening experience will be separately directed by the creative agent using approved brand assets, skills, and references.
 
-Rejected:
+Do not infer that any previous hero idea is mandatory.
+Do not copy any old prototype.
+Do not use rejected Kimi output as design direction.
 
-- Static wedding image with text.
-- Dark overlay plus two buttons.
-- Generic hero card.
-- Gradient/orb decoration.
-- Fake cinematic wording without cinematic mechanics.
+## 3. Language Rule
 
-## 3. The Scroll Story
+All public customer-facing UI and website copy must be Turkish.
 
-The homepage must feel like one continuous artwork.
+The Turkish voice must be:
 
-Order:
+- refined,
+- warm,
+- elegant,
+- clear,
+- commercially useful,
+- sometimes poetic when appropriate,
+- never cold, robotic, or machine-like.
 
-1. **Opening Ritual**  
-   The video begins quietly. The brand appears with restrained elegance. User feels they are entering a private maison.
+Admin/internal developer labels may use English where practical, but admin user-facing labels may also be Turkish.
 
-2. **Object Awakening**  
-   Scroll moves the video and lets the visible objects become meaningful. Text appears as small editorial whispers, not heavy blocks.
+## 4. Brand Rule
 
-3. **Invitation World**  
-   The invitation card becomes the bridge into invitation products, custom proof approval, personalization, and premium papers.
+Use the provided CHERIE DAY logo, monogram, stamp, and identity assets exactly.
 
-4. **Seal & Ribbon World**  
-   Wax seal and burgundy ribbon become a tactile product chapter. Use close-up product cards and refined micro-motion.
+Do not redraw, distort, stretch, recolor carelessly, blur, morph, regenerate, or reinterpret official brand marks.
 
-5. **QR & Digital Memory World**  
-   QR card becomes the bridge into digital invitations, memory pages, video/photo links, and digital delivery.
+Canonical brand sources are in:
 
-6. **Ring Box & Gift World**  
-   Ring box and gift box become the bridge into keepsakes, gift boxes, nikah sekeri, event stationery, and quote-based premium packages.
+- `assets/brand-source/logo.svg`
+- `assets/brand-source/logooo.svg`
+- `assets/brand-source/CDD.svg`
+- `assets/brand-source/stamp.svg`
 
-7. **Curated Store**  
-   The store appears as a calm luxury commerce surface: filters, categories, product cards, quick view, custom options, proof requirements, delivery notes.
+## 5. Creative Freedom Rule
 
-8. **Maison Assurance**  
-   Explain trust through interface, not marketing noise: secure payment, Turkey-only delivery, design approval, production time, support, legal consent.
+The creative director/AI is free to propose the opening experience, visual world, motion system, scene concept, 2D/3D approach, generated assets, and interaction language.
 
-9. **Concierge / Inquiry**  
-   For custom items and events, user can request consultation, upload details, and continue later from account.
+That creative work must be delivered as a separate concept/storyboard/spec before implementation.
 
-10. **Footer As Legal Maison Desk**  
-   Legal links, KVKK, distance sales, returns, privacy, cookies, contact, support, social, payment marks.
+The constitution only requires that the result:
 
-## 4. Visual School
+- belongs to CHERIE DAY,
+- supports luxury commerce,
+- uses the brand correctly,
+- performs well,
+- works on mobile,
+- remains accessible,
+- does not block shopping or service conversion.
 
-The design school is:
-
-**Cinematic Ceremonial Editorial Commerce.**
-
-It combines:
-
-- MotionSites dream-portal depth,
-- luxury beauty editorial restraint,
-- modern Turkish ecommerce clarity,
-- tactile wedding materiality,
-- warm poetic Turkish copy,
-- precise checkout/admin pragmatism.
-
-The site should feel expensive, calm, magical, and easy.
-
-## 5. Color & Material Direction
-
-Use the CHERIE palette as a luxury base:
-
-- deep burgundy,
-- ivory,
-- warm paper,
-- brass/gold,
-- cherry accent,
-- soft ink,
-- lace/mist neutrals.
-
-But do not make the whole site one flat burgundy/beige theme.
-Use contrast, photography, video, paper texture, metallic details, and white space.
-
-## 6. Typography
-
-Use a refined editorial serif for brand/headlines and a clean modern sans for commerce/UI.
-
-Turkish copy must be elegant, literary, warm, and sometimes poetic.
-All customer-facing public UI must be Turkish.
-
-Avoid machine-like Turkish.
-Avoid cold corporate copy.
-
-## 7. Store Structure
+## 6. Store Structure
 
 The public store must include:
 
-- home commerce highlights,
+- homepage commerce highlights,
 - collection pages,
 - category pages,
-- product listing,
-- product detail,
+- product listing pages,
+- product detail pages,
 - quick view,
-- cart drawer,
+- cart drawer/page,
 - checkout,
 - account,
 - login/register,
@@ -138,17 +99,17 @@ The public store must include:
 - support/inquiry,
 - legal consent checkpoints.
 
-Core categories:
+Core commerce categories:
 
 - Davetiye,
 - Dijital Davetiye,
 - Hediyelik & Nikah Sekeri,
-- Wax Seal & Ribbon,
+- Mühür & Kurdele,
 - Kutu & Packaging,
-- Masa Karti & Event Stationery,
+- Masa Kartı & Event Stationery,
 - QR Kart,
-- Hatira & Album,
-- Planlama / Ozel Teklif.
+- Hatıra & Albüm,
+- Planlama / Özel Teklif.
 
 Product behavior types:
 
@@ -158,19 +119,11 @@ Product behavior types:
 - quote-required service,
 - inquiry-only premium item.
 
-## 8. Checkout And Payment
+## 7. Checkout And Payments
 
 Service and commerce are Turkey-only.
 
-Payment planning must support:
-
-- domestic Turkish cards,
-- international Visa/Mastercard/AMEX where enabled,
-- TROY where available,
-- iyzico,
-- PayTR.
-
-Checkout must include:
+Checkout must support:
 
 - account or guest flow,
 - Turkish address,
@@ -179,16 +132,24 @@ Checkout must include:
 - proof/customization details where needed,
 - payment provider selection,
 - KVKK consent,
-- Mesafeli Satis Sozlesmesi consent,
-- On Bilgilendirme Formu consent,
+- Mesafeli Satış Sözleşmesi consent,
+- Ön Bilgilendirme Formu consent,
 - order confirmation,
 - payment status page.
 
-## 9. Admin Structure
+Payment planning must support:
 
-The admin must be treated as a real operating system, not an afterthought.
+- Turkish domestic cards,
+- TROY where available,
+- international Visa/Mastercard/AMEX where enabled by merchant settings,
+- iyzico,
+- PayTR.
 
-Admin modules:
+## 8. Admin System
+
+The admin must be a real operating system, not a cosmetic dashboard.
+
+Required admin modules:
 
 - dashboard,
 - products,
@@ -196,9 +157,10 @@ Admin modules:
 - collections,
 - pricing,
 - stock,
-- media/hero/video,
+- media/assets,
+- homepage/content management,
 - orders,
-- order status,
+- order statuses,
 - payments,
 - refunds/cancellations,
 - proof approval workflow,
@@ -207,56 +169,28 @@ Admin modules:
 - support messages,
 - coupons/campaigns,
 - legal pages,
-- homepage/section content,
 - SEO,
 - settings,
 - audit logs.
 
-The admin must allow changing prices, products, images, stock, legal text, product behavior, payment status, and order state.
+The admin must allow changing prices, products, images, stock, legal text, product behavior, payment status, order status, and homepage content.
 
-## 10. Legal Pages
+## 9. Legal Pages
 
 Build Turkish legal page structure for:
 
-- KVKK Aydinlatma Metni,
-- Mesafeli Satis Sozlesmesi,
-- On Bilgilendirme Formu,
-- Iade ve Iptal Politikasi,
-- Gizlilik Politikasi,
-- Cerez Politikasi,
+- KVKK Aydınlatma Metni,
+- Mesafeli Satış Sözleşmesi,
+- Ön Bilgilendirme Formu,
+- İade ve İptal Politikası,
+- Gizlilik Politikası,
+- Çerez Politikası,
 - Teslimat ve Kargo,
-- Kullanici Sozlesmesi if account system requires it.
+- Kullanıcı Sözleşmesi if account system requires it.
 
 Legal text may start as structured placeholder text, but routes and consent placement must exist.
 
-## 11. Motion Rules
-
-Motion must serve story and conversion.
-
-Required:
-
-- scroll-scrub video hero,
-- smooth but controllable transitions,
-- chapter bridges,
-- tactile hover states,
-- product image depth,
-- reduced-motion fallback,
-- mobile-specific motion simplification.
-
-Optional after the core is correct:
-
-- audio-reactive silk-string dividers,
-- canvas micro-interactions,
-- atmospheric product depth layers.
-
-Rejected:
-
-- random fades everywhere,
-- template reveal animation,
-- motion that delays shopping,
-- motion that breaks mobile clarity.
-
-## 12. Build Stack Expectation
+## 10. Preferred Stack
 
 Preferred production stack:
 
@@ -269,53 +203,43 @@ Preferred production stack:
 - server routes for payments,
 - webhook handlers,
 - Tailwind,
-- GSAP,
-- Lenis,
-- Framer Motion only where appropriate.
+- motion library selected by implementation needs.
 
 If a different stack is used, it must still deliver the same production capabilities.
 
-## 13. First Implementation Milestone
-
-Do not try to build everything visually first.
+## 11. Implementation Order
 
 Build in this order:
 
-1. App shell and routes.
-2. Design tokens and typography.
-3. Real hero video scroll-scrub prototype.
-4. Homepage cinematic chapter system.
-5. Storefront data model.
-6. Product listing/detail/cart.
-7. Account/auth.
-8. Checkout skeleton with legal consent.
-9. Admin shell.
-10. Product/order/admin CRUD.
-11. Payment provider integration surfaces.
+1. App shell and route map.
+2. Design tokens and brand-safe typography system.
+3. Content model and database schema.
+4. Storefront data model.
+5. Product listing/detail/cart.
+6. Account/auth.
+7. Checkout skeleton with legal consent.
+8. Admin shell.
+9. Product/order/admin CRUD.
+10. Payment provider integration surfaces.
+11. Creative opening experience after separate concept approval.
 12. QA across desktop/tablet/mobile.
 
-## 14. Absolute Rejection Tests
+## 12. Absolute Rejection Tests
 
 Reject the build immediately if:
 
-- first screen is a static image with centered text,
-- hero video is not actually used,
-- scroll does not control video time,
+- it is only a visual landing page,
 - store products are hardcoded only,
 - cart does not connect to product actions,
 - no login/register exists,
 - no checkout exists,
 - no admin exists,
 - legal pages are only footer placeholders,
-- language is not Turkish,
-- design feels like a beginner template.
+- public language is not Turkish,
+- brand marks are distorted,
+- design is copied from rejected old prototypes,
+- the creative opening blocks performance, accessibility, or commerce.
 
-## 15. The Final Feeling
+## 13. Final Goal
 
-The user should feel:
-
-I entered a private Turkish luxury maison.
-The website is alive, cinematic, poetic, and calm.
-Every beautiful object can become something I can buy, customize, approve, track, or ask about.
-
-That is CHERIE DAY.
+The final platform must make the user feel they entered a refined Turkish luxury maison and can easily buy, customize, approve, track, or request beautiful CHERIE DAY products and services.

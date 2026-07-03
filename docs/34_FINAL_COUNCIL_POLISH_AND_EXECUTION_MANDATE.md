@@ -6,7 +6,7 @@ This file is the final council mandate before handing CHERIE DAY to an implement
 
 CHERIE DAY must be built as a 21st-century Turkish luxury commerce Maison:
 
-- cinematic,
+- creatively memorable,
 - emotionally intelligent,
 - commercially complete,
 - operationally serious,
@@ -30,20 +30,12 @@ The site must never look:
 
 ## 2. Final Creative Direction
 
-The experience is governed by:
+The creative opening is intentionally not fixed in this constitution.
+It must be proposed separately by the creative agent and approved before implementation.
 
-- `Living Maison Canvas`
-- `Opening Garden Gate`
-- `Cinematic Scroll Film Hero`
-- `Continuous Chapter Scroll Plan`
-- `Sensory Maison Commerce`
-- `CHERIE Maison Chrome`
-- `Silk String Dividers`
-- `Next-Gen Commerce And Admin Experience`
+The homepage should feel like one coherent Maison journey:
 
-The homepage should feel like one continuous cinematic Maison journey:
-
-`garden film -> Maison promise -> collections -> product house -> digital/memory -> planning -> trust/footer`
+`approved opening -> Maison promise -> collections -> product house -> digital/memory -> planning -> trust/footer`
 
 No section should feel pasted under another section.
 
@@ -99,9 +91,9 @@ Every public commerce state needs a corresponding admin control.
 
 ## 5. Final Motion Direction
 
-Motion must be cinematic but useful:
+Motion must be memorable but useful:
 
-- hero can be scroll-scrubbed,
+- opening motion depends on approved concept,
 - section handoffs can be choreographed,
 - product browsing stays clear,
 - checkout/account/legal are calm and functional,
@@ -123,8 +115,8 @@ Must verify:
 
 - no text overlap,
 - no horizontal scroll,
-- hero nonblank,
-- video/poster loads,
+- opening nonblank,
+- approved media/fallback loads,
 - menu works,
 - drawer cart works,
 - product pages are clear,
@@ -140,4 +132,3 @@ Must verify:
 Proceed to design and implementation only with the full constitution, production assets, and reference skills available.
 
 Do not improvise against the constitution. Improve within it.
-

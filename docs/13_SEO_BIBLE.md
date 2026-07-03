@@ -72,14 +72,14 @@ Rehber articles should link into commercial pages naturally:
 - cherie day
 - düğün hediyelikleri
 - kişiye özel davetiye
-- wax seal davetiye
+- mühürlü davetiye
 - düğün kapı askısı
 - gelin hazırlık odası hediyeleri
 - nişan hediyelikleri
 - dijital davetiye
 - düğün web sitesi
 - gelin çantası / gelin kesesi
-- bride gift box
+- gelin hediye kutusu
 - wedding keepsake
 
 ## Local SEO For Turkey

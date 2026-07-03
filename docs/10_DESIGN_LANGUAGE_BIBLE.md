@@ -2,7 +2,7 @@
 
 This is the final, buildable visual language for CHERIE DAY. It resolves and consolidates `design-psychology.md`, `luxury-brand-analysis.md`, `motion-bible.md`, and `component-bible.md` into concrete, implementable rules.
 
-Upgrade layer: apply `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` for section-level design decisions. Visual design must support a connected cinematic Maison system, not isolated decorative pages.
+Upgrade layer: apply `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` for section-level design decisions. Visual design must support a connected Maison system, not isolated decorative pages.
 
 ## Brand Feeling
 
@@ -34,13 +34,14 @@ Structure: a warm neutral base, one deep anchor color, one warm accent, and coll
 
 ---
 
-## Core Motifs & Patterns
+## Core Patterns
 
-**Motifs:** wax seal, cherry, key, ribbon, velvet, lace, paper texture, brass detail, framed panels.
+Motifs are not locked in this file.
+They must be chosen by the approved creative concept or by product/category needs.
 
 **Layout patterns:**
 - centered logo header
-- large serif hero
+- large serif opening/brand statements where appropriate
 - italic emphasis
 - accordion expertise
 - featured work/product grid
@@ -88,7 +89,7 @@ Base unit: **8px**. All spacing values are multiples of 8 (8/16/24/32/48/64/96/1
 
 | Context | Direction |
 |---|---|
-| Hero / brand | Cinematic, warm-toned, natural light, wide or medium shot — sense of a real moment, not a posed stock photo. |
+| Opening / brand | Warm-toned, specific, brand-appropriate visual direction approved by the creative concept. |
 | Collection | Flat-lay or styled tablescape shots showing palette + material together; consistent light temperature across a collection's set. |
 | Product | Clean, tactile, macro-leaning shots on a neutral or collection-toned background; show texture (paper weight, wax, ribbon, print detail). |
 | Portfolio | Documentary-style real-event coverage; consistent color grade across the portfolio grid so it reads as one house's work, not mixed sources. |
@@ -176,7 +177,7 @@ Base unit: **8px**. All spacing values are multiples of 8 (8/16/24/32/48/64/96/1
 (Consolidating `motion-bible.md` into brand-level rules.)
 
 - Motion is **clarifying, not decorative.** Every animation should communicate state change or hierarchy, never exist purely for delight.
-- Timing: 120–180ms for controls, 300ms for cards, 500–700ms for hero/scroll reveals — always eased with `cubic-bezier(0.22, 1, 0.36, 1)`, never bounce/spring on brand pages.
+- Timing: 120–180ms for controls, 300ms for cards, 500–700ms for larger editorial reveals — always eased with `cubic-bezier(0.22, 1, 0.36, 1)`, never bounce/spring on brand pages.
 - Scroll reveals grouped/staggered (60–100ms stagger), never element-by-element confetti-style reveal.
 - Respect `prefers-reduced-motion` everywhere — this is a hard requirement, not optional polish.
 
@@ -184,7 +185,7 @@ Base unit: **8px**. All spacing values are multiples of 8 (8/16/24/32/48/64/96/1
 
 ## Texture, Glass, Shadow
 
-- **Texture:** a very subtle warm grain/noise overlay (2–4% opacity) may be used on large hero/deep-color sections to avoid flat digital coldness — must never reduce text legibility.
+- **Texture:** a very subtle warm grain/noise overlay (2–4% opacity) may be used on large brand/deep-color sections to avoid flat digital coldness — must never reduce text legibility.
 - **Glass/blur:** permitted only for sticky header background-blur on scroll, and only subtly (8–12px blur, low opacity tint). Do not use heavy frosted-glass panels as a general design motif — it reads as generic SaaS, not maison.
 - **Shadow:** always soft, warm-toned, low-opacity (see Cards section). Never sharp drop-shadows or cold gray shadows.
 

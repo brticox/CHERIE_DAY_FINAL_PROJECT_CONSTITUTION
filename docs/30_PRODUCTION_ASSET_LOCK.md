@@ -1,64 +1,47 @@
-# PRODUCTION ASSET LOCK
+# Production Asset Lock
 
-This file records the current production-candidate asset kit.
+This file defines asset governance only.
+It does not prescribe any specific opening/hero design.
 
-## Current Production Candidate Folder
+## Canonical Brand Sources
 
-`assets/production/`
+- `assets/brand-source/logo.svg`
+- `assets/brand-source/logooo.svg`
+- `assets/brand-source/CDD.svg`
+- `assets/brand-source/stamp.svg`
 
-Brand:
+These are the only governing brand marks unless the owner provides updated replacements.
 
-- `assets/production/brand/logo-primary.svg`
-- `assets/production/brand/logo-mark.svg`
-- `assets/production/brand/stamp.svg`
-- `assets/production/brand/favicon.svg`
-- `assets/production/brand/og-image.jpg`
+## Asset Rules
 
-Hero:
+- Brand marks must not be redrawn or distorted.
+- Production assets must live in repository paths, not temporary desktop/download paths.
+- Generated creative assets must be reviewed before implementation.
+- Placeholder assets must be clearly labeled.
+- Final assets must include optimized web formats.
+- Important UI/copy text must remain editable HTML/CMS text.
 
-- `assets/production/hero/wedding-background-loop.mp4`
-- `assets/production/hero/wedding-background-poster.jpg`
-- `assets/production/hero/layer-invitation-card.png`
-- `assets/production/hero/layer-envelope-wax-seal-combined.png`
-- `assets/production/hero/layer-wax-seal.png`
-- `assets/production/hero/layer-ribbon-burgundy.png`
-- `assets/production/hero/layer-ribbon-champagne.png`
-- `assets/production/hero/layer-qr-card.png`
-- `assets/production/hero/layer-ring-box.png`
-- `assets/production/hero/layer-still-life-cherry-ribbon-reference.png`
+## Suggested Production Folders
 
-## Important Limitation
+- `public/assets/brand/`
+- `public/assets/media/`
+- `public/assets/products/`
+- `public/assets/categories/`
+- `public/assets/collections/`
+- `public/assets/legal/`
 
-The current environment has `sips` but not `ffmpeg`, `cwebp`, or `magick`. Therefore:
+## Asset Status Labels
 
-- MP4 was copied as the current loop candidate.
-- Poster JPG was generated from the garden still.
-- PNG layers were promoted as production candidates from source references.
-- WebM/WebP final exports remain media-pipeline tasks.
+Use these labels in manifests:
 
-## Build Rule
+- `source`,
+- `reference`,
+- `placeholder`,
+- `approved-concept`,
+- `production-ready`,
+- `deprecated`.
 
-Implementation may use `assets/production` first. If a production file is missing, the build must fail visibly during QA rather than silently using random source/reference assets.
+## Creative Concept Assets
 
-## Final Media Pipeline Tasks
-
-Before launch:
-
-- create WebM from MP4,
-- compress MP4 for web,
-- export transparent layers as WebP/PNG pairs,
-- verify alpha channels,
-- create mobile-safe sizes,
-- optimize SVG artboards,
-- create favicon PNG sizes if needed,
-- validate OG image.
-
-## Asset Acceptance
-
-- No burned-in text.
-- No distorted logo/stamp/QR.
-- No giant cloth/veil motif.
-- No unbounded file sizes.
-- Hero text remains HTML/CSS.
-- Reduced-motion fallback uses poster + static layers.
-
+Assets produced later by Claude, Higgsfield, or another tool must be added only after concept approval.
+They should not be assumed by this constitution.

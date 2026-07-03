@@ -25,13 +25,13 @@ Use a centered logo header with:
 - `Seçimlerim`
 - `Sipariş Takibi`
 
-## Mobile Hero
+## Mobile Opening
 
-Mobile hero must:
+Mobile opening must:
 
-- load poster first,
+- load first meaningful visual quickly,
 - show HTML headline clearly,
-- use fewer layers than desktop,
+- simplify the approved creative concept versus desktop,
 - avoid scroll trap,
 - keep primary CTA visible without overlap,
 - respect reduced motion,
@@ -73,4 +73,3 @@ Test:
 - 1920 x 1080
 
 No text overlap, no horizontal scroll, no invisible CTA, no trapped pinned scroll.
-

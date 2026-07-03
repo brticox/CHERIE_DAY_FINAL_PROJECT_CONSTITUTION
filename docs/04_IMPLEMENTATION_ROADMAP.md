@@ -1,6 +1,6 @@
 # IMPLEMENTATION ROADMAP
 
-This roadmap turns the documentation into execution phases. Do not start by building random pages. Start with foundations, assets, then the cinematic homepage, then commerce and admin.
+This roadmap turns the documentation into execution phases. Do not start by building random pages. Start with foundations, assets, homepage structure, then commerce and admin.
 
 ## Phase 0 — Documentation Freeze
 
@@ -9,7 +9,7 @@ Goal: make one final source of truth.
 Tasks:
 
 - Treat `CHERIE_DAY_MASTER_BUILD_BRIEF.md` as the governing brief.
-- Treat `HERO_CINEMATIC_SYSTEM.md` as the governing homepage hero specification.
+- Treat `03_HERO_CINEMATIC_SYSTEM.md` as the neutral opening-experience creative slot.
 - Treat `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` as the governing upgrade system for all public/admin sections.
 - Apply `16_PRE_BUILD_FREEZE.md` before implementation.
 - Ignore archive/plugin/skill files during implementation.
@@ -19,7 +19,7 @@ Exit criteria:
 
 - No contradictory public strategy remains.
 - CHERIE DAY naming is final.
-- Hero direction is locked in `HERO_CINEMATIC_SYSTEM.md`.
+- Opening direction is not locked until a separate creative concept is approved.
 - Section direction is locked in `CHERIE_DAY_REVOLUTION_BLUEPRINT.md`.
 
 ## Phase 0.5 — Constitution Upgrade Pass
@@ -66,44 +66,43 @@ Exit criteria:
 
 ## Phase 2 — Asset Production
 
-Goal: produce the cinematic hero asset kit.
+Goal: prepare brand-safe production assets and the media pipeline.
 
 Tasks:
 
-- Use the generated luxury wedding garden video as background ambience only, per `HERO_CINEMATIC_SYSTEM.md`.
-- Produce transparent foreground layers exactly as required by `HERO_CINEMATIC_SYSTEM.md`: invitation, envelope, wax seal, burgundy ribbon, champagne ribbon, QR card, cherries, ring box, lace, petals, light particles.
-- Export each layer as transparent WebP/PNG/AVIF.
-- Create mobile-safe variants.
-- Create static fallback poster.
+- Prepare official brand exports.
+- Prepare product/category/collection media structure.
+- Add approved creative-opening assets only after concept approval.
+- Export assets in optimized web formats.
+- Create mobile-safe variants where needed.
+- Create static fallback posters for motion assets where needed.
 - Add alt text and CMS-ready metadata.
 
 Exit criteria:
 
-- All required files exist.
+- All approved required files exist.
 - Assets are visually consistent in color grade.
 - No burned-in text exists.
 
-## Phase 3 — Cinematic Homepage
+## Phase 3 — Homepage
 
 Goal: build the public first impression.
 
 Tasks:
 
-- Layered hero component with GSAP ScrollTrigger and Lenis, following `HERO_CINEMATIC_SYSTEM.md`.
-- Treat the background video as ambience only; implement invitation, envelope, wax seal, ribbons, QR card, ring box, cherries, lace, petals, and particles as DOM-based transparent layers.
-- Real HTML Turkish text overlay.
-- Responsive foreground object placement.
+- Build approved creative opening experience.
+- Real HTML Turkish text.
+- Responsive and accessible layout.
 - Header overlay with Maison navigation.
 - Homepage sections: Maison statement, experiences, collections, shop teaser, digital, memory, planning, stories, Rehber, FAQ, final CTA.
 
 Exit criteria:
 
-- Desktop and mobile hero are nonblank, readable, and stable.
-- The 0-100% hero stage model from `HERO_CINEMATIC_SYSTEM.md` is implemented.
-- No logo, wordmark, wax seal mark, QR code, or ribbon branding is distorted or regenerated.
+- Desktop and mobile opening are nonblank, readable, and stable.
+- No logo, wordmark, stamp, or operational asset is distorted or regenerated.
 - Reduced motion fallback works.
 - CTA path works.
-- No layout shift from hero assets.
+- No layout shift from opening assets.
 
 ## Phase 4 — Public CMS-Driven Pages
 

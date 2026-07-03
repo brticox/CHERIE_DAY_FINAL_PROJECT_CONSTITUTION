@@ -2,12 +2,12 @@
 
 This component plan defines reusable UI pieces for the CHERIE DAY rebuild. Components should support a luxury Brand House, not a marketplace. Public data should be CHERIE DAY-owned; internal supplier/team records must not become public profiles.
 
-Upgrade layer: `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` defines the required elevated component system, including MaisonHeader, MaisonDrawer, CinematicHero, CollectionWorldCard, MaisonProductCard, HayaliniTasarlaFlow, SeçimlerimDrawer, and admin operating components.
+Upgrade layer: `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` defines the required elevated component system, including MaisonHeader, MaisonDrawer, CreativeOpening, CollectionWorldCard, MaisonProductCard, HayaliniTasarlaFlow, SeçimlerimDrawer, and admin operating components.
 
 ## CHERIE DAY Specific Visual Components
 
 - Centered Maison Header
-- Editorial Hero Statement
+- Editorial Opening Statement
 - Italic Emphasis Text
 - Expertise Accordion
 - Featured Work Grid

@@ -7,8 +7,8 @@ This file defines canonical use for the current brand SVG source files. It preve
 | Role | Source File | Status | Implementation Rule |
 |---|---|---|---|
 | Primary wordmark / logo | `assets/brand-source/logo.svg` | Canonical | Use for header, footer, metadata previews, and core brand placement after SVG optimization. Preserve aspect ratio. |
-| Monogram | `assets/brand-source/CDD.svg` | Canonical | Use for favicon exploration, wax seal detail, loading mark, social mark, and compact brand moments after optimization. |
-| Stamp / seal mark | `assets/brand-source/stamp.svg` | Canonical | Use for wax seal, certificate/proof approval visuals, packaging, and decorative Maison signature. Preserve geometry. |
+| Monogram | `assets/brand-source/CDD.svg` | Canonical | Use for favicon exploration, loading mark, social mark, and compact brand moments after optimization. |
+| Stamp / seal mark | `assets/brand-source/stamp.svg` | Canonical | Use for proof approval visuals, packaging, and approved brand signature moments. Preserve geometry. |
 | Secondary source / legacy candidate | `assets/brand-source/logooo.svg` | Non-canonical until approved | Do not use in MVP public UI unless explicitly promoted. Keep as source reference only. |
 
 ## SVG Handling Rules
