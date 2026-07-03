@@ -28,7 +28,11 @@ Every public answer to "who made this?" must be:
 
 ## Reading Order
 
-Read the files in `/docs` in this order:
+First read:
+
+0. `00_AI_OPEN_FIRST_DESIGN_AND_BUILD_ORDER.md` — mandatory AI execution order, visual sequence, store/admin structure, and rejection tests.
+
+Then read the files in `/docs` in this order:
 
 1. `01_CHERIE_DAY_MASTER_BUILD_BRIEF.md` — core identity, IA, stack, acceptance criteria.
 2. `02_CHERIE_DAY_REVOLUTION_BLUEPRINT.md` — final upgrade system for all sections.
