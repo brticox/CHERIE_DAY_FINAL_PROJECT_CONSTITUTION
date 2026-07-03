@@ -71,8 +71,10 @@ Then read the files in `/docs` in this order:
 35. `35_KIMI_MASTER_BUILD_PROMPT.md` — neutral AI builder master prompt.
 36. `36_KIMI_OUTPUT_FORENSIC_REVIEW_AND_REBUILD_ORDER.md` — rejected prototype warning; not a design direction.
 37. `37_MEGA_STORE_AND_SERVICE_ATLAS.md` — large store/service scope: printed products, digital invitations, gifts, rings, organization, city services, galleries, reviews, and admin expansion.
-38. `FINAL_REVIEW_BOARD_AUDIT/` — archived review notes; not active design direction.
-39. `FINAL_GIANTS_OBJECTIVE_AUDIT/` — archived audit notes; not active design direction.
+38. `38_OPENING_EXPERIENCE_CONCEPT_APPROVAL.md` — approved Güvercin Bahçesi opening/homepage creative system, motion plan, UI chrome, and Higgsfield production queue.
+39. `39_TURKISH_LITERARY_COMMERCE_VOICE.md` — Turkish literary commerce voice for public copy, CTAs, microcopy, and tone levels.
+40. `FINAL_REVIEW_BOARD_AUDIT/` — archived review notes; not active design direction.
+41. `FINAL_GIANTS_OBJECTIVE_AUDIT/` — archived audit notes; not active design direction.
 
 ## Final Source Of Truth Notes
 
