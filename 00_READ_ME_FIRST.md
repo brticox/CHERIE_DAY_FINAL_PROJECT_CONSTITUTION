@@ -65,8 +65,9 @@ Read the files in `/docs` in this order:
 33. `33_NEXT_GEN_COMMERCE_AND_ADMIN_EXPERIENCE.md` — next-generation store UX, conversion psychology, and Shopify/IKEA-level admin commerce operating system.
 34. `34_FINAL_COUNCIL_POLISH_AND_EXECUTION_MANDATE.md` — final council polish mandate and QA expectations.
 35. `35_KIMI_MASTER_BUILD_PROMPT.md` — complete prompt for Kimi or any implementation/design agent.
-36. `FINAL_REVIEW_BOARD_AUDIT/` — first audit, required fixes, and handoff control.
-37. `FINAL_GIANTS_OBJECTIVE_AUDIT/` — stricter pre-development council audit, scorecard, blockers, simplification plan, and post-fix implementation prompt.
+36. `36_KIMI_OUTPUT_FORENSIC_REVIEW_AND_REBUILD_ORDER.md` — forensic rejection of the failed Kimi prototype and mandatory rebuild order.
+37. `FINAL_REVIEW_BOARD_AUDIT/` — first audit, required fixes, and handoff control.
+38. `FINAL_GIANTS_OBJECTIVE_AUDIT/` — stricter pre-development council audit, scorecard, blockers, simplification plan, and post-fix implementation prompt.
 
 ## Final Source Of Truth Notes
 
