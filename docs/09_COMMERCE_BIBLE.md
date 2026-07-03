@@ -21,7 +21,23 @@ The existing strategy is strong for:
 - Admin product management
 - Future commerce placeholders
 
-The updated scope requires a professional Turkey-only store with cart, checkout, payments, shipping, tax/invoice readiness, order tracking, proof approval, support inquiries, and admin order management.
+The updated scope requires a professional Turkey-only mega store and service showroom with cart, checkout, payments, shipping, tax/invoice readiness, order tracking, proof approval, quote/reservation flows, service galleries, reviews, support inquiries, and admin order/service management.
+
+CHERIE DAY must support far more than invitations:
+
+- 200+ physical invitation designs and more later,
+- digital invitation designs and website-style digital invitations,
+- printed event stationery,
+- gifts and guest favors,
+- engagement/söz/isteme products,
+- nişan/söz trays and ceremony materials,
+- rings and accessories where offered,
+- gift boxes and proposal/marriage boxes,
+- event organization services,
+- birthday/baby shower/gender reveal concepts,
+- DJ/music/band add-ons where offered,
+- city-based home/venue services across Turkey,
+- galleries, concept examples, and reviews.
 
 ## CHERIE DAY Commerce Language
 
@@ -148,9 +164,25 @@ Core capabilities:
 - Related products
 - Matching items
 - Collection sets
+- Departments
+- Event types
+- Service categories
+- City availability
+- Galleries and reviews
 
 Public UX:
 Users browse by CHERIE DAY worlds, categories, event types, and materials. The catalog should feel curated, not endless.
+
+Users must also be able to browse by celebration need:
+
+- `Düğünüm için`
+- `Nişan & Söz için`
+- `İsteme için`
+- `Doğum günü için`
+- `Baby shower için`
+- `Davetiyemi seçmek istiyorum`
+- `Dijital davetiye istiyorum`
+- `Organizasyon desteği istiyorum`
 
 Admin needs:
 

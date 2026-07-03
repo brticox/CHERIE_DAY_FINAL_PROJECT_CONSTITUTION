@@ -7,7 +7,7 @@ It is intentionally not a hero art-direction file.
 
 ## 1. What CHERIE DAY Is
 
-CHERIE DAY is a Turkey-only luxury wedding, invitation, gift, digital memory, and celebration commerce maison.
+CHERIE DAY is a Turkey-only luxury wedding, invitation, gift, digital memory, organization, and celebration commerce maison.
 
 It must function as a serious modern ecommerce and service platform with:
 
@@ -24,6 +24,9 @@ It must function as a serious modern ecommerce and service platform with:
 - admin system,
 - legal pages,
 - payment provider integration surfaces.
+
+It must be understood as a large store and service showroom, not a small invitation shop.
+It includes printed products, digital products, gifts, accessories, engagement/söz/isteme products, rings, organization services, city-based service flows, galleries, reviews, and quote/reservation journeys.
 
 ## 2. What This File Must Not Do
 
@@ -109,6 +112,15 @@ Core commerce categories:
 - Masa Kartı & Event Stationery,
 - QR Kart,
 - Hatıra & Albüm,
+- Nişan & Söz,
+- İsteme,
+- Nişan Tepsisi,
+- Yüzükler & Aksesuarlar,
+- Organizasyon,
+- Doğum Günü,
+- Baby Shower,
+- Müzik & DJ,
+- Şehir Hizmetleri,
 - Planlama / Özel Teklif.
 
 Product behavior types:
@@ -117,7 +129,9 @@ Product behavior types:
 - proof-required custom product,
 - digital delivery product,
 - quote-required service,
-- inquiry-only premium item.
+- inquiry-only premium item,
+- reservation-request service,
+- city-dependent service.
 
 ## 7. Checkout And Payments
 

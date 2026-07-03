@@ -70,14 +70,16 @@ Then read the files in `/docs` in this order:
 34. `34_FINAL_COUNCIL_POLISH_AND_EXECUTION_MANDATE.md` — final council polish mandate and QA expectations.
 35. `35_KIMI_MASTER_BUILD_PROMPT.md` — neutral AI builder master prompt.
 36. `36_KIMI_OUTPUT_FORENSIC_REVIEW_AND_REBUILD_ORDER.md` — rejected prototype warning; not a design direction.
-37. `FINAL_REVIEW_BOARD_AUDIT/` — first audit, required fixes, and handoff control.
-38. `FINAL_GIANTS_OBJECTIVE_AUDIT/` — stricter pre-development council audit, scorecard, blockers, simplification plan, and post-fix implementation prompt.
+37. `37_MEGA_STORE_AND_SERVICE_ATLAS.md` — large store/service scope: printed products, digital invitations, gifts, rings, organization, city services, galleries, reviews, and admin expansion.
+38. `FINAL_REVIEW_BOARD_AUDIT/` — archived review notes; not active design direction.
+39. `FINAL_GIANTS_OBJECTIVE_AUDIT/` — archived audit notes; not active design direction.
 
 ## Final Source Of Truth Notes
 
 - Turkish-first editorial content uses `/rehber`, not `/journal`.
 - All public customer-facing interface copy is Turkish.
 - Commerce is Turkey-only for MVP: Turkish account, cart, checkout, payment, delivery, order tracking, proof approval, and support flows.
+- CHERIE DAY is a large store/service maison, not only an invitation shop. It includes printed products, digital invitations, gifts, engagement/söz/isteme products, rings/accessories, event organization, city-based services, galleries, reviews, quote/reservation flows, and admin operations.
 - Payments must support Turkish domestic cards plus foreign-issued Visa/Mastercard/AMEX where enabled by iyzico/PayTR merchant settings, with TROY support for Turkey.
 - International commerce/shipping, multi-currency storefronts, EN/AR storefronts, live RSVP, and wedding website builder are future phases unless explicitly re-scoped.
 - Current constitution readiness is **95/100** after the hardening lock files `22` through `31`.
