@@ -1,0 +1,856 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Frozen design tokens — docs/25_DESIGN_TOKENS_AND_TYPE_LOCK.md.
+ * Font family variables (--font-display / --font-ui) are injected by next/font
+ * in app/layout.tsx; the stacks below are fallbacks that match docs/25.
+ */
+:root {
+  /* Color tokens (docs/25 §Color Tokens) */
+  --cherie-ivory: #faf7f1;
+  --cherie-paper: #f3ede3;
+  --cherie-ink: #1f1917;
+  --cherie-soft-ink: #4b403c;
+  --cherie-burgundy: #4a0e17;
+  --cherie-cherry: #8f1d2c;
+  --cherie-velvet: #2b1118;
+  --cherie-brass: #b08a57;
+  --cherie-lace: #e8d8c7;
+  --cherie-mist: #efe8de;
+  --cherie-success: #326a4a;
+  --cherie-warning: #a96721;
+  --cherie-error: #9d2b2b;
+  --cherie-focus: #7f5a2d;
+
+  /* RGB triplets of the same frozen tokens — lets Tailwind apply opacity
+   * modifiers (bg-cherie-ivory/85 etc.). Values must mirror the hex above. */
+  --cherie-ivory-rgb: 250 247 241;
+  --cherie-paper-rgb: 243 237 227;
+  --cherie-ink-rgb: 31 25 23;
+  --cherie-soft-ink-rgb: 75 64 60;
+  --cherie-burgundy-rgb: 74 14 23;
+  --cherie-cherry-rgb: 143 29 44;
+  --cherie-velvet-rgb: 43 17 24;
+  --cherie-brass-rgb: 176 138 87;
+  --cherie-lace-rgb: 232 216 199;
+  --cherie-mist-rgb: 239 232 222;
+  --cherie-success-rgb: 50 106 74;
+  --cherie-warning-rgb: 169 103 33;
+  --cherie-error-rgb: 157 43 43;
+  --cherie-focus-rgb: 127 90 45;
+
+  /* Typography stacks (docs/25 §Typography Lock) — overridden by next/font */
+  --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-ui: "Inter", "Manrope", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--cherie-ivory);
+    color: var(--cherie-ink);
+    font-family: var(--font-ui);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--cherie-ink);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  /* Visible focus ring (docs/25 §Radius/Shadow/Focus, docs/44 §8) */
+  :focus-visible {
+    outline: 2px solid var(--cherie-focus);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--cherie-lace);
+    color: var(--cherie-ink);
+  }
+
+  /* Respect reduced motion globally (docs/29, docs/44 §8) */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Type scale helpers (docs/25 §Type Scale) */
+  .text-display-xl {
+    font-family: var(--font-display);
+    font-size: 38px;
+    line-height: 1.1;
+  }
+  .text-h1 {
+    font-family: var(--font-display);
+    font-size: 34px;
+    line-height: 1.12;
+  }
+  .text-h2 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    line-height: 1.18;
+  }
+  .text-h3 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  @media (min-width: 768px) {
+    .text-display-xl {
+      font-size: 64px;
+      line-height: 1.05;
+    }
+    .text-h1 {
+      font-size: 56px;
+      line-height: 1.08;
+    }
+    .text-h2 {
+      font-size: 42px;
+      line-height: 1.15;
+    }
+    .text-h3 {
+      font-size: 30px;
+      line-height: 1.2;
+    }
+  }
+
+  .cherie-container {
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+}
+
+/* ==========================================================================
+ * Homepage — «Gökten Bahçeye — Kirazlı Işık Bahçesi» v2 (docs/47, 4C rebuild).
+ * One continuous cinematic WorldStage driven purely by CSS custom properties
+ * that the stage's scroll engine writes (--v-i, --p-i, --x-i, --ramp, --mx/--my).
+ * Every rule here is decorative; deleting this block leaves a working store.
+ * ========================================================================== */
+
+@layer components {
+  .world-stage {
+    background: linear-gradient(to bottom, #35508f 0%, #5a72ab 46%, #c9b58e 88%, #eee4cd 100%);
+  }
+  .scene {
+    position: absolute;
+    inset: 0;
+  }
+  .layer {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Descent parallax: plates travel gently upward as their section scrolls
+   * through (camera moving down); overscan hides the travel. ≤1.12 scale. */
+  .layer-drift {
+    transform: translate3d(0, calc((0.5 - var(--p, 0.5)) * -7%), 0) scale(1.12);
+    will-change: transform;
+  }
+  .layer-drift.layer-mouse {
+    transform: translate3d(calc(var(--mx, 0) * 8px), calc((0.5 - var(--p, 0.5)) * -7% + var(--my, 0) * 5px), 0)
+      scale(1.12);
+  }
+  .layer-sky {
+    transform: translate3d(calc(var(--mx, 0) * -6px), calc(var(--my, 0) * -4px), 0) scale(1.05);
+  }
+
+  /* ---- Scene 0 · Gök: clouds that PART as the first scroll begins ---- */
+  .hero-grade {
+    background:
+      radial-gradient(58% 42% at 50% 46%, rgba(21, 34, 66, 0.38) 0%, rgba(21, 34, 66, 0) 100%),
+      linear-gradient(to bottom, rgba(27, 39, 74, 0.32) 0%, rgba(27, 39, 74, 0) 35%, rgba(238, 226, 200, 0.1) 100%);
+    opacity: calc(1 - var(--x-0, 0) * 0.8);
+  }
+  .cloud-bank {
+    position: absolute;
+    bottom: -8%;
+    height: 52%;
+    width: 78%;
+    filter: blur(2px);
+    will-change: transform, opacity;
+  }
+  .cloud-bank-l {
+    left: -12%;
+    background:
+      radial-gradient(42% 55% at 30% 75%, rgba(250, 247, 241, 0.92) 0%, transparent 70%),
+      radial-gradient(34% 48% at 62% 88%, rgba(244, 236, 220, 0.85) 0%, transparent 72%),
+      radial-gradient(28% 42% at 84% 70%, rgba(250, 247, 241, 0.7) 0%, transparent 70%);
+    transform: translate3d(calc(var(--x-0, 0) * -46% + var(--mx, 0) * 10px), calc(var(--x-0, 0) * 8%), 0);
+    opacity: calc(1 - var(--x-0, 0) * 0.55);
+    animation: cloud-drift-a 11s ease-in-out infinite alternate;
+  }
+  .cloud-bank-r {
+    right: -12%;
+    background:
+      radial-gradient(42% 55% at 70% 78%, rgba(250, 247, 241, 0.92) 0%, transparent 70%),
+      radial-gradient(32% 46% at 38% 88%, rgba(244, 236, 220, 0.85) 0%, transparent 72%),
+      radial-gradient(26% 40% at 12% 72%, rgba(250, 247, 241, 0.7) 0%, transparent 70%);
+    transform: translate3d(calc(var(--x-0, 0) * 46% + var(--mx, 0) * 10px), calc(var(--x-0, 0) * 8%), 0);
+    opacity: calc(1 - var(--x-0, 0) * 0.55);
+    animation: cloud-drift-b 14s ease-in-out infinite alternate;
+  }
+  .undercloud-glow-stage {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 46%;
+    background: radial-gradient(60% 70% at 50% 100%, rgba(255, 208, 130, 0.55) 0%, rgba(255, 208, 130, 0.16) 45%, transparent 75%);
+    opacity: calc(0.7 + var(--x-0, 0) * 0.3);
+    animation: glow-breathe 7s ease-in-out infinite;
+    transform: translate3d(calc(var(--mx, 0) * 6px), 0, 0);
+  }
+
+  /* ---- Scene grades: quiet zones + light ramp glue per plate ---- */
+  .atlas-grade {
+    background: linear-gradient(to bottom, rgba(248, 236, 216, 0.55) 0%, transparent 34%, rgba(28, 20, 16, 0.78) 100%);
+  }
+  .kiraz-grade {
+    background: linear-gradient(to bottom, rgba(250, 247, 241, 0.55) 0%, rgba(250, 247, 241, 0.18) 40%, rgba(43, 17, 24, 0.6) 100%);
+  }
+  .bower-grade {
+    background: linear-gradient(to bottom, rgba(36, 16, 25, 0.7) 0%, rgba(36, 16, 25, 0.42) 45%, rgba(43, 17, 24, 0.8) 100%);
+  }
+  .rose-grade {
+    background: linear-gradient(to bottom, rgba(43, 17, 24, 0.72) 0%, rgba(43, 17, 24, 0.42) 46%, rgba(43, 17, 24, 0.82) 100%);
+  }
+  .gift-grade {
+    background: linear-gradient(to bottom, rgba(43, 17, 24, 0.72) 0%, rgba(58, 22, 32, 0.46) 45%, rgba(43, 17, 24, 0.84) 100%);
+  }
+  .pavilion-grade {
+    background: linear-gradient(to bottom, rgba(28, 18, 8, 0.72) 0%, rgba(28, 18, 8, 0.4) 45%, rgba(28, 18, 8, 0.82) 100%);
+  }
+  .night-grade {
+    background: linear-gradient(to bottom, #2b1118 0%, #171c2e 55%, #12141f 100%);
+  }
+  .calm-grade {
+    background: linear-gradient(to bottom, #12141f 0%, #1b141c 60%, #1c0b10 100%);
+  }
+  .gate-grade {
+    background: linear-gradient(to bottom, rgba(22, 11, 16, 0.7) 0%, rgba(22, 11, 16, 0.36) 45%, rgba(18, 8, 12, 0.86) 100%);
+  }
+
+  /* ---- Işık Patikası: lights that ignite one beat ahead of scroll ----
+   * opacity = clamp(0, (sceneProgress − threshold) × 8, 1)                */
+  .stage-lantern,
+  .stage-bulb,
+  .stage-candle {
+    position: absolute;
+    border-radius: 9999px;
+    opacity: clamp(0, calc((var(--pp, 0) - var(--t, 0.3)) * 8), 1);
+  }
+  .stage-lantern {
+    width: 8px;
+    height: 8px;
+    background: #ffd68c;
+    box-shadow:
+      0 0 12px 4px rgba(255, 214, 140, 0.65),
+      0 0 42px 14px rgba(255, 190, 110, 0.25);
+    animation: lantern-flicker 4.5s ease-in-out infinite;
+  }
+  /* Flames warm and lean toward a nearby pointer (presence system). */
+  .stage-lantern,
+  .stage-bulb,
+  .stage-candle {
+    filter: brightness(calc(1 + var(--near, 0) * 0.45));
+    scale: calc(1 + var(--near, 0) * 0.18);
+    transition: filter 300ms cubic-bezier(0.22, 1, 0.36, 1), scale 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .stage-lantern-night {
+    background: #ffe0a8;
+    box-shadow:
+      0 0 14px 5px rgba(255, 224, 168, 0.55),
+      0 0 52px 18px rgba(255, 200, 130, 0.18);
+  }
+  .stage-bulb {
+    width: 6px;
+    height: 6px;
+    background: #ffdf9e;
+    box-shadow: 0 0 10px 3px rgba(255, 223, 158, 0.6);
+    animation: lantern-flicker 6s ease-in-out infinite;
+  }
+  .stage-candle {
+    width: 130px;
+    height: 130px;
+    background: radial-gradient(circle, rgba(255, 208, 130, 0.5) 0%, rgba(255, 208, 130, 0.14) 45%, transparent 72%);
+    animation: lantern-flicker 5s ease-in-out infinite;
+  }
+  .firefly-dot {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 9999px;
+    background: #ffe4b0;
+    box-shadow: 0 0 8px 3px rgba(255, 214, 140, 0.5);
+    animation: firefly-pulse 4s ease-in-out infinite;
+  }
+
+  /* ---- Scene 2 · Kiraz: real blossom branches passing through depth ---- */
+  .branch {
+    position: absolute;
+    will-change: transform;
+    filter: drop-shadow(0 18px 32px rgba(43, 17, 24, 0.25));
+  }
+  .branch-1 {
+    left: -16%;
+    top: 96%;
+    width: min(46rem, 72vw);
+    transform: translate3d(calc(var(--mx, 0) * 10px), calc(var(--p-2, 0) * -155vh), 0) rotate(9deg);
+  }
+  .branch-2 {
+    right: -18%;
+    top: 108%;
+    width: min(34rem, 58vw);
+    opacity: 0.85;
+    transform: translate3d(calc(var(--mx, 0) * 5px), calc(var(--p-2, 0) * -115vh), 0) rotate(-7deg);
+  }
+
+  /* ---- Doves: one unhurried crossing, far away, never cartoonish ---- */
+  .dove-path {
+    position: absolute;
+    top: 16%;
+    left: 0;
+    width: 100%;
+    transform: translate3d(0, calc(var(--my, 0) * -6px), 0);
+  }
+  .dove-glide {
+    animation: dove-cross 56s linear infinite;
+    will-change: transform;
+  }
+
+  /* ---- Silk ribbon drifting over the gift bench ---- */
+  .ribbon-drift {
+    position: absolute;
+    inset-inline: -8%;
+    top: 4%;
+    opacity: 0.75;
+    transform: translate3d(calc(var(--mx, 0) * 6px), calc((0.5 - var(--p-6, 0.5)) * -16vh), 0) rotate(-3deg);
+    will-change: transform;
+  }
+
+  /* ---- Presence: soft carried light that follows the visitor ---- */
+  .presence-light {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 380px;
+    height: 380px;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(255, 214, 140, 0.5) 0%, rgba(255, 214, 140, 0.12) 45%, transparent 70%);
+    mix-blend-mode: soft-light;
+    opacity: calc(0.35 + var(--ramp, 0) * 0.5);
+    transform: translate3d(-600px, -600px, 0);
+    transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+  .stage-petal {
+    position: absolute;
+    top: -4%;
+    width: 12px;
+    height: 14px;
+    border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%;
+    background: #e9b8c4;
+    opacity: 0.75;
+    animation: petal-fall 16s linear infinite;
+    animation-delay: var(--d, 0s);
+  }
+
+  /* ---- Scene 5 · Saklı Koru: shaft, hedges parting, the ring box ---- */
+  .grove-velvet {
+    background: radial-gradient(120% 90% at 50% 34%, #3a1a24 0%, #2b1118 55%, #1c0b10 100%);
+  }
+  .grove-shaft-stage {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(168deg, transparent 26%, rgba(255, 205, 128, 0.26) 46%, transparent 64%);
+    opacity: clamp(0, calc((var(--p-5, 0) - 0.32) * 5), 1);
+  }
+  .grove-box-stage {
+    position: absolute;
+    inset-inline: 8%;
+    top: 16%;
+    bottom: 20%;
+    opacity: clamp(0, calc((var(--p-5, 0) - 0.36) * 6), 1);
+    transform: scale(calc(0.94 + clamp(0, calc((var(--p-5, 0) - 0.36) * 6), 1) * 0.06));
+    filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5));
+  }
+  @media (min-width: 1024px) {
+    .grove-box-stage {
+      inset-inline: 4% 52%;
+      top: 14%;
+      bottom: 14%;
+    }
+  }
+  .grove-hedge {
+    position: absolute;
+    inset-block: 0;
+    width: 58%;
+    will-change: transform;
+  }
+  .grove-hedge-l {
+    left: 0;
+    background: linear-gradient(to right, #1c0b10 52%, rgba(28, 11, 16, 0) 100%);
+    transform: translate3d(calc(clamp(0, calc((var(--p-5, 0) - 0.38) * 3.2), 1) * -103%), 0, 0);
+  }
+  .grove-hedge-r {
+    right: 0;
+    background: linear-gradient(to left, #1c0b10 52%, rgba(28, 11, 16, 0) 100%);
+    transform: translate3d(calc(clamp(0, calc((var(--p-5, 0) - 0.38) * 3.2), 1) * 103%), 0, 0);
+  }
+  .grove-tease-stage {
+    position: absolute;
+    inset-inline: 22%;
+    bottom: 0;
+    height: 36%;
+    background: radial-gradient(60% 100% at 50% 100%, rgba(255, 190, 110, 0.3) 0%, transparent 75%);
+    opacity: clamp(0, calc((var(--p-4, 0) - 0.52) * 3), 1);
+    animation: glow-breathe 6s ease-in-out infinite;
+  }
+
+  /* ---- Whole-journey light ramp (noon → gold → dusk glue) ---- */
+  .ramp {
+    position: absolute;
+    inset: 0;
+  }
+  .ramp-gold {
+    background: linear-gradient(to bottom, rgba(255, 196, 120, 0.16), rgba(200, 130, 70, 0.14));
+    opacity: clamp(0, calc(var(--ramp, 0) * 2.6 - 0.28), 1);
+  }
+  .ramp-dusk {
+    background: linear-gradient(to bottom, rgba(30, 14, 22, 0.28), rgba(16, 8, 14, 0.4));
+    opacity: clamp(0, calc(var(--ramp, 0) * 2 - 1.05), 1);
+  }
+
+  /* ---- Vitrin jewellery ---- */
+  .atlas-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    background: #ffd68c;
+    box-shadow: 0 0 10px 3px rgba(255, 214, 140, 0.65);
+    animation: lantern-flicker 4.5s ease-in-out infinite;
+  }
+  .cta-brass {
+    border-bottom: 1px solid rgba(176, 138, 87, 0.55);
+    transition: border-color 140ms cubic-bezier(0.22, 1, 0.36, 1), color 140ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .cta-brass:hover {
+    border-bottom-color: var(--cherie-brass);
+  }
+  .card-sheen {
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.32) 0%, transparent 40%, transparent 74%, rgba(176, 138, 87, 0.1) 100%);
+  }
+  .micro-cue {
+    opacity: 0;
+    animation:
+      cue-in 900ms ease-out 2.8s forwards,
+      cue-breathe 3.6s ease-in-out 3.7s infinite;
+  }
+
+  /* ---- Ignition grammar for Vitrin content (fade-through-warm) ---- */
+  [data-ignite] .ig {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  [data-ignite][data-lit] .ig {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: calc(var(--ig-i, 0) * 80ms);
+  }
+
+  /* ---- Global film grain ---- */
+  .home-grain {
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+}
+
+/* ---- Keyframes ---- */
+@keyframes cloud-drift-a {
+  from { margin-left: -1.2%; }
+  to { margin-left: 1.2%; }
+}
+@keyframes cloud-drift-b {
+  from { margin-right: 1%; }
+  to { margin-right: -1%; }
+}
+@keyframes glow-breathe {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.22); }
+}
+@keyframes cue-in {
+  from { opacity: 0; }
+  to { opacity: 0.7; }
+}
+@keyframes cue-breathe {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, 4px); }
+}
+@keyframes lantern-flicker {
+  0%, 100% { filter: brightness(0.92); }
+  12% { filter: brightness(1.1); }
+  34% { filter: brightness(0.85); }
+  58% { filter: brightness(1.05); }
+  81% { filter: brightness(0.9); }
+}
+@keyframes firefly-pulse {
+  0%, 100% { opacity: 0.15; transform: translateY(0); }
+  50% { opacity: 0.9; transform: translateY(-7px); }
+}
+@keyframes petal-fall {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(5vw, 110vh) rotate(300deg); }
+}
+@keyframes dove-cross {
+  0% { transform: translate3d(-16vw, 2vh, 0) scale(0.9); }
+  50% { transform: translate3d(52vw, -2.5vh, 0) scale(1); }
+  100% { transform: translate3d(118vw, 1vh, 0) scale(0.92); }
+}
+
+/* ---- Reduced motion: the completed matte painting (docs/47 §12) ----
+ * Scene crossfades stay (they are scroll-position state, not animation);
+ * autonomous drift, ignition delays and parallax are removed; everything
+ * that can burn is already burning. */
+@media (prefers-reduced-motion: reduce) {
+  .layer-drift,
+  .layer-drift.layer-mouse,
+  .layer-sky,
+  .cloud-bank-l,
+  .cloud-bank-r,
+  .branch-1,
+  .branch-2,
+  .ribbon-drift,
+  .dove-glide,
+  .dove-path {
+    transform: none !important;
+    animation: none !important;
+  }
+  .presence-light { display: none; }
+  .stage-lantern,
+  .stage-bulb,
+  .stage-candle,
+  .grove-shaft-stage,
+  .grove-box-stage,
+  .grove-tease-stage {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .grove-hedge-l { transform: translate3d(-103%, 0, 0) !important; }
+  .grove-hedge-r { transform: translate3d(103%, 0, 0) !important; }
+  .stage-petal { display: none; }
+  .micro-cue { opacity: 0.7; animation: none; }
+  [data-ignite] .ig {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+ * Maison homepage — «Bir CHERIE Günü» (docs/51–53). Decorative living-air CSS
+ * for the new cinematic engine. `--px/--py` are the pointer field (-0.5..0.5)
+ * written by MaisonProvider; deleting this block leaves a working store.
+ * ========================================================================== */
+@layer components {
+  /* subtle pointer parallax for the hero safe-zone (≤14px, docs/52 §5) */
+  .parallax-soft {
+    transform: translate3d(calc(var(--px, 0) * -14px), calc(var(--py, 0) * -8px), 0);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  /* the whole world drifts a few px opposite the cursor for parallax depth */
+  .world-parallax {
+    transform: translate3d(calc(var(--px, 0) * 14px), calc(var(--py, 0) * 10px), 0);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  /* slow cinematic Ken-Burns push on whichever film is active — continuous
+   * camera drift layered on top of the film's own baked motion */
+  .kenburns {
+    animation: kenburns 22s ease-out both;
+    transform-origin: 50% 42%;
+    will-change: transform;
+  }
+
+  /* the dove crosses the sky on a slow bezier-eased arc (scale + depth fade),
+   * never a straight linear track (docs/52 §Bird motion law) */
+  .dove-fly {
+    animation: dove-fly 30s cubic-bezier(0.4, 0, 0.5, 1) infinite;
+    will-change: transform, opacity;
+  }
+
+  /* a dove crossing the open sky on a drifting arc (never a straight PNG) */
+  .dove-drift,
+  .dove-drift-2 {
+    left: 0;
+    will-change: transform, opacity;
+  }
+  .dove-drift {
+    animation: maison-dove 19s linear infinite;
+  }
+  .dove-drift-2 {
+    animation: maison-dove 27s linear infinite;
+    animation-delay: -9s;
+    opacity: 0.7;
+  }
+}
+
+@layer components {
+  /* silk ribbon breathing in the near foreground */
+  .maison-sway {
+    animation: maison-sway 9s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  /* petal cluster drifting down through the frame */
+  .maison-fall {
+    animation: maison-fall 24s linear infinite;
+    will-change: transform, opacity;
+  }
+}
+
+@keyframes maison-sway {
+  0% {
+    transform: rotate(-2.5deg) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: rotate(2deg) translate3d(-10px, 8px, 0);
+  }
+}
+
+@keyframes maison-fall {
+  0% {
+    transform: translate3d(0, -8vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.75;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(-6vw, 105vh, 0) rotate(38deg);
+    opacity: 0;
+  }
+}
+
+@keyframes kenburns {
+  0% {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.11) translate3d(-1.2%, -1.6%, 0);
+  }
+}
+
+@keyframes dove-fly {
+  0% {
+    transform: translate3d(-16vw, 22vh, 0) scale(0.5);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  38% {
+    transform: translate3d(34vw, 2vh, 0) scale(0.82);
+  }
+  62% {
+    transform: translate3d(66vw, 20vh, 0) scale(1);
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(112vw, -6vh, 0) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes maison-dove {
+  0% {
+    transform: translate3d(-12vw, 0, 0) scale(0.8);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.95;
+  }
+  50% {
+    transform: translate3d(42vw, -4vh, 0) scale(1);
+  }
+  88% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(96vw, 2vh, 0) scale(0.85);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parallax-soft,
+  .world-parallax {
+    transform: none;
+  }
+  .kenburns,
+  .dove-fly,
+  .dove-drift,
+  .dove-drift-2,
+  .maison-sway {
+    animation: none;
+  }
+  .maison-fall {
+    animation: none;
+    display: none;
+  }
+}
+
+/* ---- Maison painterly toolkit: grain, vignette, volumetrics, bokeh ---- */
+@layer components {
+  /* film grain — kills the "flat plastic gradient" read on every plate */
+  .m-grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+  /* cinematic vignette — pulls the eye to the light */
+  .m-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(115% 90% at 50% 42%, transparent 52%, rgba(20, 12, 8, 0.42) 100%);
+  }
+  /* volumetric god-ray fan */
+  .m-godray {
+    position: absolute;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 244, 214, 0.85) 0%,
+      rgba(255, 236, 190, 0.28) 55%,
+      transparent 100%
+    );
+    filter: blur(14px);
+    mix-blend-mode: screen;
+    animation: m-ray-breathe 7s ease-in-out infinite;
+  }
+  /* soft warm bokeh orb */
+  .m-bokeh {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(255, 226, 160, 0.55) 0%, rgba(255, 226, 160, 0) 70%);
+    mix-blend-mode: screen;
+    animation: m-bokeh-float 9s ease-in-out infinite alternate;
+  }
+  .m-bokeh:nth-child(2n) {
+    animation-duration: 12s;
+    animation-delay: -4s;
+  }
+  /* wood material for doors — layered sheen instead of flat brown */
+  .m-wood {
+    background:
+      linear-gradient(92deg, rgba(255, 214, 150, 0.1) 0%, transparent 18%, rgba(0, 0, 0, 0.28) 100%),
+      repeating-linear-gradient(4deg, rgba(0, 0, 0, 0.13) 0 2px, transparent 2px 9px),
+      linear-gradient(170deg, #4a3524 0%, #33241a 55%, #241812 100%);
+  }
+  .m-wood-r {
+    background:
+      linear-gradient(268deg, rgba(255, 214, 150, 0.1) 0%, transparent 18%, rgba(0, 0, 0, 0.3) 100%),
+      repeating-linear-gradient(-4deg, rgba(0, 0, 0, 0.13) 0 2px, transparent 2px 9px),
+      linear-gradient(190deg, #46311f 0%, #2e2016 55%, #201510 100%);
+  }
+  /* polished marble floor with light reflection */
+  .m-marble {
+    background:
+      radial-gradient(60% 130% at 50% -10%, rgba(255, 240, 205, 0.5) 0%, transparent 60%),
+      repeating-linear-gradient(88deg, rgba(255, 255, 255, 0.04) 0 3px, transparent 3px 26px),
+      linear-gradient(#2e241b, #191009);
+  }
+  .m-cloud {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 9999px;
+    filter: blur(18px);
+    background: radial-gradient(50% 60% at 50% 55%, rgba(255, 252, 244, 0.9) 0%, rgba(255, 250, 238, 0) 72%);
+    animation: m-cloud-drift 26s ease-in-out infinite alternate;
+  }
+  .m-cloud:nth-child(2n) {
+    animation-duration: 34s;
+    animation-delay: -12s;
+  }
+}
+
+@keyframes m-ray-breathe {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes m-bokeh-float {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(14px, -22px, 0) scale(1.15);
+  }
+}
+@keyframes m-cloud-drift {
+  from {
+    transform: translate3d(-3%, 0, 0);
+  }
+  to {
+    transform: translate3d(4%, -2%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-godray,
+  .m-bokeh,
+  .m-cloud {
+    animation: none;
+  }
+}
+

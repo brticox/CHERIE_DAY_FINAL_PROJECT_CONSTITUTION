@@ -1,0 +1,16 @@
+# CHERIE DAY — Supabase local config (docs/29).
+# `project_id` is a local identifier; link a real project with `supabase link`.
+project_id = "cherie-day"
+
+[db]
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[storage]
+enabled = true
+
+[auth]
+enable_signup = true
