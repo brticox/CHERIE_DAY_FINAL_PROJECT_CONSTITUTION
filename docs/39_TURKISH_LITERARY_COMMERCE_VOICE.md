@@ -1,5 +1,7 @@
 # Turkish Literary Commerce Voice
 
+> **HOMEPAGE RESET NOTE (2026-07-05).** Previous homepage-specific hero lines and concept copy were archived outside this project. This file remains authoritative for Turkish public copy site-wide, but it no longer locks a homepage headline, metaphor, or CTA.
+
 This file defines the CHERIE DAY public copywriting voice. It governs all Turkish public-facing copy site-wide — not only the homepage — and works together with `12_CONTENT_STRATEGY.md` and `25_DESIGN_TOKENS_AND_TYPE_LOCK.md`. Where this file and `12_CONTENT_STRATEGY.md` overlap, this file provides the deeper literary discipline; `25_DESIGN_TOKENS_AND_TYPE_LOCK.md`'s exact microcopy tokens (`Seçimlerim`, `Güvenli Ödeme`, etc.) remain authoritative and must not be renamed.
 
 Governing rule reminder: all public customer-facing UI and website copy must be Turkish (`00_AI_OPEN_FIRST_DESIGN_AND_BUILD_ORDER.md` §3).
@@ -9,7 +11,7 @@ Governing rule reminder: all public customer-facing UI and website copy must be 
 ## 1. Voice Principles
 
 - **Breath-length lines.** Every poetic line must read comfortably in a single breath aloud — never longer than that.
-- **Concrete imagery, not abstract praise.** Words like "muhteşem," "eşsiz," "unutulmaz" are banned as filler; the dove, the paper, the light, the velvet — the real objects of the Güvercin Bahçesi world — carry the emotion instead.
+- **Concrete imagery, not abstract praise.** Words like "muhteşem," "eşsiz," "unutulmaz" are banned as filler; paper, light, velvet, ribbon, seal, candle, and other real Maison objects should carry the emotion instead.
 - **One sentence, one feeling.** Never stack two metaphors in a single sentence.
 - **Respectful warmth.** "Siz" address throughout — the tone of a gracious host, never a salesperson.
 - **Poetry opens, clarity closes.** Every section pairs one emotional line with one clear commercial line — they are never merged into a single overloaded sentence, and never reversed in order.

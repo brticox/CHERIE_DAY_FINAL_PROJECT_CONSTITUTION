@@ -109,4 +109,4 @@ If such folders exist beside this package, they are inspiration/archive only and
 
 ## 7. Developer Handoff
 
-Use `docs/FINAL_REVIEW_BOARD_AUDIT/FINAL_DEVELOPER_HANDOFF_PROMPT.md` as the corrected implementation handoff prompt after completing the remaining asset/legal/security decisions.
+Use `docs/46_BUILDER_HANDOFF_AND_BUILD_READINESS.md` as the corrected implementation handoff layer (it replaces the removed `FINAL_REVIEW_BOARD_AUDIT/FINAL_DEVELOPER_HANDOFF_PROMPT.md`). Pair it with `docs/06_DEVELOPER_PROMPT.md` after completing the remaining asset/legal/security decisions.

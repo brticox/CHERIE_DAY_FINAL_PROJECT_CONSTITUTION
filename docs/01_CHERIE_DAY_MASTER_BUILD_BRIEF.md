@@ -1,6 +1,6 @@
 # CHERIE DAY MASTER BUILD BRIEF
 
-Governing upgrade layer: `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` defines how all sections should be raised into a connected Maison system. `03_HERO_CINEMATIC_SYSTEM.md` is now a neutral opening-experience creative slot, not a fixed hero specification.
+Governing upgrade layer: `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` defines how all non-homepage sections should be raised into a connected Maison system. The previous homepage/opening brief has been archived outside this project; a new homepage brief is required before rebuilding `/`.
 
 ## 1. Final Identity
 
@@ -43,12 +43,12 @@ Core Turkish brand copy:
 4. Collections are worlds, not random product groups.
 5. Digital tools are CHERIE DAY Digital experiences, not generic templates.
 6. Commerce is quiet luxury. No noisy sale banners, star ratings, marketplace seller labels, or aggressive urgency.
-7. The opening experience is governed by `03_HERO_CINEMATIC_SYSTEM.md` as a neutral creative slot. No specific hero scene, video, object list, or animation pattern is mandatory.
+7. The homepage/opening has no active creative authority after the reset. No specific hero scene, video, object list, or animation pattern is mandatory.
 8. The site can be inspired by luxury editorial commerce systems, but must not copy another brand's visual identity.
 
 ## 3. Final Website Concept
 
-The website should open with an approved CHERIE DAY creative experience, then become a shoppable, service-rich editorial platform.
+The website should eventually open with a newly approved CHERIE DAY homepage experience, then become a shoppable, service-rich editorial platform.
 
 User journey:
 

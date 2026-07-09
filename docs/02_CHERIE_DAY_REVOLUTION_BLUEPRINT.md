@@ -4,7 +4,7 @@ Project: **CHERIE DAY — Wedding, Gift & Celebration Maison**
 
 This document upgrades the whole CHERIE DAY constitution into a higher-level execution system. It focuses on product, commerce, UX, content, and operations.
 
-This file does not prescribe the opening creative concept. `03_HERO_CINEMATIC_SYSTEM.md` is a neutral creative slot. This file governs how public and internal sections should be upgraded.
+This file does not prescribe the homepage/opening creative concept. The previous homepage brief has been archived outside this project. This file governs how public and internal non-homepage sections should be upgraded.
 
 ## 1. The Big Idea
 
@@ -88,51 +88,19 @@ Drawer structure:
 - Footer shortcuts: WhatsApp, Instagram, email.
 - Motion: slide/fade 280-350ms, no bounce.
 
-## 4. Homepage Revolution
+## 4. Homepage Reset
 
-Homepage is not a list of blocks. It is an editorial-commerce sequence with an approved creative opening.
+The previous homepage/landing-page strategy has been separated from this project.
+The current `/` route is a plain reset page.
 
-Final order:
+Before a new homepage is built:
 
-1. **Approved Creative Opening** — governed by `03_HERO_CINEMATIC_SYSTEM.md` as a neutral slot.
-2. **Maison Promise** — one strong statement, no clutter.
-3. **How CHERIE DAY Works** — discover, design, produce, coordinate, deliver.
-4. **Experience Worlds** — wedding, engagement, kına, nikah, baby, corporate, private.
-5. **Collections As Worlds** — Cherry Seal, Ivory Letter, Maison Rouge, Lace Memory, Velvet Promise, Noir Cherie, Pearl Ceremony.
-6. **Mağaza / Maison Ürünleri** — curated product row with tactile story, not commodity cards.
-7. **Digital Love Story** — invitation, RSVP, QR, wedding website.
-8. **Memory Chapter** — film, photo, reels, event trailer.
-9. **Hayalini Tasarla** — tailor/quiz entry.
-10. **Client Stories / Portfolio** — proof through CHERIE DAY stories, not vendor reviews.
-11. **Rehber** — SEO entry with editorial value.
-12. **Final CTA** — `Hayalini Tasarla` and `Teklif Al`.
-
-Homepage motion:
-
-- Opening experience: created separately through an approved concept.
-- Below opening: subtle section reveals, not constant spectacle.
-- Section transitions should feel intentional and premium.
-- Product rows can use gentle interaction, no frantic sliders.
-
-## 5. Opening Experience Upgrade
-
-The opening experience is governed by `03_HERO_CINEMATIC_SYSTEM.md` as a neutral creative slot.
-
-Non-negotiable summary:
-
-- no fixed hero scene is mandatory,
-- no old prototype is binding,
-- no external reference is binding,
-- official brand marks must remain intact,
-- HTML/CMS Turkish text must remain editable,
-- reduced motion is required,
-- commerce paths must remain clear.
-
-Opening meaning:
-
-- establish CHERIE DAY as a luxury Maison,
-- create emotional memory,
-- lead naturally into store, inquiry, account, and service flows,
+- create a new homepage brief,
+- obtain owner approval,
+- keep official brand marks intact,
+- keep HTML/CMS Turkish text editable,
+- protect reduced motion and accessibility,
+- keep commerce paths clear.
 - support the approved creative concept without overwhelming usability.
 
 ## 6. Experiences Upgrade

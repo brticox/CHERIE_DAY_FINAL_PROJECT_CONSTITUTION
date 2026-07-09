@@ -36,23 +36,21 @@ Then read the files in `/docs` in this order:
 
 1. `01_CHERIE_DAY_MASTER_BUILD_BRIEF.md` — core identity, IA, stack, acceptance criteria.
 2. `02_CHERIE_DAY_REVOLUTION_BLUEPRINT.md` — final upgrade system for all sections.
-3. `03_HERO_CINEMATIC_SYSTEM.md` — neutral opening-experience creative slot; no fixed hero design.
-4. `04_IMPLEMENTATION_ROADMAP.md` — build phases.
-5. `05_ASSET_MANIFEST.md` — asset inventory and rules.
-6. `06_DEVELOPER_PROMPT.md` — implementation prompt for a developer/AI builder.
-7. `07_PLATFORM_ARCHITECTURE.md` — public/admin platform architecture.
-8. `08_DATA_MODEL_AND_CMS_SCHEMA.md` — Supabase/Postgres/CMS/RLS model.
-9. `09_COMMERCE_BIBLE.md` — full commerce roadmap and store operations.
-10. `10_DESIGN_LANGUAGE_BIBLE.md` — visual system.
-11. `11_COMPONENT_BIBLE.md` — reusable component plan.
-12. `12_CONTENT_STRATEGY.md` — Turkish voice, copy, CTA logic.
-13. `13_SEO_BIBLE.md` — SEO structure and schemas.
-14. `14_CONVERSION_ANALYSIS.md` — funnels, lead capture, WhatsApp.
-15. `15_INFORMATION_ARCHITECTURE.md` — IA reference.
-16. `16_PRE_BUILD_FREEZE.md` — final pre-build decisions that resolve audit gaps.
-17. `17_BRAND_ASSET_MAP.md` — canonical role mapping for logo, monogram, stamp, and legacy SVGs.
-18. `18_HERO_ASSET_PRODUCTION_CHECKLIST.md` — general visual asset production checklist.
-19. `19_TURKISH_LUXURY_COMMERCE_SCOPE.md` — Turkish-only language rule and Turkey-only full commerce scope.
+3. `04_IMPLEMENTATION_ROADMAP.md` — build phases.
+4. `05_ASSET_MANIFEST.md` — asset inventory and rules.
+5. `06_DEVELOPER_PROMPT.md` — implementation prompt for a developer/AI builder.
+6. `07_PLATFORM_ARCHITECTURE.md` — public/admin platform architecture.
+7. `08_DATA_MODEL_AND_CMS_SCHEMA.md` — Supabase/Postgres/CMS/RLS model.
+8. `09_COMMERCE_BIBLE.md` — full commerce roadmap and store operations.
+9. `10_DESIGN_LANGUAGE_BIBLE.md` — visual system.
+10. `11_COMPONENT_BIBLE.md` — reusable component plan.
+11. `12_CONTENT_STRATEGY.md` — Turkish voice, copy, CTA logic.
+12. `13_SEO_BIBLE.md` — SEO structure and schemas.
+13. `14_CONVERSION_ANALYSIS.md` — funnels, lead capture, WhatsApp.
+14. `15_INFORMATION_ARCHITECTURE.md` — IA reference.
+15. `16_PRE_BUILD_FREEZE.md` — final pre-build decisions that resolve audit gaps.
+16. `17_BRAND_ASSET_MAP.md` — canonical role mapping for logo, monogram, stamp, and legacy SVGs.
+17. `19_TURKISH_LUXURY_COMMERCE_SCOPE.md` — Turkish-only language rule and Turkey-only full commerce scope.
 20. `20_PAYMENT_AND_LEGAL_RESEARCH.md` — payment provider direction and Turkish legal document requirements.
 21. `21_GIELLY_GREEN_INSPIRATION_SYSTEM.md` — external inspiration handling policy; references are research only.
 22. `22_PRE_BUILD_HARDENING_LOCK.md` — final hardening decisions raising constitution readiness to implementation-ready status.
@@ -71,10 +69,21 @@ Then read the files in `/docs` in this order:
 35. `35_KIMI_MASTER_BUILD_PROMPT.md` — neutral AI builder master prompt.
 36. `36_KIMI_OUTPUT_FORENSIC_REVIEW_AND_REBUILD_ORDER.md` — rejected prototype warning; not a design direction.
 37. `37_MEGA_STORE_AND_SERVICE_ATLAS.md` — large store/service scope: printed products, digital invitations, gifts, rings, organization, city services, galleries, reviews, and admin expansion.
-38. `38_OPENING_EXPERIENCE_CONCEPT_APPROVAL.md` — approved Güvercin Bahçesi opening/homepage creative system, motion plan, UI chrome, and Higgsfield production queue.
 39. `39_TURKISH_LITERARY_COMMERCE_VOICE.md` — Turkish literary commerce voice for public copy, CTAs, microcopy, and tone levels.
-40. `FINAL_REVIEW_BOARD_AUDIT/` — archived review notes; not active design direction.
-41. `FINAL_GIANTS_OBJECTIVE_AUDIT/` — archived audit notes; not active design direction.
+
+### Foundation Upgrade Layer (40–46) — functional/commerce/service/admin/legal/data/ops/build
+
+These files upgrade the non-creative layers by propagating the full mega-store + service scope. They do not touch the frozen creative opening.
+
+40. `40_MASTER_IA_AND_ROUTE_MAP.md` — single canonical route map: all shop departments, services, city services, legal, help center, search, favorites, account. Supersedes route fragments in `07`/`15`/`13`.
+41. `41_SERVICE_COMMERCE_AND_RESERVATION_SYSTEM.md` — service packages, city coverage, consultation/quote/reservation flows, deposits, briefs, milestones, status lifecycle, post-event review, and the service data model.
+42. `42_COMMERCE_DATA_MODEL_EXTENSIONS.md` — canonical superset of the data model: reviews/moderation, favorites, notifications, digital products/licenses, addons/price-tiers/bundles, city availability, deposits/installments, Turkish invoice/tax, legal versioning, search index.
+43. `43_CHECKOUT_PAYMENT_AND_ORDER_STATE_MACHINE.md` — cart eligibility, mixed payables, checkout step contract, full order/payment/fulfillment state machine, deposits/installments, failure/fraud states, guest-checkout decision.
+44. `44_UX_STATE_AND_MICROCOPY_MATRIX_TR.md` — every empty/loading/error/auth/cart/payment/search-no-result state with Turkish microcopy; search behavior; accessibility acceptance.
+45. `45_ADMIN_OPERATIONS_EXPANSION.md` — admin for the full scope: reservation calendar, quotes, service packages, city availability, reviews/gallery moderation, legal versioning, notifications/campaigns, role×module permission matrix, audit events.
+46. `46_BUILDER_HANDOFF_AND_BUILD_READINESS.md` — consolidated builder handoff (replaces the removed FINAL_DEVELOPER_HANDOFF_PROMPT): phases, MVP/Phase2/Phase3 matrix, data seed, QA gate, risk register, integrations.
+- `FINAL_REVIEW_BOARD_AUDIT/` — archived review notes; not active design direction.
+- `FINAL_GIANTS_OBJECTIVE_AUDIT/` — archived audit notes; not active design direction.
 
 ## Final Source Of Truth Notes
 
@@ -84,24 +93,17 @@ Then read the files in `/docs` in this order:
 - CHERIE DAY is a large store/service maison, not only an invitation shop. It includes printed products, digital invitations, gifts, engagement/söz/isteme products, rings/accessories, event organization, city-based services, galleries, reviews, quote/reservation flows, and admin operations.
 - Payments must support Turkish domestic cards plus foreign-issued Visa/Mastercard/AMEX where enabled by iyzico/PayTR merchant settings, with TROY support for Turkey.
 - International commerce/shipping, multi-currency storefronts, EN/AR storefronts, live RSVP, and wedding website builder are future phases unless explicitly re-scoped.
-- Current constitution readiness is **95/100** after the hardening lock files `22` through `31`.
+- Current constitution readiness is **97/100** after the foundation upgrade layer `40` through `46` propagated the full mega-store + service scope into IA, data model, checkout, service operations, admin, legal, and build-readiness. (Was 95/100 after hardening locks `22`–`31`.) Remaining points are external launch dependencies: lawyer, accountant, and payment-merchant sign-off.
 - Assets must be referenced from this repository, not from `Downloads`, temporary clipboard folders, or desktop-only paths.
 - External skill/plugin repositories are not part of this final constitution.
 
-## Creative Opening Rule
+## Homepage Reset
 
-The constitution does not prescribe a specific hero/opening scene.
+The previous homepage/landing-page design, implementation, media assets, reference forensics, and homepage-specific constitution files were separated from this project on 2026-07-05 and archived at:
 
-The opening experience must be created in a separate approved creative concept before implementation.
-Claude, Higgsfield, or any creative tool may propose the visual world, motion system, generated assets, 2D/3D approach, and interaction language.
+`/Users/albarayousef/Desktop/CHERIE_DAY_HOMEPAGE_ARCHIVE_2026-07-05`
 
-The only fixed rules are:
-
-- use CHERIE DAY brand assets correctly,
-- keep public copy Turkish,
-- preserve performance, accessibility, and mobile usability,
-- connect the opening experience to real store/inquiry/account paths,
-- do not copy rejected prototypes or external references directly.
+The current `/` route is intentionally a plain reset page. Any future homepage direction must be defined as a new, explicit brief before implementation.
 
 ## Assets
 

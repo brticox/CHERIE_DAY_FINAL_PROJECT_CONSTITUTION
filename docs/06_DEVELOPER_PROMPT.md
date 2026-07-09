@@ -8,32 +8,40 @@ Read these files first and treat them as the final source of truth:
 2. `docs/16_PRE_BUILD_FREEZE.md`
 3. `docs/01_CHERIE_DAY_MASTER_BUILD_BRIEF.md`
 4. `docs/02_CHERIE_DAY_REVOLUTION_BLUEPRINT.md`
-5. `docs/03_HERO_CINEMATIC_SYSTEM.md`
-6. `docs/04_IMPLEMENTATION_ROADMAP.md`
-7. `docs/05_ASSET_MANIFEST.md`
-8. `docs/07_PLATFORM_ARCHITECTURE.md`
-9. `docs/08_DATA_MODEL_AND_CMS_SCHEMA.md`
-10. `docs/09_COMMERCE_BIBLE.md`
-11. `docs/10_DESIGN_LANGUAGE_BIBLE.md`
-12. `docs/11_COMPONENT_BIBLE.md`
-13. `docs/12_CONTENT_STRATEGY.md`
-14. `docs/13_SEO_BIBLE.md`
-15. `docs/14_CONVERSION_ANALYSIS.md`
-16. `docs/15_INFORMATION_ARCHITECTURE.md`
-17. `docs/19_TURKISH_LUXURY_COMMERCE_SCOPE.md`
-18. `docs/FINAL_REVIEW_BOARD_AUDIT/FINAL_DEVELOPER_HANDOFF_PROMPT.md`
-19. `docs/22_PRE_BUILD_HARDENING_LOCK.md`
-20. `docs/23_SUPABASE_RLS_SECURITY_IMPLEMENTATION_PLAN.md`
-21. `docs/24_TURKEY_LEGAL_PAYMENT_POLICY_LOCK.md`
-22. `docs/25_DESIGN_TOKENS_AND_TYPE_LOCK.md`
-23. `docs/26_MVP_PRODUCT_CATALOG_AND_COMMERCE_RULES.md`
-24. `docs/27_CONTENT_SEO_SEED_PLAN_TR.md`
-25. `docs/28_OPERATIONS_FULFILLMENT_SLA_LOCK.md`
-26. `docs/29_TECHNICAL_FOUNDATION_AND_QA_LOCK.md`
-27. `docs/30_PRODUCTION_ASSET_LOCK.md`
-28. `docs/31_MOBILE_UX_ACCEPTANCE_LOCK.md`
-29. `docs/32_LUXURY_DESIGN_REVOLUTION_SYSTEM.md`
-30. `docs/33_NEXT_GEN_COMMERCE_AND_ADMIN_EXPERIENCE.md`
+5. `docs/04_IMPLEMENTATION_ROADMAP.md`
+6. `docs/05_ASSET_MANIFEST.md`
+7. `docs/07_PLATFORM_ARCHITECTURE.md`
+8. `docs/08_DATA_MODEL_AND_CMS_SCHEMA.md`
+9. `docs/09_COMMERCE_BIBLE.md`
+10. `docs/10_DESIGN_LANGUAGE_BIBLE.md`
+11. `docs/11_COMPONENT_BIBLE.md`
+12. `docs/12_CONTENT_STRATEGY.md`
+13. `docs/13_SEO_BIBLE.md`
+14. `docs/14_CONVERSION_ANALYSIS.md`
+15. `docs/15_INFORMATION_ARCHITECTURE.md`
+16. `docs/19_TURKISH_LUXURY_COMMERCE_SCOPE.md`
+17. `docs/46_BUILDER_HANDOFF_AND_BUILD_READINESS.md` (this is the corrected handoff layer; the old `FINAL_REVIEW_BOARD_AUDIT/FINAL_DEVELOPER_HANDOFF_PROMPT.md` was removed)
+18. `docs/22_PRE_BUILD_HARDENING_LOCK.md`
+19. `docs/23_SUPABASE_RLS_SECURITY_IMPLEMENTATION_PLAN.md`
+20. `docs/24_TURKEY_LEGAL_PAYMENT_POLICY_LOCK.md`
+21. `docs/25_DESIGN_TOKENS_AND_TYPE_LOCK.md`
+22. `docs/26_MVP_PRODUCT_CATALOG_AND_COMMERCE_RULES.md`
+23. `docs/27_CONTENT_SEO_SEED_PLAN_TR.md`
+24. `docs/28_OPERATIONS_FULFILLMENT_SLA_LOCK.md`
+25. `docs/29_TECHNICAL_FOUNDATION_AND_QA_LOCK.md`
+26. `docs/30_PRODUCTION_ASSET_LOCK.md`
+27. `docs/31_MOBILE_UX_ACCEPTANCE_LOCK.md`
+28. `docs/32_LUXURY_DESIGN_REVOLUTION_SYSTEM.md`
+29. `docs/33_NEXT_GEN_COMMERCE_AND_ADMIN_EXPERIENCE.md`
+30. `docs/37_MEGA_STORE_AND_SERVICE_ATLAS.md`
+31. `docs/40_MASTER_IA_AND_ROUTE_MAP.md`
+32. `docs/41_SERVICE_COMMERCE_AND_RESERVATION_SYSTEM.md`
+33. `docs/42_COMMERCE_DATA_MODEL_EXTENSIONS.md`
+34. `docs/43_CHECKOUT_PAYMENT_AND_ORDER_STATE_MACHINE.md`
+35. `docs/44_UX_STATE_AND_MICROCOPY_MATRIX_TR.md`
+36. `docs/45_ADMIN_OPERATIONS_EXPANSION.md`
+
+The previous opening/homepage creative layer has been archived outside this project. Do not use any old homepage concept unless the owner explicitly restores it from the Desktop archive.
 
 ## Absolute Direction
 
@@ -72,15 +80,15 @@ Build a luxury cinematic website and commerce platform that combines:
 
 Follow `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` for every section-level decision. The site must be built as a connected Maison system, not as isolated pages.
 
-## Opening Experience
+## Homepage Reset
 
-`03_HERO_CINEMATIC_SYSTEM.md` is now a neutral opening-experience creative slot.
+The `/` route is currently a plain reset page.
 
 Do not implement any old hero idea as mandatory.
 Do not copy the rejected Kimi prototype.
 Do not assume a specific video, object list, scene, or scroll animation.
 
-Before coding the opening, produce a separate creative concept package and obtain approval.
+Before coding a new homepage or opening, produce a separate creative concept package and obtain approval.
 
 Fixed requirements:
 

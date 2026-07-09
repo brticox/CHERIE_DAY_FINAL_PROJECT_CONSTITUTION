@@ -2,6 +2,8 @@
 
 Governing rule: public API/anon access must **never** be able to read `suppliers`, `teams`, `assignments`, internal notes, cost fields, or unpublished content. This is enforced via RLS policies, not just app-level filtering.
 
+> **This file is the core, not the whole schema.** The canonical superset lives in `42_COMMERCE_DATA_MODEL_EXTENSIONS.md` (departments, event_types, materials/colors/tags, collection_sets, product_addons, price_tiers, city availability, digital_products/licenses, reviews + moderation, favorites, notifications, deposits/installments, Turkish invoice/tax, legal document versioning, search index) and the service/reservation model lives in `41_SERVICE_COMMERCE_AND_RESERVATION_SYSTEM.md` (service_packages, service_cities, availability, consultations, quotes, reservations, briefs, milestones). Build the union of `08` + `41` + `42`. RLS additions for the new tables are in `42 §10`, extending `23`.
+
 ## Roles
 
 | Role | Description |

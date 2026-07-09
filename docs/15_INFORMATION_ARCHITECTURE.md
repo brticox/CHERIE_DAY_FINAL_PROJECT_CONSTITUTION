@@ -2,6 +2,8 @@
 
 This is the final CHERIE DAY IA for a Brand House / End-to-End Celebration Experience Brand.
 
+> **Canonical route source:** `40_MASTER_IA_AND_ROUTE_MAP.md` is the authoritative, complete route map — it adds the mega-store departments (Nişan & Söz, Yüzükler, Organizasyon, etc.), the `/hizmetler` service tree, `/kurumsal` legal pages, `/yardim` help center, `/arama` search, and account favorites/reservations/notifications that this file predates. Where this file and `40` differ, `40` wins. The three-way public separation (Experiences vs Hizmetler vs Mağaza) is defined in `40 §2`.
+
 ## Public Navigation
 
 - CHERIE DAY

@@ -1,6 +1,6 @@
 # IMPLEMENTATION ROADMAP
 
-This roadmap turns the documentation into execution phases. Do not start by building random pages. Start with foundations, assets, homepage structure, then commerce and admin.
+This roadmap turns the documentation into execution phases. Do not start by building random pages. Start with foundations, platform structure, commerce, services, and admin.
 
 ## Phase 0 — Documentation Freeze
 
@@ -9,7 +9,7 @@ Goal: make one final source of truth.
 Tasks:
 
 - Treat `CHERIE_DAY_MASTER_BUILD_BRIEF.md` as the governing brief.
-- Treat `03_HERO_CINEMATIC_SYSTEM.md` as the neutral opening-experience creative slot.
+- Treat the homepage as reset. A new homepage brief must be approved before rebuilding `/`.
 - Treat `CHERIE_DAY_REVOLUTION_BLUEPRINT.md` as the governing upgrade system for all public/admin sections.
 - Apply `16_PRE_BUILD_FREEZE.md` before implementation.
 - Ignore archive/plugin/skill files during implementation.
@@ -19,7 +19,7 @@ Exit criteria:
 
 - No contradictory public strategy remains.
 - CHERIE DAY naming is final.
-- Opening direction is not locked until a separate creative concept is approved.
+- Homepage direction is not locked until a separate creative concept is approved.
 - Section direction is locked in `CHERIE_DAY_REVOLUTION_BLUEPRINT.md`.
 
 ## Phase 0.5 — Constitution Upgrade Pass

@@ -5,8 +5,11 @@ This file upgrades CHERIE DAY from strategic constitution to implementation-read
 ## Final Readiness
 
 **Constitution readiness after this hardening pass:** 95 / 100.
+**After the foundation upgrade layer (`40`–`46`):** 97 / 100.
 
-This means the documentation is now ready to hand to an implementation agent. It does **not** mean final legal advice, final accountant approval, or final commercial photography are complete. Those remain professional launch dependencies, but they no longer block engineering architecture.
+The upgrade layer propagated the full mega-store + service scope into IA/routes (`40`), service operations & reservations (`41`), the data-model superset (`42`), the checkout/payment/order state machine (`43`), the UX-state & Turkish microcopy matrix (`44`), admin operations (`45`), and a consolidated builder handoff (`46`).
+
+This means the documentation is now ready to hand to an implementation agent. It does **not** mean final legal advice, final accountant approval, final payment-merchant confirmation, or final commercial photography are complete. Those remain professional launch dependencies, but they no longer block engineering architecture.
 
 ## Governing Priority
 
@@ -23,8 +26,15 @@ If documents conflict, use this order:
 9. `29_TECHNICAL_FOUNDATION_AND_QA_LOCK.md`
 10. `30_PRODUCTION_ASSET_LOCK.md`
 11. `31_MOBILE_UX_ACCEPTANCE_LOCK.md`
-12. numbered docs `01` through `21`
-13. audit folders as reference only.
+12. `40_MASTER_IA_AND_ROUTE_MAP.md`
+13. `41_SERVICE_COMMERCE_AND_RESERVATION_SYSTEM.md`
+14. `42_COMMERCE_DATA_MODEL_EXTENSIONS.md`
+15. `43_CHECKOUT_PAYMENT_AND_ORDER_STATE_MACHINE.md`
+16. `44_UX_STATE_AND_MICROCOPY_MATRIX_TR.md`
+17. `45_ADMIN_OPERATIONS_EXPANSION.md`
+18. `46_BUILDER_HANDOFF_AND_BUILD_READINESS.md`
+19. numbered docs `01` through `21`, `26`–`39` (with `03`/`18`/`38`/`39` frozen for creative)
+20. audit folders as reference only.
 
 ## MVP Lock
 
