@@ -24,6 +24,29 @@ import { HeroWebGL } from '@/components/home/hero/HeroWebGL';
 const HERO_RUNWAY_VH = 300;
 
 /**
+ * Phase 5B poster image kill-switch — flip to `false` to fall back to the
+ * Phase 2A CSS/SVG poster instantly (the image is never requested).
+ */
+const HERO_POSTER_IMAGE_ENABLED = true;
+
+/**
+ * Gate-A approved poster derivatives (Phase 5A.1). Desktop = F1 hero frame
+ * (16:9, ring at ~50%/48%); mobile = G2 hands close-up (9:16, ring ~45%).
+ * The 1024px breakpoint matches the WebGL guard's viewport gate.
+ */
+const POSTER = {
+  base: '/home/hero/posters',
+  desktopWidths: [2560, 1920, 1280, 960],
+  mobileWidths: [1080, 750],
+  srcset(variant: 'desktop' | 'mobile', ext: 'avif' | 'webp' | 'jpg'): string {
+    const widths = variant === 'desktop' ? this.desktopWidths : this.mobileWidths;
+    return widths
+      .map((w) => `${this.base}/poster-${variant}-${w}.${ext} ${w}w`)
+      .join(', ');
+  },
+};
+
+/**
  * Overture text choreography: driven by HeroStage via CSS vars written on
  * the runway host (fade windows are constants in HeroStage.client.tsx).
  * Defaults keep the text fully visible whenever the stage isn't running.
@@ -115,9 +138,65 @@ export function HeroOverture() {
           className="absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-cherie-burgundy/10 blur-2xl"
         />
 
+        {/* ── Phase 5B poster image: F1 (desktop) / G2 (mobile) over the CSS
+            poster layers, under the canvas and text. The CSS/SVG layers stay
+            beneath as instant first paint and image-failure fallback. ── */}
+        {HERO_POSTER_IMAGE_ENABLED ? (
+          <picture aria-hidden="true">
+            <source
+              type="image/avif"
+              media="(min-width: 1024px)"
+              srcSet={POSTER.srcset('desktop', 'avif')}
+              sizes="100vw"
+            />
+            <source
+              type="image/webp"
+              media="(min-width: 1024px)"
+              srcSet={POSTER.srcset('desktop', 'webp')}
+              sizes="100vw"
+            />
+            <source
+              type="image/avif"
+              media="(max-width: 1023px)"
+              srcSet={POSTER.srcset('mobile', 'avif')}
+              sizes="100vw"
+            />
+            <source
+              type="image/webp"
+              media="(max-width: 1023px)"
+              srcSet={POSTER.srcset('mobile', 'webp')}
+              sizes="100vw"
+            />
+            <img
+              src={`${POSTER.base}/poster-desktop-1920.jpg`}
+              srcSet={`${POSTER.srcset('desktop', 'jpg')}, ${POSTER.srcset('mobile', 'jpg')}`}
+              sizes="100vw"
+              alt=""
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+          </picture>
+        ) : null}
+
         {/* ── The WebGL stage (Phase 3): client-only island, mounts over the
             poster art and under the overture text when the guard approves ── */}
         <HeroWebGL />
+
+        {/* ── Legibility scrim: soft ivory radial behind the overture text so
+            the headline holds against F1's couple/ring artwork; rides the
+            same choreography var, so it fades out with the text during the
+            scrub and returns at Duruş. ── */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            opacity: 'var(--hero-text-opacity, 1)',
+            background:
+              'radial-gradient(62% 58% at 50% 52%, rgba(250,247,241,0.85) 0%, rgba(250,247,241,0.5) 42%, rgba(250,247,241,0) 72%)',
+          }}
+        />
 
         {/* ── Overture — real HTML, above the stage, choreographed via vars ── */}
         <div
