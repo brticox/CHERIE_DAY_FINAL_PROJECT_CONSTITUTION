@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
  * Kill switch — flip to `false` to restore the exact Phase 2A homepage
  * hero (poster + text, no canvas, no three.js chunk ever requested).
  */
-export const HERO_WEBGL_ENABLED = true;
+export const HERO_WEBGL_ENABLED = false;
 
 /**
  * ssr:false — the stage never renders on the server, so the SSR overture
