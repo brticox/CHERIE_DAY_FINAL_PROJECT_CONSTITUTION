@@ -51,7 +51,7 @@ export default async function ProductPage({
   const path = `${ROUTES.magaza}/${department}/${slug}`;
 
   return (
-    <div className="cherie-container py-14">
+    <div className="cherie-page-glow cherie-container py-10 md:py-16">
       <JsonLd data={productLd(product, path)} />
       <Breadcrumbs
         items={[
@@ -65,8 +65,9 @@ export default async function ProductPage({
       <ProductDetail product={product} department={dep} />
 
       {related.length > 0 && (
-        <section className="mt-24">
-          <h2 className="text-h3 text-cherie-ink">Bunları da beğenebilirsiniz</h2>
+        <section className="mt-24 border-t border-cherie-lace pt-16">
+          <p className="cherie-kicker">Birlikte güzel</p>
+          <h2 className="text-h2 mt-3 text-cherie-ink">Bunları da beğenebilirsiniz</h2>
           <div className="mt-8">
             <ProductGrid products={related} />
           </div>

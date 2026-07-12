@@ -15,10 +15,7 @@ export type ProductBehavior =
   | 'city_dependent_service';
 
 export type ServiceBehavior =
-  | 'quote_required'
-  | 'reservation_request'
-  | 'city_dependent_service'
-  | 'inquiry_only';
+  'quote_required' | 'reservation_request' | 'city_dependent_service' | 'inquiry_only';
 
 export type PriceBand = 'inquiry_only' | 'starter' | 'premium' | 'luxury' | 'bespoke';
 export type StockMode = 'in_stock' | 'made_to_order' | 'preorder' | 'unavailable';
@@ -61,6 +58,76 @@ export interface Product {
   return_note: string | null;
   delivery_note: string | null;
   media_ids: string[];
+  category_slug?: string | null;
+  category_name?: string | null;
+  sku?: string | null;
+  gift_wrapping_available?: boolean;
+  variants?: ProductVariant[];
+  price_tiers?: ProductPriceTier[];
+  addons?: ProductAddon[];
+  personalization_fields?: ProductPersonalizationField[];
+  colors?: ProductAttribute[];
+  materials?: ProductAttribute[];
+  media?: ProductMedia[];
+}
+
+export interface ProductMedia {
+  id: string;
+  url: string | null;
+  alt_text: string | null;
+  sort_order: number | null;
+}
+
+export interface ProductVariant {
+  id: string;
+  title: string;
+  sku: string | null;
+  option_values: Record<string, string>;
+  price: number | null;
+  stock_quantity: number | null;
+}
+
+export interface ProductPriceTier {
+  id: string;
+  variant_id: string | null;
+  min_qty: number;
+  unit_price: number;
+}
+
+export interface ProductAddon {
+  id: string;
+  name_tr: string;
+  addon_type: 'gift_wrap' | 'rush' | 'extra_revision' | 'upgrade' | 'other';
+  price: number;
+  price_type: 'fixed' | 'percentage';
+  is_optional: boolean;
+}
+
+export interface ProductPersonalizationField {
+  id: string;
+  label: string;
+  field_type: 'text' | 'textarea' | 'date' | 'select' | 'file' | 'number' | 'checkbox';
+  required: boolean;
+  options: string[] | null;
+  helper_text: string | null;
+}
+
+export interface ProductAttribute {
+  id: string;
+  name_tr: string;
+  slug: string;
+  hex?: string | null;
+}
+
+export interface Category {
+  id: string;
+  department_id: string | null;
+  department_slug?: string | null;
+  name: string;
+  slug: string;
+  parent_id: string | null;
+  description: string | null;
+  sort_order: number;
 }
 
 export interface DigitalProduct {
@@ -150,11 +217,7 @@ export interface LegalDocument {
 }
 
 export type SearchEntityType =
-  | 'product'
-  | 'service_package'
-  | 'collection'
-  | 'experience'
-  | 'article';
+  'product' | 'service_package' | 'collection' | 'experience' | 'article';
 
 export interface SearchResult {
   id: string;

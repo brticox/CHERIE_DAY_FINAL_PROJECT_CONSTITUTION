@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import animate from 'tailwindcss-animate';
 
 /**
  * Tailwind theme is bound to the CSS variables defined in styles/globals.css,
@@ -38,12 +39,13 @@ const config: Config = {
         ui: 'var(--font-ui)',
       },
       borderRadius: {
-        control: '4px',
-        card: '6px',
-        'card-lg': '8px',
+        control: '8px',
+        card: '12px',
+        'card-lg': '18px',
       },
       boxShadow: {
-        card: '0 12px 32px rgba(31, 25, 23, 0.08)',
+        card: '0 20px 60px rgba(31, 25, 23, 0.10)',
+        lift: '0 28px 80px rgba(31, 25, 23, 0.14)',
       },
       transitionTimingFunction: {
         cherie: 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -58,7 +60,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [animate],
 };
 
 export default config;

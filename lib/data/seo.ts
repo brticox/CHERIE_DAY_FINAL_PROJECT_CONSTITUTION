@@ -47,6 +47,12 @@ export function breadcrumbLd(items: { name: string; path: string }[]) {
 }
 
 export function productLd(product: Product, path: string) {
+  const availability = {
+    in_stock: 'https://schema.org/InStock',
+    made_to_order: 'https://schema.org/MadeToOrder',
+    preorder: 'https://schema.org/PreOrder',
+    unavailable: 'https://schema.org/OutOfStock',
+  }[product.stock_mode];
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -54,13 +60,16 @@ export function productLd(product: Product, path: string) {
     description: product.description ?? undefined,
     url: `${SITE_URL}${path}`,
     brand: { '@type': 'Brand', name: BRAND },
+    image: product.media?.map((item) => item.url).filter(Boolean),
+    sku: product.sku ?? undefined,
     ...(product.base_price
       ? {
           offers: {
             '@type': 'Offer',
             price: product.base_price,
             priceCurrency: product.currency,
-            availability: 'https://schema.org/MadeToOrder',
+            availability,
+            url: `${SITE_URL}${path}`,
           },
         }
       : {}),

@@ -1,6 +1,11 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { getPublicClient, isSupabaseConfigured } from '@/lib/supabase/public';
+import type { Database } from '@/lib/supabase/database.types';
 
 export { isSupabaseConfigured };
+
+type PublicViewName = keyof Database['public']['Views'] & string;
 
 /**
  * Read a public view with graceful fallback. When Supabase is not configured
@@ -8,14 +13,16 @@ export { isSupabaseConfigured };
  * every page renders credible Turkish content in Phase 3. Never throws.
  */
 export async function readPublic<T>(
-  view: string,
+  view: PublicViewName,
   fallback: T[],
   opts?: { order?: string; ascending?: boolean; limit?: number },
 ): Promise<T[]> {
   const supabase = getPublicClient();
   if (!supabase) return fallback;
   try {
-    const base = supabase.from(view).select('*');
+    // The view name is schema-checked above; the untyped client keeps this
+    // shared dynamic reader from expanding every generated view row union.
+    const base = (supabase as unknown as SupabaseClient).from(view).select('*');
     const ordered = opts?.order
       ? base.order(opts.order, { ascending: opts.ascending ?? true })
       : base;
@@ -30,7 +37,7 @@ export async function readPublic<T>(
 
 /** Read a single row by a column match, with seed fallback resolution. */
 export async function readOnePublic<T>(
-  view: string,
+  view: PublicViewName,
   column: string,
   value: string,
   fallbackResolver: () => T | undefined,
@@ -38,7 +45,11 @@ export async function readOnePublic<T>(
   const supabase = getPublicClient();
   if (!supabase) return fallbackResolver() ?? null;
   try {
-    const { data, error } = await supabase.from(view).select('*').eq(column, value).limit(1);
+    const { data, error } = await (supabase as unknown as SupabaseClient)
+      .from(view)
+      .select('*')
+      .eq(column, value)
+      .limit(1);
     if (error || !data || data.length === 0) return fallbackResolver() ?? null;
     return data[0] as unknown as T;
   } catch {

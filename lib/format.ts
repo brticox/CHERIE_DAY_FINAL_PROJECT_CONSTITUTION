@@ -14,7 +14,7 @@ export function formatTRY(amount: number | null | undefined): string | null {
 /** Turkish behavior badge for products (docs/26, docs/44). */
 export function productBehaviorBadge(behavior: ProductBehavior): string {
   switch (behavior) {
-    case 'cart_enabled': return 'Hemen Al';
+    case 'cart_enabled': return 'İncele';
     case 'proof_required_cart': return 'Tasarım Onaylı';
     case 'digital_checkout': return 'Dijital';
     case 'quote_required': return 'Teklif ile';

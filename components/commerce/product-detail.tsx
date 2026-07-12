@@ -2,15 +2,11 @@ import Link from 'next/link';
 
 import type { Department, Product } from '@/lib/data/types';
 import { ROUTES } from '@/lib/data/routes';
-import {
-  formatTRY,
-  productBehaviorBadge,
-  productPrimaryCta,
-  productionTimeLabel,
-} from '@/lib/format';
+import { formatTRY, productBehaviorBadge, productionTimeLabel } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { MediaFrame } from './media-frame';
+import { ProductOptions } from './product-options';
+import { BadgeCheck, Clock3, ShieldCheck } from 'lucide-react';
 
 /**
  * Read-only product detail (docs/13 product SEO, docs/26 commerce rules).
@@ -24,21 +20,55 @@ export function ProductDetail({
   department: Department | null;
 }) {
   const price = formatTRY(product.base_price);
+  const productPath = `${ROUTES.magaza}/${product.department_slug}/${product.slug}`;
+  const isQuote = product.behavior_type === 'quote_required';
+  const isAppointment = product.behavior_type === 'inquiry_only';
+  const intakeBase = isQuote
+    ? ROUTES.teklif
+    : isAppointment
+      ? ROUTES.randevu
+      : ROUTES.iletisim;
+  const intakeParams = new URLSearchParams({
+    sourceType: 'product',
+    sourceSlug: product.slug,
+    sourceLabel: product.name,
+    sourcePath: productPath,
+  });
+  const primaryLabel = isQuote
+    ? 'Teklif Al'
+    : isAppointment
+      ? 'Randevu Al'
+      : 'Ürün Hakkında Sor';
 
   return (
-    <div className="grid gap-10 lg:grid-cols-2">
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(24rem,0.92fr)] lg:gap-16">
       {/* Hero media */}
       <div className="space-y-4">
-        <MediaFrame label={product.name} ratio="aspect-[4/5]" />
+        <MediaFrame
+          label={product.name}
+          src={product.media?.[0]?.url}
+          alt={product.media?.[0]?.alt_text ?? product.name}
+          ratio="aspect-[4/5]"
+          className="relative"
+        />
         <div className="grid grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <MediaFrame key={i} label={product.name} ratio="aspect-square" />
+            <MediaFrame
+              key={i}
+              label={product.name}
+              src={product.media?.[i + 1]?.url}
+              alt={
+                product.media?.[i + 1]?.alt_text ?? `${product.name} — görünüm ${i + 2}`
+              }
+              ratio="aspect-square"
+              className="relative"
+            />
           ))}
         </div>
       </div>
 
       {/* Information */}
-      <div>
+      <div className="lg:sticky lg:top-28 lg:h-fit">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone="burgundy">{productBehaviorBadge(product.behavior_type)}</Badge>
           {product.collection_slug && (
@@ -51,31 +81,78 @@ export function ProductDetail({
           )}
         </div>
 
-        <h1 className="mt-3 text-h2 text-cherie-ink">{product.name}</h1>
+        <h1 className="text-h1 mt-4 text-balance text-cherie-ink">{product.name}</h1>
         {product.description && (
-          <p className="mt-3 text-body-lg text-cherie-soft-ink">{product.description}</p>
+          <p className="mt-4 max-w-xl text-lg leading-8 text-cherie-soft-ink">
+            {product.description}
+          </p>
         )}
 
-        <p className="mt-5 font-display text-3xl text-cherie-burgundy">
+        <p className="cherie-price mt-6 font-display text-4xl text-cherie-burgundy">
           {price ?? 'Teklif ile'}
         </p>
 
-        {/* CTA placeholders (no real cart in Phase 3) */}
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Button type="button" size="lg">{productPrimaryCta(product.behavior_type)}</Button>
-          <Button type="button" size="lg" variant="secondary">Favorilere Ekle</Button>
+        <div className="mt-6 grid gap-3 border-y border-cherie-lace py-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+          <TrustItem
+            Icon={BadgeCheck}
+            label={
+              product.proof_required ? 'Tasarım onaylı üretim' : 'Özenle hazırlanan seçim'
+            }
+          />
+          <TrustItem
+            Icon={Clock3}
+            label={
+              productionTimeLabel(product.production_time_days) ??
+              'Süre ekipçe netleştirilir'
+            }
+          />
+          <TrustItem Icon={ShieldCheck} label="Fiyat sunucuda doğrulanır" />
         </div>
-        <p className="mt-2 text-xs text-cherie-soft-ink">
-          Sepet ve ödeme adımları bir sonraki aşamada etkinleşecek.
-        </p>
+
+        <ProductOptions
+          product={product}
+          intakePath={intakeBase}
+          baseParams={intakeParams.toString()}
+          primaryLabel={primaryLabel}
+        />
 
         {/* Information sections */}
-        <dl className="mt-10 space-y-5 border-t border-cherie-lace pt-6 text-sm">
-          {product.material_story && (
-            <Row term="Malzeme">{product.material_story}</Row>
+        <dl className="mt-8 space-y-5 rounded-card-lg border border-cherie-lace bg-cherie-ivory/70 p-5 text-sm">
+          {product.material_story && <Row term="Malzeme">{product.material_story}</Row>}
+          {(product.materials?.length ?? 0) > 0 && (
+            <Row term="Materyaller">
+              {product.materials?.map((item) => item.name_tr).join(', ')}
+            </Row>
+          )}
+          {(product.colors?.length ?? 0) > 0 && (
+            <Row term="Renkler">
+              <span className="flex flex-wrap gap-2">
+                {product.colors?.map((color) => (
+                  <span
+                    key={color.id}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-cherie-lace px-2.5 py-1 text-xs"
+                  >
+                    {color.hex && (
+                      <span
+                        className="size-3 rounded-full border border-black/10"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                    )}
+                    {color.name_tr}
+                  </span>
+                ))}
+              </span>
+            </Row>
           )}
           {product.is_personalizable && (
             <Row term="Kişiselleştirme">Bu ürün size özel kişiselleştirilebilir.</Row>
+          )}
+          {(product.personalization_fields?.length ?? 0) > 0 && (
+            <Row term="İstenen bilgiler">
+              {product.personalization_fields
+                ?.map((field) => `${field.label}${field.required ? ' *' : ''}`)
+                .join(', ')}
+            </Row>
           )}
           {product.proof_required && (
             <Row term="Tasarım Onayı">
@@ -83,7 +160,9 @@ export function ProductDetail({
             </Row>
           )}
           {productionTimeLabel(product.production_time_days) && (
-            <Row term="Üretim Süresi">{productionTimeLabel(product.production_time_days)}</Row>
+            <Row term="Üretim Süresi">
+              {productionTimeLabel(product.production_time_days)}
+            </Row>
           )}
           {product.delivery_note && <Row term="Teslimat">{product.delivery_note}</Row>}
           {product.return_note && <Row term="İade">{product.return_note}</Row>}
@@ -105,9 +184,18 @@ export function ProductDetail({
 
 function Row({ term, children }: { term: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[120px_1fr] gap-4">
-      <dt className="text-cherie-brass">{term}</dt>
+    <div className="grid gap-1 sm:grid-cols-[130px_1fr] sm:gap-4">
+      <dt className="font-semibold text-cherie-ink">{term}</dt>
       <dd className="text-cherie-soft-ink">{children}</dd>
+    </div>
+  );
+}
+
+function TrustItem({ Icon, label }: { Icon: typeof ShieldCheck; label: string }) {
+  return (
+    <div className="flex items-center gap-2 text-xs leading-5 text-cherie-soft-ink">
+      <Icon className="size-4 shrink-0 text-cherie-brass" strokeWidth={1.6} />
+      <span>{label}</span>
     </div>
   );
 }

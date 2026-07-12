@@ -22,20 +22,26 @@ export default async function MagazaPage() {
   ]);
 
   return (
-    <div className="cherie-container py-14">
-      <Breadcrumbs items={[{ name: 'Ana Sayfa', path: ROUTES.home }, { name: 'Mağaza', path: ROUTES.magaza }]} />
+    <div className="cherie-page-glow cherie-container py-14 md:py-20">
+      <Breadcrumbs
+        items={[
+          { name: 'Ana Sayfa', path: ROUTES.home },
+          { name: 'Mağaza', path: ROUTES.magaza },
+        ]}
+      />
       <PageHeader
         eyebrow="Ürün Evi"
         title="Her kapı, ayrı bir hikâyeye açılır"
         lead="Kağıda dökülen ilk sözden, misafirinize kalan hatıraya kadar; departmanlarımızda gezinin."
       />
 
-      <section className="mt-12">
+      <section className="mt-14">
         <DepartmentGrid departments={departments} />
       </section>
 
-      <section className="mt-20">
-        <h2 className="text-h2 text-cherie-ink">Öne Çıkan Seçimler</h2>
+      <section className="mt-24 border-t border-cherie-lace pt-16">
+        <p className="cherie-kicker">Maison seçkisi</p>
+        <h2 className="text-h2 mt-3 text-cherie-ink">Öne Çıkan Seçimler</h2>
         <div className="mt-8">
           <ProductGrid products={featured} />
         </div>
