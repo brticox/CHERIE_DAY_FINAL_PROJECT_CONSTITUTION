@@ -6,6 +6,8 @@ import { PRIMARY_CTA } from '@/lib/data/navigation';
 import { ParallaxLayer } from '@/components/home/primitives/ParallaxLayer';
 import { StageFrame } from '@/components/home/primitives/StageFrame';
 import { HeroWebGL } from '@/components/home/hero/HeroWebGL';
+import { HeroLightField } from '@/components/home/hero/HeroLightField.client';
+import lightStyles from '@/components/home/hero/HeroLightField.module.css';
 
 /**
  * HeroOverture — Phase 3: SSR poster/fallback shell + pinned WebGL runway.
@@ -30,8 +32,31 @@ const HERO_RUNWAY_VH = 300;
 const HERO_POSTER_IMAGE_ENABLED = true;
 
 /**
- * Gate-A approved poster derivatives (Phase 5A.1). Desktop = F1 hero frame
- * (16:9, ring at ~50%/48%); mobile = G2 hands close-up (9:16, ring ~45%).
+ * Cinematic scene kill-switch ("the breathing photograph"). Flip to
+ * `false` to restore the plain approved still + base motion layer: no
+ * camera breath/push-in, no depth plate, no candle/sheen/glint/grade
+ * layers, no scroll timeline.
+ */
+const HERO_CINEMATIC_ENABLED = true;
+
+/**
+ * Veil depth plate mask — a wide-feathered ellipse over the veil/lace
+ * mass at frame-left. The plate is the full C1 image again (offsets can
+ * never open holes); the feather lands in the dark field and busy lace
+ * texture, and its pointer delta vs the base poster stays ≤3px, so no
+ * ghosting on the hands.
+ */
+const VEIL_PLATE_MASK =
+  'radial-gradient(42% 78% at 10% 56%, #000 45%, transparent 78%)';
+
+/**
+ * Hands-only hero poster set (hero art-direction reset). Desktop = C1
+ * creation-near-touch (16:9, candlelit hands, touch point at ~48%/45%);
+ * mobile = dark 9:16 crop of the SAME C1 master (band x600–1248: ring at
+ * left third, touch bead at ~63%/46%, ring-safe under 19.5:9 cover-crop)
+ * so both breakpoints live in one candlelit world. The full bride/groom
+ * F1 frame and the ivory G2 mobile plate are retired from the visible
+ * hero (their poster files remain archived in the same directory).
  * The 1024px breakpoint matches the WebGL guard's viewport gate.
  */
 const POSTER = {
@@ -40,9 +65,8 @@ const POSTER = {
   mobileWidths: [1080, 750],
   srcset(variant: 'desktop' | 'mobile', ext: 'avif' | 'webp' | 'jpg'): string {
     const widths = variant === 'desktop' ? this.desktopWidths : this.mobileWidths;
-    return widths
-      .map((w) => `${this.base}/poster-${variant}-${w}.${ext} ${w}w`)
-      .join(', ');
+    const name = variant === 'desktop' ? 'poster-hands-desktop' : 'poster-hands-mobile-dark';
+    return widths.map((w) => `${this.base}/${name}-${w}.${ext} ${w}w`).join(', ');
   },
 };
 
@@ -138,11 +162,33 @@ export function HeroOverture() {
           className="absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-cherie-burgundy/10 blur-2xl"
         />
 
-        {/* ── Phase 5B poster image: F1 (desktop) / G2 (mobile) over the CSS
-            poster layers, under the canvas and text. The CSS/SVG layers stay
-            beneath as instant first paint and image-failure fallback. ── */}
+        {/* ── Dark underlay (all breakpoints): both hero plates are dark
+            candlelit C1 crops and the overture text is ivory, so the
+            image-failure/no-image state must also be dark. Umber tones
+            sampled from C1's field. ── */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(120% 90% at 50% 42%, #2b1e18 0%, #17100c 55%, #0e0a08 100%)',
+          }}
+        />
+
+        {/* ── Hands-only poster image: C1 (desktop) / G2 (mobile) over the
+            CSS poster layers, under the canvas and text. The CSS/SVG layers
+            stay beneath as instant first paint and image-failure fallback.
+            Wrapper stack: overflow clip → scroll push-in (var transform) →
+            camera breath (keyframe transform) — separate elements so the
+            two transform sources never fight, all composite-only. ── */}
         {HERO_POSTER_IMAGE_ENABLED ? (
-          <picture aria-hidden="true">
+          <div aria-hidden className="absolute inset-0 overflow-hidden">
+            <div
+              className="absolute inset-0"
+              style={{ transform: 'scale(calc(1 + var(--hero-rich, 0) * 0.028))' }}
+            >
+              <div className={`absolute inset-0 ${lightStyles.cameraBreath}`}>
+                <picture>
             <source
               type="image/avif"
               media="(min-width: 1024px)"
@@ -168,7 +214,7 @@ export function HeroOverture() {
               sizes="100vw"
             />
             <img
-              src={`${POSTER.base}/poster-desktop-1920.jpg`}
+              src={`${POSTER.base}/poster-hands-desktop-1920.jpg`}
               srcSet={`${POSTER.srcset('desktop', 'jpg')}, ${POSTER.srcset('mobile', 'jpg')}`}
               sizes="100vw"
               alt=""
@@ -176,27 +222,75 @@ export function HeroOverture() {
               loading="eager"
               decoding="async"
               className="absolute inset-0 h-full w-full object-cover object-center"
+              /* vars are written by useHeroPointer only on fine-pointer
+                 desktop without reduced motion; everywhere else the
+                 defaults keep this an identity transform (approved
+                 framing, zero layout shift) */
+              style={{
+                transform:
+                  'translate3d(calc(var(--hero-pointer-x, 0) * -10px), calc(var(--hero-pointer-y, 0) * -7px), 0) scale(var(--hero-para-s, 1))',
+              }}
             />
-          </picture>
+                </picture>
+
+                {/* ── Veil depth plate: the full image again, feather-masked
+                    to the veil mass and moving 3px more than the base — a
+                    2.5D read with zero cut-edge risk. Same srcset as the
+                    poster (browser cache hit), lazy, desktop-only. ── */}
+                {HERO_CINEMATIC_ENABLED ? (
+                  <picture>
+                    <source
+                      type="image/avif"
+                      media="(min-width: 1024px)"
+                      srcSet={POSTER.srcset('desktop', 'avif')}
+                      sizes="100vw"
+                    />
+                    <img
+                      src={`${POSTER.base}/poster-hands-desktop-1920.jpg`}
+                      srcSet={POSTER.srcset('desktop', 'jpg')}
+                      sizes="100vw"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 hidden h-full w-full object-cover object-center lg:block"
+                      style={{
+                        WebkitMaskImage: VEIL_PLATE_MASK,
+                        maskImage: VEIL_PLATE_MASK,
+                        transform:
+                          'translate3d(calc(var(--hero-pointer-x, 0) * -13px), calc(var(--hero-pointer-y, 0) * -9px), 0) scale(var(--hero-para-s, 1))',
+                      }}
+                    />
+                  </picture>
+                ) : null}
+              </div>
+            </div>
+          </div>
         ) : null}
 
         {/* ── The WebGL stage (Phase 3): client-only island, mounts over the
             poster art and under the overture text when the guard approves ── */}
         <HeroWebGL />
 
-        {/* ── Legibility scrim: soft ivory radial behind the overture text so
-            the headline holds against F1's couple/ring artwork; rides the
-            same choreography var, so it fades out with the text during the
-            scrub and returns at Duruş. ── */}
+        {/* ── Legibility scrim: both plates are dark candlelit C1 crops and
+            the text is ivory, so one quiet dark radial deepens the field
+            behind the overture (no ivory fog over the painting). Rides the
+            choreography var. ── */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             opacity: 'var(--hero-text-opacity, 1)',
             background:
-              'radial-gradient(62% 58% at 50% 52%, rgba(250,247,241,0.85) 0%, rgba(250,247,241,0.5) 42%, rgba(250,247,241,0) 72%)',
+              'radial-gradient(58% 55% at 50% 52%, rgba(12,8,6,0.48) 0%, rgba(12,8,6,0.26) 45%, rgba(12,8,6,0) 72%)',
           }}
         />
+
+        {/* ── Motion layer: pointer-reactive candlelight, load bloom, gold
+            dust, film grain — and, when cinematic, candle flicker, silk
+            sheen, ring glints, and the scroll-driven grade. CSS-only,
+            pointer-events-none, desktop-only; sits over poster + scrims,
+            under the overture text. ── */}
+        <HeroLightField cinematic={HERO_CINEMATIC_ENABLED} />
 
         {/* ── Overture — real HTML, above the stage, choreographed via vars ── */}
         <div
@@ -206,10 +300,10 @@ export function HeroOverture() {
           <p className="text-xs font-medium uppercase tracking-[0.3em] text-cherie-brass">
             CHERIE DAY · Maison
           </p>
-          <h1 className="mt-6 max-w-4xl text-display-xl text-cherie-ink">
+          <h1 className="mt-6 max-w-4xl text-display-xl text-cherie-ivory">
             Her şey bir dokunuşla başlar.
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-cherie-soft-ink md:text-lg md:leading-8">
+          <p className="mt-6 max-w-xl text-base leading-7 text-cherie-ivory/80 md:text-lg md:leading-8">
             Sözünüzün ilk anından son hatırasına; davetiyeden organizasyona,
             hediyeden albüme — bütün bir gün, tek bir imzayla.
           </p>
@@ -222,7 +316,7 @@ export function HeroOverture() {
             </Link>
             <Link
               href={ROUTES.maison}
-              className="inline-flex h-12 items-center justify-center rounded-control border border-cherie-burgundy bg-cherie-ivory/70 px-8 text-base font-medium text-cherie-burgundy backdrop-blur-sm transition-colors duration-control ease-cherie hover:bg-cherie-paper"
+              className="inline-flex h-12 items-center justify-center rounded-control border border-cherie-ivory/50 bg-cherie-ivory/10 px-8 text-base font-medium text-cherie-ivory backdrop-blur-sm transition-colors duration-control ease-cherie hover:bg-cherie-ivory/20"
             >
               Maison&rsquo;u Keşfet
             </Link>

@@ -1,0 +1,463 @@
+/*
+ * HeroLightField — candlelit cinematic atmosphere over the hands-only
+ * poster ("the breathing photograph").
+ *
+ * The governing rule: THE LIGHT MOVES, NOT THE PAINTING. Fabric feels
+ * alive because a sheen travels across it; the image itself only breathes.
+ *
+ * Everything is composite-only (transform/opacity): gradient plates never
+ * repaint — pointer and scroll motion only translate/fade them. All
+ * animation is fenced behind prefers-reduced-motion: no-preference;
+ * without it (or without JS) the layer degrades to a static candlelit
+ * still. Scroll-phase intensities (--hero-wake/--hero-touch/--hero-rich)
+ * arrive as inline calc() opacities from the component.
+ *
+ * C1 anchor points (image space): touch bead 48.5%/45.5% · bride's ring
+ * 34%/47% · candle flames ~3.2%/8.5% and ~13.5%/7.5% · veil mass left.
+ */
+
+/* ── camera ─────────────────────────────────────────────────────────── */
+
+/* tripod breath: sits on its own wrapper so it never fights the inline
+   var-driven push-in/parallax transforms on parent/child elements */
+.cameraBreath {
+  transform: scale(1);
+}
+
+/* ── the promise light (existing base layer) ────────────────────────── */
+
+.glow {
+  position: absolute;
+  left: 49%;
+  top: 46%;
+  width: 66vw;
+  height: 46vw;
+  transform: translate3d(
+    calc(-50% + var(--hero-pointer-x, 0) * 34px),
+    calc(-50% + var(--hero-pointer-y, 0) * 22px),
+    0
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(216, 172, 110, 0.26) 0%,
+    rgba(190, 146, 92, 0.11) 42%,
+    rgba(120, 84, 48, 0) 72%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  will-change: transform;
+}
+
+.bloom {
+  position: absolute;
+  left: 49%;
+  top: 46%;
+  width: 44vw;
+  height: 32vw;
+  transform: translate3d(-50%, -50%, 0) scale(0.55);
+  background: radial-gradient(
+    closest-side,
+    rgba(238, 214, 168, 0.5) 0%,
+    rgba(214, 170, 108, 0.18) 45%,
+    rgba(214, 170, 108, 0) 72%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+
+/* ── candles ────────────────────────────────────────────────────────── */
+
+.flame {
+  position: absolute;
+  width: 9vw;
+  height: 9vw;
+  transform: translate3d(
+    calc(-50% + var(--hero-pointer-x, 0) * 6px),
+    calc(-50% + var(--hero-pointer-y, 0) * 4px),
+    0
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 214, 140, 0.5) 0%,
+    rgba(224, 160, 84, 0.2) 45%,
+    rgba(224, 160, 84, 0) 72%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+/* the candles' cast light reaching the veil and her wrist */
+.candleHalo {
+  position: absolute;
+  width: 34vw;
+  height: 34vw;
+  transform: translate3d(
+    calc(-50% + var(--hero-pointer-x, 0) * 6px),
+    calc(-50% + var(--hero-pointer-y, 0) * 4px),
+    0
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(226, 168, 96, 0.16) 0%,
+    rgba(226, 168, 96, 0.06) 50%,
+    rgba(226, 168, 96, 0) 75%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+/* ── silk sheen — light passing over the veil, never deforming it ───── */
+
+.sheenMask {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: radial-gradient(42% 78% at 10% 56%, #000 40%, transparent 75%);
+  mask-image: radial-gradient(42% 78% at 10% 56%, #000 40%, transparent 75%);
+  mix-blend-mode: screen;
+  transform: translate3d(
+    calc(var(--hero-pointer-x, 0) * -13px),
+    calc(var(--hero-pointer-y, 0) * -9px),
+    0
+  );
+}
+
+.sheenBand {
+  position: absolute;
+  top: -20%;
+  left: -60%;
+  width: 80%;
+  height: 140%;
+  transform: rotate(16deg) translate3d(0, 0, 0);
+  background: linear-gradient(
+    90deg,
+    rgba(240, 228, 206, 0) 0%,
+    rgba(240, 228, 206, 0.1) 42%,
+    rgba(240, 228, 206, 0.16) 50%,
+    rgba(240, 228, 206, 0.1) 58%,
+    rgba(240, 228, 206, 0) 100%
+  );
+  opacity: 0.75;
+}
+
+/* ── ring / touch glints ────────────────────────────────────────────── */
+
+.glintWrap {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.glintCore {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 244, 214, 0.85) 0%,
+    rgba(224, 178, 110, 0.32) 45%,
+    rgba(224, 178, 110, 0) 75%
+  );
+  mix-blend-mode: screen;
+}
+
+.glintFlare {
+  position: absolute;
+  width: 34px;
+  height: 1.5px;
+  transform: translate(-50%, -50%) rotate(-24deg);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 240, 200, 0) 0%,
+    rgba(255, 240, 200, 0.75) 50%,
+    rgba(255, 240, 200, 0) 100%
+  );
+  mix-blend-mode: screen;
+}
+
+.glintSmall .glintCore {
+  width: 15px;
+  height: 15px;
+}
+
+.glintSmall .glintFlare {
+  width: 24px;
+  transform: translate(-50%, -50%) rotate(-12deg);
+}
+
+/* ── gold dust ──────────────────────────────────────────────────────── */
+
+.dust {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  mix-blend-mode: screen;
+}
+
+.dustFar {
+  composes: dust;
+  transform: translate3d(
+    calc(var(--hero-pointer-x, 0) * 9px),
+    calc(var(--hero-pointer-y, 0) * 6px),
+    0
+  );
+}
+
+.dustNear {
+  composes: dust;
+  transform: translate3d(
+    calc(var(--hero-pointer-x, 0) * 18px),
+    calc(var(--hero-pointer-y, 0) * 12px),
+    0
+  );
+}
+
+/* Double-height field animated -50% for a seamless upward ember drift;
+   every speck is rendered twice (y and y+50%) by the component. */
+.drift {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 200%;
+}
+
+.driftFar {
+  composes: drift;
+}
+
+.driftNear {
+  composes: drift;
+}
+
+.speck {
+  position: absolute;
+  border-radius: 9999px;
+}
+
+/* ── grade / atmosphere ─────────────────────────────────────────────── */
+
+/* the promise deepens: burgundy shadows, brass mid-light */
+.grade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    165deg,
+    rgba(58, 16, 24, 0.55) 0%,
+    rgba(58, 16, 24, 0.1) 40%,
+    rgba(214, 170, 108, 0.16) 62%,
+    rgba(58, 16, 24, 0.5) 100%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    85% 75% at 50% 48%,
+    rgba(8, 5, 4, 0) 55%,
+    rgba(8, 5, 4, 0.5) 100%
+  );
+  opacity: 0;
+}
+
+/* film-stock temperature drift */
+.colorBreath {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    60% 55% at 49% 46%,
+    rgba(226, 178, 108, 0.5) 0%,
+    rgba(226, 178, 108, 0) 70%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0.06;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── motion (all of it) ─────────────────────────────────────────────── */
+
+/* camera breath is desktop-only — below lg the poster is a pure still */
+@media (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
+  .cameraBreath {
+    animation: hlf-camera-breath 40s ease-in-out infinite alternate;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glow {
+    animation: hlf-breathe 7.5s ease-in-out infinite alternate;
+  }
+
+  .bloom {
+    animation: hlf-bloom 3s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+  }
+
+  .flameA {
+    animation: hlf-flicker 6.2s linear infinite;
+  }
+
+  .flameB {
+    animation: hlf-flicker 7.7s linear -2.4s infinite;
+  }
+
+  .candleHalo {
+    animation: hlf-halo-breathe 9s ease-in-out infinite alternate;
+  }
+
+  .sheenBand {
+    animation: hlf-sheen 34s ease-in-out infinite alternate;
+  }
+
+  .glintCore,
+  .glintFlare {
+    animation: hlf-shimmer 3.2s ease-in-out infinite alternate;
+  }
+
+  .glintSmall .glintCore,
+  .glintSmall .glintFlare {
+    animation-delay: -1.3s;
+  }
+
+  .colorBreath {
+    animation: hlf-color-breath 28s ease-in-out infinite alternate;
+  }
+
+  .driftFar {
+    animation: hlf-drift 130s linear infinite;
+  }
+
+  .driftNear {
+    animation: hlf-drift 80s linear infinite;
+  }
+}
+
+@keyframes hlf-camera-breath {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.012);
+  }
+}
+
+@keyframes hlf-breathe {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 0.98;
+  }
+}
+
+@keyframes hlf-bloom {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale(0.55);
+  }
+  30% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale(1.3);
+  }
+}
+
+/* irregular candle jitter — deliberately not a sine wave */
+@keyframes hlf-flicker {
+  0% {
+    opacity: 0.72;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  13% {
+    opacity: 0.8;
+  }
+  22% {
+    opacity: 0.92;
+  }
+  31% {
+    opacity: 0.78;
+  }
+  40% {
+    opacity: 0.98;
+  }
+  47% {
+    opacity: 0.85;
+  }
+  58% {
+    opacity: 0.93;
+  }
+  66% {
+    opacity: 0.75;
+  }
+  74% {
+    opacity: 0.9;
+  }
+  83% {
+    opacity: 0.8;
+  }
+  91% {
+    opacity: 0.97;
+  }
+  100% {
+    opacity: 0.72;
+  }
+}
+
+@keyframes hlf-halo-breathe {
+  from {
+    opacity: 0.75;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hlf-sheen {
+  from {
+    transform: rotate(16deg) translate3d(-30%, 0, 0);
+  }
+  to {
+    transform: rotate(16deg) translate3d(150%, 0, 0);
+  }
+}
+
+@keyframes hlf-shimmer {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hlf-color-breath {
+  from {
+    opacity: 0.04;
+  }
+  to {
+    opacity: 0.11;
+  }
+}
+
+@keyframes hlf-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
