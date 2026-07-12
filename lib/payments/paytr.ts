@@ -1,0 +1,128 @@
+import 'server-only';
+
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+type PaytrItem = { name: string; price: number; quantity: number };
+
+export type PaytrInitializeInput = {
+  orderNumber: string;
+  amount: number;
+  email: string;
+  fullName: string;
+  phone: string;
+  address: string;
+  userIp: string;
+  items: PaytrItem[];
+};
+
+export type PaytrInitializeResult = {
+  merchantOrderId: string;
+  token: string;
+  paymentUrl: string;
+};
+
+function credentials() {
+  const merchantId = process.env.PAYTR_MERCHANT_ID;
+  const merchantKey = process.env.PAYTR_MERCHANT_KEY;
+  const merchantSalt = process.env.PAYTR_MERCHANT_SALT;
+  if (!merchantId || !merchantKey || !merchantSalt) {
+    throw new Error('PAYTR_NOT_CONFIGURED');
+  }
+  return { merchantId, merchantKey, merchantSalt };
+}
+
+export async function initializePaytr(
+  input: PaytrInitializeInput,
+): Promise<PaytrInitializeResult> {
+  const { merchantId, merchantKey, merchantSalt } = credentials();
+  const merchantOrderId = input.orderNumber.replace(/[^a-zA-Z0-9]/g, '');
+  const paymentAmount = String(Math.round(input.amount * 100));
+  const currency = 'TL';
+  const testMode = process.env.PAYTR_TEST_MODE === '0' ? '0' : '1';
+  const noInstallment = '0';
+  const maxInstallment = process.env.PAYTR_MAX_INSTALLMENT ?? '0';
+  const basket = Buffer.from(
+    JSON.stringify(
+      input.items.map((item) => [item.name, item.price.toFixed(2), item.quantity]),
+    ),
+  ).toString('base64');
+  const hashSource =
+    merchantId +
+    input.userIp +
+    merchantOrderId +
+    input.email +
+    paymentAmount +
+    basket +
+    noInstallment +
+    maxInstallment +
+    currency +
+    testMode;
+  const paytrToken = createHmac('sha256', merchantKey)
+    .update(hashSource + merchantSalt)
+    .digest('base64');
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(
+    /\/$/,
+    '',
+  );
+  const form = new URLSearchParams({
+    merchant_id: merchantId,
+    user_ip: input.userIp,
+    merchant_oid: merchantOrderId,
+    email: input.email,
+    payment_amount: paymentAmount,
+    paytr_token: paytrToken,
+    user_basket: basket,
+    debug_on: testMode,
+    no_installment: noInstallment,
+    max_installment: maxInstallment,
+    user_name: input.fullName.slice(0, 60),
+    user_address: input.address.slice(0, 400),
+    user_phone: input.phone.slice(0, 20),
+    merchant_ok_url: `${siteUrl}/odeme/basarili?order=${encodeURIComponent(input.orderNumber)}`,
+    merchant_fail_url: `${siteUrl}/odeme/basarisiz?order=${encodeURIComponent(input.orderNumber)}`,
+    timeout_limit: '30',
+    currency,
+    test_mode: testMode,
+    lang: 'tr',
+  });
+  const response = await fetch('https://www.paytr.com/odeme/api/get-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: form,
+    cache: 'no-store',
+    signal: AbortSignal.timeout(20_000),
+  });
+  const result = (await response.json().catch(() => null)) as {
+    status?: string;
+    token?: string;
+    reason?: string;
+  } | null;
+  if (!response.ok || result?.status !== 'success' || !result.token) {
+    throw new Error(
+      result?.reason ? `PAYTR_INIT_FAILED:${result.reason}` : 'PAYTR_INIT_FAILED',
+    );
+  }
+  return {
+    merchantOrderId,
+    token: result.token,
+    paymentUrl: `https://www.paytr.com/odeme/guvenli/${encodeURIComponent(result.token)}`,
+  };
+}
+
+export function verifyPaytrCallback(input: {
+  merchantOrderId: string;
+  status: string;
+  totalAmount: string;
+  hash: string;
+}) {
+  const { merchantKey, merchantSalt } = credentials();
+  const expected = createHmac('sha256', merchantKey)
+    .update(input.merchantOrderId + merchantSalt + input.status + input.totalAmount)
+    .digest('base64');
+  const actualBuffer = Buffer.from(input.hash);
+  const expectedBuffer = Buffer.from(expected);
+  return (
+    actualBuffer.length === expectedBuffer.length &&
+    timingSafeEqual(actualBuffer, expectedBuffer)
+  );
+}
