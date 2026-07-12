@@ -3,8 +3,10 @@ import type { Metadata } from 'next';
 import { buildMetadata, organizationLd } from '@/lib/data/seo';
 import { ROUTES } from '@/lib/data/routes';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import { IntakeForm } from '@/components/forms/intake-form';
 import { PageHeader } from '@/components/layout/page-header';
 import { JsonLd } from '@/components/layout/json-ld';
+import type { IntakeSourceContext } from '@/lib/validation/intake';
 
 export const metadata: Metadata = buildMetadata({
   title: 'İletişim | CHERIE DAY',
@@ -12,43 +14,70 @@ export const metadata: Metadata = buildMetadata({
   path: ROUTES.iletisim,
 });
 
-export default function IletisimPage() {
-  const whatsapp = process.env.WHATSAPP_CONTACT_URL;
+export default async function IletisimPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const whatsapp =
+    process.env.NEXT_PUBLIC_WHATSAPP_CONTACT_URL ?? process.env.WHATSAPP_CONTACT_URL;
+  const params = await searchParams;
+  const source = sourceFromParams(params);
+  const initialMessage = first(params.message);
   return (
     <div className="cherie-container max-w-3xl py-14">
       <JsonLd data={organizationLd()} />
-      <Breadcrumbs items={[{ name: 'Ana Sayfa', path: ROUTES.home }, { name: 'İletişim', path: ROUTES.iletisim }]} />
+      <Breadcrumbs
+        items={[
+          { name: 'Ana Sayfa', path: ROUTES.home },
+          { name: 'İletişim', path: ROUTES.iletisim },
+        ]}
+      />
       <PageHeader
         eyebrow="CHERIE DAY"
         title="Bize yazın; bahçenin kapısı açık"
         lead="Bir sorunuz mu var, yoksa bir hayaliniz mi? İkisi için de buradayız."
       />
 
-      <dl className="mt-10 space-y-6 border-t border-cherie-lace pt-8 text-sm">
-        <div>
-          <dt className="text-cherie-brass">WhatsApp</dt>
-          <dd className="mt-1">
-            {whatsapp ? (
-              <a href={whatsapp} className="text-cherie-burgundy hover:underline">WhatsApp ile Yaz</a>
-            ) : (
-              <span className="text-cherie-soft-ink">WhatsApp hattı yakında paylaşılacak.</span>
-            )}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-cherie-brass">E-posta</dt>
-          <dd className="mt-1 text-cherie-soft-ink">merhaba@cherieday.example</dd>
-        </div>
-        <div>
-          <dt className="text-cherie-brass">Hizmet Bölgesi</dt>
-          <dd className="mt-1 text-cherie-soft-ink">Türkiye geneli · İstanbul, Ankara, İzmir, Bursa, Antalya</dd>
-        </div>
-      </dl>
+      {whatsapp && (
+        <p className="mt-8 text-sm text-cherie-soft-ink">
+          Dilerseniz doğrudan{' '}
+          <a
+            href={whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-cherie-burgundy underline"
+          >
+            WhatsApp ile yazabilirsiniz
+          </a>
+          .
+        </p>
+      )}
 
-      <p className="mt-8 rounded-card border border-dashed border-cherie-lace bg-cherie-paper/50 px-4 py-3 text-sm text-cherie-soft-ink">
-        İletişim formu bir sonraki aşamada etkinleşecek. O zamana kadar WhatsApp veya e-posta ile
-        bize ulaşabilirsiniz.
-      </p>
+      <div className="mt-10 rounded-card border border-cherie-lace bg-cherie-ivory p-6 shadow-card sm:p-8">
+        <IntakeForm type="contact" source={source} initialMessage={initialMessage} />
+      </div>
     </div>
   );
+}
+
+function sourceFromParams(
+  params: Record<string, string | string[] | undefined>,
+): IntakeSourceContext {
+  const first = (value: string | string[] | undefined) =>
+    Array.isArray(value) ? value[0] : value;
+  const type = first(params.sourceType);
+  return {
+    sourceEntityType:
+      type === 'product' || type === 'service' || type === 'experience' || type === 'page'
+        ? type
+        : undefined,
+    sourceSlug: first(params.sourceSlug),
+    sourceLabel: first(params.sourceLabel),
+    sourcePath: first(params.sourcePath),
+  };
+}
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
 }
