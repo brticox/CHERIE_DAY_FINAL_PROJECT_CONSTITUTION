@@ -21,6 +21,13 @@ no real secrets** in this phase.
 | `0011_public_views.sql` | 21 `*_public` views + grants to anon/authenticated |
 | `0012_rls_policies.sql` | Enable RLS on every table + owner/staff/anon policies |
 | `0013_storage.sql` | 5 buckets + storage.objects policies |
+| `0014_secure_public_intake.sql` | Field-whitelisted public intake RPC; removes broad anon table inserts |
+| `0015_auth_and_rls_hardening.sql` | Auth profile trigger, safe proof/profile RPCs, append-only evidence, tighter staff/customer RLS |
+| `20260711074056_catalog_commercial_read_model.sql` | Published variants, tiers, addons, attributes, personalization, and media read views |
+| `20260711075617_secure_cart_customization.sql` | Server-priced guest/customer carts, immutable snapshots, private uploads, direct-write lockdown |
+| `20260711115746_checkout_foundation.sql` | Turkey-only checkout snapshots, invoice identity, proof acknowledgement, legal versions, expiry |
+| `0016_order_operations_workflow.sql` | Guarded order/proof/production/QC/shipment workflow and append-only customer history |
+| `0017_payment_orchestration.sql` | Atomic checkout→order conversion, idempotent payment attempts and verified provider event application |
 
 Seed: `seed.sql` (departments, 7 collections, ~48 products, 8 services, 5 cities,
 6 digital designs, 12 articles, 12 legal docs + v1, faqs, testimonials, portfolio,
@@ -56,6 +63,19 @@ cannot read leads/orders/payments/payment_events/suppliers/consent/reviews/base
 products; anon *can* read the `*_public` views and insert intake leads without
 reading them back; customer A sees only their own order; customer B cannot see
 customer A's data.
+
+## PayTR activation
+
+1. Apply `0017_payment_orchestration.sql` and regenerate database types.
+2. Add the PayTR merchant credentials from `.env.example`.
+3. Keep `PAYTR_TEST_MODE=1` until sandbox acceptance is complete.
+4. Configure the merchant notification URL as
+   `https://YOUR_DOMAIN/api/payments/paytr/callback`.
+5. Run a successful, failed, duplicate-callback and wrong-hash test before
+   setting `PAYTR_TEST_MODE=0`.
+
+The browser success URL is never treated as proof of payment. Only the signed
+PayTR callback can move a payment/order to `paid`.
 
 ## Security invariants (docs/23, docs/42 §10)
 
