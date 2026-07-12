@@ -50,6 +50,7 @@ export const ROUTES = {
   hesapGiris: '/hesap/giris',
   hesapKayit: '/hesap/kayit',
   hesapSifremiUnuttum: '/hesap/sifremi-unuttum',
+  hesapSifreyiYenile: '/hesap/sifreyi-yenile',
   siparisTakip: '/siparis-takip',
 
   // Sepet / Ödeme
