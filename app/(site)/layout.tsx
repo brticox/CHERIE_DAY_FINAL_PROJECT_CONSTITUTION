@@ -1,6 +1,7 @@
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { CookieConsent } from '@/components/layout/cookie-consent';
+import { CommerceAssurance } from '@/components/layout/commerce-assurance';
 
 /** Shared chrome for all public (non-admin) surfaces. */
 export default function SiteLayout({
@@ -15,9 +16,10 @@ export default function SiteLayout({
         İçeriğe geç
       </a>
       <SiteHeader />
-      <main id="main" className="flex-1">
+      <main id="main" className="flex-1 overflow-clip">
         {children}
       </main>
+      <CommerceAssurance />
       <SiteFooter />
       <CookieConsent />
     </div>

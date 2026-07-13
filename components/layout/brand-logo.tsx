@@ -14,15 +14,18 @@ export function BrandLogo({ className }: { className?: string }) {
     <Link
       href={ROUTES.home}
       aria-label="CHERIE DAY ana sayfa"
-      className={cn('inline-flex items-center', className)}
+      className={cn(
+        'relative inline-flex h-11 w-32 shrink-0 items-center overflow-hidden',
+        className,
+      )}
     >
       <Image
         src="/brand/logo.svg"
         alt="CHERIE DAY"
-        width={150}
-        height={40}
+        width={192}
+        height={128}
         priority
-        className="h-8 w-auto"
+        className="absolute left-1/2 top-1/2 h-32 w-48 max-w-none -translate-x-1/2 -translate-y-1/2"
       />
     </Link>
   );

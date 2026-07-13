@@ -13,12 +13,12 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <header className={cn('max-w-3xl', className)}>
-      {eyebrow && (
-        <p className="mb-3 text-xs uppercase tracking-[0.18em] text-cherie-brass">{eyebrow}</p>
+    <header className={cn('max-w-4xl', className)}>
+      {eyebrow && <p className="cherie-kicker mb-4">{eyebrow}</p>}
+      <h1 className="text-h1 max-w-3xl text-balance text-cherie-ink">{title}</h1>
+      {lead && (
+        <p className="mt-5 max-w-2xl text-lg leading-8 text-cherie-soft-ink">{lead}</p>
       )}
-      <h1 className="text-h1 text-cherie-ink">{title}</h1>
-      {lead && <p className="mt-4 text-body-lg text-cherie-soft-ink">{lead}</p>}
     </header>
   );
 }
