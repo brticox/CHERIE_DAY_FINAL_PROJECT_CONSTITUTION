@@ -141,6 +141,10 @@ export function capabilitiesFor(role: string): readonly AdminCapability[] {
   return isAdminRole(role) ? ROLE_CAPABILITIES[role] : [];
 }
 
+export function canManageFinance(role: string) {
+  return role === 'superadmin' || role === 'admin';
+}
+
 export const ROLE_LABELS: Record<AdminRole, string> = {
   superadmin: 'Süper Yönetici',
   admin: 'Yönetici',

@@ -2,20 +2,21 @@ import 'server-only';
 
 import { redirect } from 'next/navigation';
 
-import { requireStaff } from '@/lib/auth/guards';
-
-const READ_ROLES = new Set(['superadmin', 'admin', 'finance_viewer', 'commerce_manager']);
-const MUTATE_ROLES = new Set(['superadmin', 'admin']);
+import { canManageFinance } from '@/lib/admin/permissions';
+import { requireCapability } from '@/lib/auth/guards';
 
 export async function requireFinanceRead(next = '/admin/finance') {
-  const session = await requireStaff(next);
-  if (!READ_ROLES.has(session.staff.role)) redirect('/admin?error=finance_required');
-  return session;
+  return requireCapability('finance.read', next);
+}
+
+export async function requireFinanceAudit(next = '/admin/finance/audit') {
+  return requireCapability('audit.read', next);
 }
 
 export async function requireFinanceMutation(next = '/admin/finance') {
   const session = await requireFinanceRead(next);
-  if (!MUTATE_ROLES.has(session.staff.role))
+  if (!canManageFinance(session.staff.role)) {
     redirect(`${next}?error=finance_mutation_required`);
+  }
   return session;
 }

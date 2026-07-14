@@ -1,6 +1,11 @@
 import type { AdminCapability } from './permissions';
 
-export type AdminNavItem = { label: string; href: string; keywords?: string[] };
+export type AdminNavItem = {
+  label: string;
+  href: string;
+  keywords?: string[];
+  capability?: AdminCapability;
+};
 export type AdminNavGroup = {
   label: string;
   capability: AdminCapability;
@@ -27,7 +32,11 @@ export const ADMIN_NAVIGATION: AdminNavGroup[] = [
       { label: 'Üretim', href: '/admin/commerce/production' },
       { label: 'Kalite Kontrol', href: '/admin/commerce/production?view=quality' },
       { label: 'Kargo', href: '/admin/commerce/shipments' },
-      { label: 'İptal / İade', href: '/admin/commerce/refunds' },
+      {
+        label: 'İptal / İade',
+        href: '/admin/finance/refunds',
+        capability: 'finance.read',
+      },
     ],
   },
   {
@@ -86,9 +95,15 @@ export const ADMIN_NAVIGATION: AdminNavGroup[] = [
     label: 'Ödemeler ve Finans',
     capability: 'finance.read',
     items: [
-      { label: 'Ödemeler', href: '/admin/commerce/payments' },
-      { label: 'Başarısız Ödemeler', href: '/admin/commerce/payments?status=failed' },
-      { label: 'İadeler', href: '/admin/commerce/refunds' },
+      { label: 'Finans Merkezi', href: '/admin/finance' },
+      { label: 'Ödemeler', href: '/admin/finance/payments' },
+      { label: 'Uzlaştırma', href: '/admin/finance/reconciliation' },
+      { label: 'İadeler', href: '/admin/finance/refunds' },
+      {
+        label: 'Finans Denetimi',
+        href: '/admin/finance/audit',
+        capability: 'audit.read',
+      },
     ],
   },
   {

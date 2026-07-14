@@ -201,7 +201,7 @@ export default async function DashboardPage({
       {
         label: 'Başarısız ödeme',
         value: failedPayments,
-        href: '/admin/commerce/payments?status=failed',
+        href: '/admin/finance/payments?status=failed',
         capability: 'finance.read',
         urgent: (failedPayments ?? 0) > 0,
         icon: AlertTriangle,
@@ -507,7 +507,7 @@ export default async function DashboardPage({
               <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
                 C · Operasyon
               </p>
-              <h2 id="ops-heading" className="font-display text-3xl">
+              <h2 id="ops-heading" className="font-display text-3xl text-white">
                 Darboğazlar
               </h2>
               <div className="mt-6 divide-y divide-white/10">

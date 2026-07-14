@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { DataWorkspace } from '@/components/admin/data-workspace';
 import type { AdminCapability } from '@/lib/admin/permissions';
 
@@ -9,7 +9,6 @@ const CAPS: Record<string, AdminCapability> = {
   coupons: 'content.read',
   'digital-products': 'catalog.read',
   inventory: 'catalog.read',
-  refunds: 'finance.read',
 };
 const configs = {
   'abandoned-carts': {
@@ -65,17 +64,6 @@ const configs = {
     ],
     statusKey: 'status',
   },
-  refunds: {
-    title: 'İadeler',
-    table: 'refunds',
-    fields: [
-      { key: 'order_id', label: 'Sipariş' },
-      { key: 'amount', label: 'Tutar' },
-      { key: 'reason', label: 'Neden' },
-    ],
-    statusKey: 'status',
-    dateKey: 'created_at',
-  },
 } as const;
 export default async function Page({
   params,
@@ -85,6 +73,7 @@ export default async function Page({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { module } = await params;
+  if (module === 'refunds') redirect('/admin/finance/refunds');
   const config = configs[module as keyof typeof configs];
   if (!config) notFound();
   return (

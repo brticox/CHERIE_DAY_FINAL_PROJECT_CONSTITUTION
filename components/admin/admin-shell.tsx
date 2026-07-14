@@ -99,7 +99,15 @@ export function AdminShell({ children, staff }: Props) {
   const paletteDesktopTrigger = useRef<HTMLButtonElement>(null);
   const paletteMobileTrigger = useRef<HTMLButtonElement>(null);
   const groups = useMemo(
-    () => ADMIN_NAVIGATION.filter((group) => can(staff.role, group.capability)),
+    () =>
+      ADMIN_NAVIGATION.filter((group) => can(staff.role, group.capability)).map(
+        (group) => ({
+          ...group,
+          items: group.items.filter(
+            (item) => !item.capability || can(staff.role, item.capability),
+          ),
+        }),
+      ),
     [staff.role],
   );
 

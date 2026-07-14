@@ -4,7 +4,11 @@ import { ArrowLeft, Box, CheckCircle2, Clock3, Truck } from 'lucide-react';
 
 import { formatTRY } from '@/lib/format';
 import { getCustomerOrderDetail, jsonText } from '@/lib/orders/customer';
-import { orderStatusLabel, paymentStatusLabel } from '@/lib/orders/presentation';
+import {
+  orderStatusLabel,
+  paymentStatusLabel,
+  proofStatusLabel,
+} from '@/lib/orders/presentation';
 import { respondToProofAction } from './actions';
 
 export default async function Page({
@@ -151,7 +155,7 @@ export default async function Page({
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-semibold">Tasarım v{proof.version}</p>
                       <span className="rounded-full bg-cherie-paper px-2.5 py-1 text-xs font-semibold">
-                        {proof.status}
+                        {proofStatusLabel(proof.status)}
                       </span>
                     </div>
                     {proof.status === 'sent' && (

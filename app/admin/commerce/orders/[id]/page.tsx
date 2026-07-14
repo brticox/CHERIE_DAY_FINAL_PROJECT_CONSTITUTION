@@ -72,7 +72,7 @@ export default async function Page({
     staffRows,
   ] = await Promise.all([
     admin.from('orders').select('*').eq('id', id).maybeSingle(),
-    admin.from('order_items').select('*').eq('order_id', id).order('created_at'),
+    admin.from('order_items').select('*').eq('order_id', id).order('id'),
     admin
       .from('product_proofs')
       .select('*')

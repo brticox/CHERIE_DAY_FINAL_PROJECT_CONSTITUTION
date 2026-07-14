@@ -87,11 +87,7 @@ export async function getCustomerOrderDetail(
   const orderRow = order as OrderRow;
 
   const [items, events, shipments, proofs] = await Promise.all([
-    supabase
-      .from('order_items')
-      .select('*')
-      .eq('order_id', orderRow.id)
-      .order('created_at'),
+    supabase.from('order_items').select('*').eq('order_id', orderRow.id).order('id'),
     supabase
       .from('order_status_events')
       .select('*')
