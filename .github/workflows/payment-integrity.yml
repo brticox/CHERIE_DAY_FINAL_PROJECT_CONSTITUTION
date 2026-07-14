@@ -41,6 +41,8 @@ jobs:
         run: npm run test:phase3:replay
       - name: Phase 1, Phase 2, RLS, and Phase 3 SQL suites
         run: npm run test:integration:db
+      - name: Identity and email-services SQL suite
+        run: npm run test:identity:db
       - name: Concurrent callback replay suite
         run: npm run test:phase3:burst
       - name: Production dependency audit

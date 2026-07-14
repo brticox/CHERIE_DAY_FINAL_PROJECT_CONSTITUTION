@@ -11,6 +11,7 @@ import { resolveRecipient } from './recipients';
 import { nextRetryAt, shouldRetry } from './retry';
 import { renderTemplate } from './templates';
 import type { NotificationPayload } from './types';
+import { notificationReplyTo } from './config';
 
 type OutboxRow = Database['public']['Tables']['notification_outbox']['Row'];
 
@@ -33,6 +34,7 @@ export async function processNotificationBatch(batchSize = 20) {
       const result = await transport.send({
         ...rendered,
         to: recipient,
+        replyTo: notificationReplyTo(row.template_key),
         idempotencyKey: row.idempotency_key,
       });
       const { error: updateError } = await admin

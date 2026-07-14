@@ -268,12 +268,13 @@ export async function addCartItem(input: AddCartItemInput) {
   }
   const baseTotalMinor = multiplyMinor(unitPriceMinor, input.quantity);
   const addonTotalMinor = addons.reduce(
-    (sum, addon) => addMinor(
-      sum,
-      addon.price_type === 'percentage'
-        ? percentageOfMinor(baseTotalMinor, String(addon.price))
-        : tryToMinor(String(addon.price), { allowZero: true }),
-    ),
+    (sum, addon) =>
+      addMinor(
+        sum,
+        addon.price_type === 'percentage'
+          ? percentageOfMinor(baseTotalMinor, String(addon.price))
+          : tryToMinor(String(addon.price), { allowZero: true }),
+      ),
     0,
   );
   const totalMinor = addMinor(baseTotalMinor, addonTotalMinor);
@@ -399,43 +400,20 @@ export async function mergeGuestCartForCurrentUser() {
   if (!cartConfigured()) return;
   const context = await owner(false);
   if (!context.customerId || !context.tokenHash) return;
-  const { data: guest } = await context.admin
-    .from('carts')
-    .select('id')
-    .eq('anonymous_token_hash', context.tokenHash)
-    .eq('status', 'active')
-    .maybeSingle();
-  if (!guest) return;
-  const { data: customerCart } = await context.admin
-    .from('carts')
-    .select('id')
-    .eq('customer_id', context.customerId)
-    .eq('status', 'active')
-    .maybeSingle();
-  if (customerCart) {
-    await context.admin
-      .from('cart_items')
-      .update({ cart_id: customerCart.id })
-      .eq('cart_id', guest.id);
-    await context.admin
-      .from('customer_uploads')
-      .update({
-        cart_id: customerCart.id,
-        customer_id: context.customerId,
-        anonymous_token_hash: null,
-      })
-      .eq('cart_id', guest.id);
-    await context.admin.from('carts').update({ status: 'abandoned' }).eq('id', guest.id);
-  } else {
-    await context.admin
-      .from('carts')
-      .update({ customer_id: context.customerId, anonymous_token_hash: null })
-      .eq('id', guest.id);
-    await context.admin
-      .from('customer_uploads')
-      .update({ customer_id: context.customerId, anonymous_token_hash: null })
-      .eq('cart_id', guest.id);
-  }
+  const userClient = await createClient();
+  const mergeRpc = userClient.rpc as unknown as (
+    name: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ error: { code: string } | null }>;
+  const { error } = await mergeRpc('merge_guest_cart_for_current_user', {
+    p_token_hash: context.tokenHash,
+  });
+  if (error)
+    throw new CartError(
+      'cart_merge_failed',
+      'Seçimleriniz hesabınıza aktarılamadı.',
+      409,
+    );
   const cookieStore = await cookies();
   cookieStore.delete(CART_COOKIE);
 }

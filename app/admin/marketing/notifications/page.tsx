@@ -68,7 +68,7 @@ export default async function Page({
         }
       />
 
-      <div className="admin-surface grid overflow-hidden sm:grid-cols-2 xl:grid-cols-5">
+      <div className="admin-surface grid overflow-hidden sm:grid-cols-2 xl:grid-cols-7">
         {Object.entries(counts).map(([label, value]) => (
           <div
             key={label}
@@ -107,6 +107,11 @@ export default async function Page({
               'queued',
               'processing',
               'sent',
+              'delivered',
+              'delayed',
+              'bounced',
+              'complained',
+              'failed',
               'retry_scheduled',
               'permanently_failed',
               'cancelled',
@@ -245,6 +250,9 @@ function countStatuses(rows: { status: string }[]) {
     Kuyrukta: 0,
     İşleniyor: 0,
     Gönderildi: 0,
+    Teslim: 0,
+    Geciken: 0,
+    'Teslim sorunu': 0,
     Tekrar: 0,
     'Kalıcı hata': 0,
   };
@@ -252,6 +260,10 @@ function countStatuses(rows: { status: string }[]) {
     if (row.status === 'queued') result.Kuyrukta += 1;
     else if (row.status === 'processing') result.İşleniyor += 1;
     else if (row.status === 'sent') result.Gönderildi += 1;
+    else if (row.status === 'delivered') result.Teslim += 1;
+    else if (row.status === 'delayed') result.Geciken += 1;
+    else if (['bounced', 'complained', 'failed'].includes(row.status))
+      result['Teslim sorunu'] += 1;
     else if (row.status === 'retry_scheduled') result.Tekrar += 1;
     else if (row.status === 'permanently_failed') result['Kalıcı hata'] += 1;
   }
@@ -273,6 +285,11 @@ function statusLabel(value: string) {
         queued: 'Kuyrukta',
         processing: 'İşleniyor',
         sent: 'Gönderildi',
+        delivered: 'Teslim edildi',
+        delayed: 'Gecikiyor',
+        bounced: 'Geri döndü',
+        complained: 'İstenmeyen olarak bildirildi',
+        failed: 'Teslim edilemedi',
         retry_scheduled: 'Tekrar bekliyor',
         permanently_failed: 'Kalıcı hata',
         cancelled: 'İptal',

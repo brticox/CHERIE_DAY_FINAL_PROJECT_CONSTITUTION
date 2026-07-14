@@ -7,25 +7,38 @@ import { can, type AdminCapability } from '@/lib/admin/permissions';
 import { isSupabaseConfigured } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase/server';
 
-type CustomerSummary = { id: string; name: string | null; email: string | null; phone: string | null };
+type CustomerSummary = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  status: string;
+};
 type StaffSummary = { id: string; name: string; role: string; is_active: boolean };
 
 export async function requireUser(next = '/hesap') {
   if (!isSupabaseConfigured()) redirect('/hesap/giris?reason=unavailable');
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
-  if (!data.user) redirect(`/hesap/giris?reason=session&next=${encodeURIComponent(next)}`);
+  if (!data.user)
+    redirect(`/hesap/giris?reason=session&next=${encodeURIComponent(next)}`);
 
   const { data: customerData } = await supabase
     .from('customers')
-    .select('id, name, email, phone')
+    .select('id, name, email, phone, status')
     .eq('auth_user_id', data.user.id)
     .maybeSingle();
+
+  const customer = (customerData as CustomerSummary | null) ?? null;
+  if (!customer || customer.status !== 'active') {
+    await supabase.auth.signOut();
+    redirect('/hesap/giris?reason=account_blocked');
+  }
 
   return {
     supabase,
     user: data.user as User,
-    customer: (customerData as CustomerSummary | null) ?? null,
+    customer,
   };
 }
 
@@ -56,4 +69,3 @@ export async function requireCapability(capability: AdminCapability, next = '/ad
   }
   return session;
 }
-

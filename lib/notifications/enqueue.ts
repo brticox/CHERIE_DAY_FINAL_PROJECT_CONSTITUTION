@@ -17,7 +17,11 @@ export async function enqueueNotification(input: {
   category?: 'transactional' | 'operational' | 'security';
 }) {
   const admin = createAdminClient();
-  const { data, error } = await admin.rpc('enqueue_notification', {
+  const rpc = admin.rpc as unknown as (
+    name: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: string | null; error: { code: string } | null }>;
+  const { data, error } = await rpc('enqueue_notification', {
     p_event_type: input.eventType,
     p_aggregate_type: input.aggregateType,
     p_aggregate_id: input.aggregateId,

@@ -22,6 +22,7 @@ export interface NotificationPayload {
 
 export interface EmailMessage extends RenderedEmail {
   to: string;
+  replyTo?: string;
   idempotencyKey: string;
 }
 

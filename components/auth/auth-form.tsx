@@ -17,6 +17,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/lib/data/routes';
 import { INITIAL_AUTH_STATE, type AuthActionState } from '@/lib/validation/auth';
+import type { CustomerAuthProvider } from '@/lib/auth/config';
+import { SocialAuthButtons } from './social-auth-buttons';
 
 type Mode = 'login' | 'register' | 'forgot' | 'update';
 type Action = (state: AuthActionState, formData: FormData) => Promise<AuthActionState>;
@@ -26,11 +28,13 @@ export function AuthForm({
   action,
   available,
   next,
+  providers,
 }: {
   mode: Mode;
   action: Action;
   available: boolean;
   next?: string;
+  providers?: Record<CustomerAuthProvider, boolean>;
 }) {
   const [state, formAction] = useActionState(action, INITIAL_AUTH_STATE);
   const [showPassword, setShowPassword] = useState(false);
@@ -55,8 +59,13 @@ export function AuthForm({
   const needsPassword = mode === 'login' || mode === 'register' || mode === 'update';
 
   return (
-    <form action={formAction} className="space-y-5" noValidate>
-      {next && <input type="hidden" name="next" value={next} />}
+    <>
+      {(mode === 'login' || mode === 'register') && providers && (
+        <SocialAuthButtons next={next ?? '/hesap'} providers={providers} />
+      )}
+
+      <form action={formAction} className="mt-5 space-y-5" noValidate>
+        {next && <input type="hidden" name="next" value={next} />}
 
       {mode === 'register' && (
         <Field label="Ad Soyad" error={error('name')} icon={<UserRound />}>
@@ -209,7 +218,8 @@ export function AuthForm({
           </Link>
         </p>
       )}
-    </form>
+      </form>
+    </>
   );
 }
 

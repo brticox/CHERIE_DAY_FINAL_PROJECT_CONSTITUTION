@@ -63,9 +63,18 @@ export type AuthActionState = {
 export const INITIAL_AUTH_STATE: AuthActionState = { status: 'idle' };
 
 export function safeNextPath(value: string | null | undefined, fallback = '/hesap') {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/api/')) {
+  if (
+    !value ||
+    value.length > 500 ||
+    !value.startsWith('/') ||
+    value.startsWith('//') ||
+    value.startsWith('/\\') ||
+    value.includes('\\') ||
+    /[\u0000-\u001f\u007f]/.test(value) ||
+    value.startsWith('/api/') ||
+    value.startsWith('/auth/')
+  ) {
     return fallback;
   }
   return value;
 }
-

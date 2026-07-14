@@ -38,6 +38,9 @@ jobs:
       - name: Type-check
         run: npm run typecheck
 
+      - name: Unit, identity, and communication tests
+        run: npm test
+
       - name: Build production application
         run: npm run build
 

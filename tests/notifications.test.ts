@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { getNotificationConfig, notificationReadiness } from '@/lib/notifications/config';
+import { getNotificationConfig, notificationReadiness, notificationReplyTo } from '@/lib/notifications/config';
 import { NotificationError, classifyNotificationError, redactError } from '@/lib/notifications/errors';
 import { notificationIdempotencyKey } from '@/lib/notifications/idempotency';
 import { CaptureTransport } from '@/lib/notifications/providers/capture';
@@ -88,5 +88,18 @@ describe('safe transport configuration', () => {
     delete process.env.RESEND_API_KEY;
     delete process.env.NOTIFICATION_FROM_EMAIL;
     expect(() => getNotificationConfig()).toThrow('Resend');
+  });
+
+  it('routes customer replies to the responsible human inbox', () => {
+    process.env.APP_ENV = 'development';
+    process.env.NOTIFICATION_SEND_ENABLED = 'false';
+    process.env.EMAIL_HELLO = 'hello@example.test';
+    process.env.EMAIL_SUPPORT = 'support@example.test';
+    process.env.EMAIL_ORDERS = 'orders@example.test';
+    process.env.EMAIL_PAYMENTS = 'payments@example.test';
+    expect(notificationReplyTo('intake_contact_received')).toBe('hello@example.test');
+    expect(notificationReplyTo('order_status_shipped')).toBe('orders@example.test');
+    expect(notificationReplyTo('refund_succeeded')).toBe('payments@example.test');
+    expect(notificationReplyTo('account_welcome')).toBe('support@example.test');
   });
 });
