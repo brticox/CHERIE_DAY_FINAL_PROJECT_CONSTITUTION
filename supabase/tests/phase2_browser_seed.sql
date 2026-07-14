@@ -84,18 +84,81 @@ insert into public.tracking_events (shipment_id,status,message_tr)
 values ('92000000-0000-0000-0000-000000000005','preparing','Gönderi kaydı hazırlandı.');
 
 insert into public.payments (
-  id,order_id,provider,status,amount,currency,provider_payment_id,idempotency_key,paid_at
+  id,order_id,provider,status,amount,amount_minor,captured_total_minor,currency,
+  provider_payment_id,provider_conversation_id,idempotency_key,correlation_id,paid_at
 ) values (
   '92000000-0000-0000-0000-000000000006',
-  '92000000-0000-0000-0000-000000000001','iyzico','paid',4250,'TRY',
-  'qa-provider-payment','qa-payment-20260714-0001',now()-interval '2 days'
+  '92000000-0000-0000-0000-000000000001','iyzico','paid',4250,425000,425000,'TRY',
+  'qa-provider-payment','QA20260714PAID','qa-payment-20260714-0001',
+  '96000000-0000-0000-0000-000000000001',now()-interval '2 days'
 );
 insert into public.payment_events (
-  payment_id,provider,event_type,provider_event_id,signature_valid,processing_status,payload
+  payment_id,provider,event_type,provider_event_id,signature_valid,processing_status,
+  payload,correlation_id,outcome,payload_digest
 ) values (
   '92000000-0000-0000-0000-000000000006','iyzico','payment.succeeded',
-  'qa-provider-event-1',true,'applied','{"source":"phase2_browser_qa"}'
+  'qa-provider-event-1',true,'applied','{"source":"integration_browser_qa"}',
+  '96000000-0000-0000-0000-000000000001','applied',repeat('a',64)
 );
+
+-- Phase 3 finance records intentionally extend the Phase 2 operational
+-- fixture so the integrated admin can be reviewed without fake UI metrics.
+insert into public.payments (
+  id,order_id,provider,status,amount,amount_minor,currency,provider_conversation_id,
+  idempotency_key,attempt_number,correlation_id,last_error_code,created_at
+) values (
+  '92000000-0000-0000-0000-000000000007',
+  '92000000-0000-0000-0000-000000000001','paytr','failed',4250,425000,'TRY',
+  'QA20260714FAILED','qa-payment-20260714-0002',2,
+  '96000000-0000-0000-0000-000000000002','provider_declined',now()-interval '3 hours'
+);
+insert into public.payment_events (
+  id,payment_id,provider,event_type,provider_event_id,signature_valid,
+  processing_status,payload,correlation_id,outcome,payload_digest
+) values (
+  '92000000-0000-0000-0000-000000000008',
+  '92000000-0000-0000-0000-000000000007','paytr','paytr.failed',
+  'qa-provider-event-2',true,'applied','{"failed_reason_code":"provider_declined"}',
+  '96000000-0000-0000-0000-000000000002','applied',repeat('b',64)
+);
+insert into public.refunds (
+  id,order_id,payment_id,amount,amount_minor,reason,type,status,notes_internal,
+  created_by,requested_by,idempotency_key,correlation_id
+) values (
+  '92000000-0000-0000-0000-000000000009',
+  '92000000-0000-0000-0000-000000000001',
+  '92000000-0000-0000-0000-000000000006',750,75000,'customer_request','partial',
+  'requested','Müşteri talebi finans onayı bekliyor.',
+  (select id from public.staff_users where role='admin' limit 1),
+  (select id from public.staff_users where role='admin' limit 1),
+  'qa-refund-20260714-0001','96000000-0000-0000-0000-000000000003'
+);
+insert into public.payment_reconciliation_discrepancies (
+  id,fingerprint,discrepancy_type,severity,status,order_id,payment_id,payment_event_id,
+  expected_amount_minor,provider_amount_minor,provider_reference,evidence,recommended_action
+) values (
+  '92000000-0000-0000-0000-000000000010','qa:amount-mismatch:20260714',
+  'amount_mismatch','critical','open','92000000-0000-0000-0000-000000000001',
+  '92000000-0000-0000-0000-000000000007','92000000-0000-0000-0000-000000000008',
+  425000,420000,'QA20260714FAILED','{"source":"integration_browser_qa"}',
+  'Sağlayıcı tutarını sipariş kanıtıyla karşılaştırın; otomatik düzeltme yapmayın.'
+);
+insert into public.financial_audit_log (
+  action,severity,actor_type,order_id,payment_id,payment_event_id,refund_id,
+  correlation_id,provider_event_id,metadata,created_at
+) values
+  ('payment_marked_paid','info','provider','92000000-0000-0000-0000-000000000001',
+   '92000000-0000-0000-0000-000000000006',null,null,
+   '96000000-0000-0000-0000-000000000001','qa-provider-event-1',
+   '{"amount_minor":425000}',now()-interval '2 days'),
+  ('payment_marked_failed','warning','provider','92000000-0000-0000-0000-000000000001',
+   '92000000-0000-0000-0000-000000000007','92000000-0000-0000-0000-000000000008',null,
+   '96000000-0000-0000-0000-000000000002','qa-provider-event-2',
+   '{"amount_minor":425000}',now()-interval '3 hours'),
+  ('refund_requested','info','staff','92000000-0000-0000-0000-000000000001',
+   '92000000-0000-0000-0000-000000000006',null,'92000000-0000-0000-0000-000000000009',
+   '96000000-0000-0000-0000-000000000003',null,
+   '{"amount_minor":75000}',now()-interval '1 hour');
 
 insert into public.consultations (
   id,consultation_number,customer_id,service_category,preferred_slots,

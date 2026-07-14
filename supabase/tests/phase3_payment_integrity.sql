@@ -74,6 +74,24 @@ select pg_temp.assert((
 ),'duplicate callback acknowledged');
 select pg_temp.assert((select count(*)=1 from public.payment_events where provider_event_id='phase3-success-event'),'one event for duplicate');
 select pg_temp.assert((
+  select count(*)=1 from public.order_status_events
+  where order_id=(select order_id from phase3_attempt) and to_status='paid'
+),'success callback records one paid order event');
+select pg_temp.assert((
+  select count(*)=1 from public.notification_outbox
+  where aggregate_id=(select order_id from phase3_attempt)
+    and recipient_kind='customer' and template_key='order_status_paid'
+),'success callback queues one customer notification');
+select pg_temp.assert((
+  select count(*)=1 from public.notification_outbox
+  where aggregate_id=(select order_id from phase3_attempt)
+    and recipient_kind='staff' and template_key='staff_paid'
+),'success callback queues one staff notification');
+select pg_temp.assert((
+  select count(*)=1 from public.financial_audit_log
+  where payment_id=(select payment_id from phase3_attempt) and action='payment_marked_paid'
+),'success callback records one immutable financial audit event');
+select pg_temp.assert((
   public.ingest_paytr_callback(
     (select merchant_order_id from phase3_attempt),'phase3-conflict-event','failed',10000,10000,'TL',
     '{"status":"failed","failed_reason_code":"0"}'::jsonb,'37000000-0000-0000-0000-000000000003'
@@ -149,6 +167,16 @@ select public.mark_refund_submitted((select id from phase3_refund));
 select public.record_refund_submission((select id from phase3_refund),true,'SIM-REF-1',null,false);
 select pg_temp.assert((select status='partially_refunded' from public.payments where id=(select payment_id from phase3_attempt)),'partial refund status exact');
 select pg_temp.assert((select payment_status='partially_refunded' from public.orders where id=(select order_id from phase3_attempt)),'order payment status exact');
+select pg_temp.assert((
+  select count(*)=4 from public.financial_audit_log
+  where refund_id=(select id from phase3_refund)
+    and action in ('refund_requested','refund_approved','refund_submitted','refund_succeeded')
+),'refund lifecycle records every financial audit stage once');
+select pg_temp.assert((
+  select count(*)=1 from public.notification_outbox
+  where aggregate_id=(select id from phase3_refund)
+    and recipient_kind='customer' and template_key='refund_succeeded'
+),'partial refund queues one success notification');
 
 reset role;
 set local role authenticated;
@@ -171,6 +199,15 @@ do $$
 begin
   update public.payment_events set outcome='failed' where provider_event_id='phase3-success-event';
   raise exception 'immutable payment event unexpectedly updated';
+exception when sqlstate '42501' then null;
+end;
+$$;
+
+do $$
+begin
+  update public.financial_audit_log set metadata='{"tampered":true}'::jsonb
+  where payment_id=(select payment_id from phase3_attempt) and action='payment_marked_paid';
+  raise exception 'immutable financial audit unexpectedly updated';
 exception when sqlstate '42501' then null;
 end;
 $$;
