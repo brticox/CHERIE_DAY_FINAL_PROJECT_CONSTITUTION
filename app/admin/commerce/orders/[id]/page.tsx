@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, PackageCheck } from 'lucide-react';
+import { AdminStatus } from '@/components/admin/admin-workspace';
+import { adminEventLabel, adminValueLabel } from '@/lib/admin/presentation';
+import { roleLabel } from '@/lib/admin/permissions';
 
 import { formatTRY } from '@/lib/format';
 import { jsonText } from '@/lib/orders/customer';
@@ -117,6 +120,53 @@ export default async function Page({
   const payments = (rawPayments ?? []) as PaymentRow[];
   const events = (rawEvents ?? []) as EventRow[];
   const feedback = (await searchParams).transition;
+  const riskCount =
+    Number(order.payment_status !== 'paid') +
+    Number(
+      items.some((item) => item.requires_proof) &&
+        !proofs.some((proof) => proof.status === 'approved'),
+    ) +
+    Number(
+      production.some(
+        (job) =>
+          job.due_at && new Date(job.due_at) < new Date() && job.status !== 'completed',
+      ),
+    ) +
+    Number(shipments.some((shipment) => shipment.status === 'returned'));
+  const nextStatus = (NEXT[order.status] ?? [])[0];
+  const commandSignals = [
+    { label: 'Sipariş', value: orderStatusLabel(order.status), status: order.status },
+    {
+      label: 'Sıradaki adım',
+      value: nextStatus ? orderStatusLabel(nextStatus) : 'İşlem gerekmiyor',
+      status: nextStatus ?? 'completed',
+    },
+    {
+      label: 'Risk',
+      value: riskCount ? `${riskCount} konu` : 'Risk yok',
+      status: riskCount ? 'blocked' : 'passed',
+    },
+    {
+      label: 'Ödeme',
+      value: paymentStatusLabel(order.payment_status),
+      status: order.payment_status,
+    },
+    {
+      label: 'Tasarım',
+      value: proofs[0] ? proofStatusLabel(proofs[0].status) : 'Kayıt yok',
+      status: proofs[0]?.status ?? 'pending',
+    },
+    {
+      label: 'Üretim',
+      value: production[0] ? productionStatusLabel(production[0].status) : 'Başlamadı',
+      status: production[0]?.status ?? 'pending',
+    },
+    {
+      label: 'Kargo',
+      value: shipments[0] ? shipmentStatusLabel(shipments[0].status) : 'Hazırlanmadı',
+      status: shipments[0]?.status ?? 'pending',
+    },
+  ];
   return (
     <div className="space-y-8 p-5 md:p-8">
       <Link
@@ -128,12 +178,13 @@ export default async function Page({
       </Link>
       <header className="flex flex-col gap-4 border-b border-cherie-lace pb-7 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[.18em] text-cherie-brass">
-            Sipariş operasyonu
-          </p>
-          <h1 className="mt-2 font-display text-4xl">{order.order_number}</h1>
+          <p className="admin-eyebrow">Sipariş operasyonu</p>
+          <h1 className="admin-page-title mt-2 break-all">{order.order_number}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <StatusChip tone={orderTone(order.status)} label={orderStatusLabel(order.status)} />
+            <StatusChip
+              tone={orderTone(order.status)}
+              label={orderStatusLabel(order.status)}
+            />
             <StatusChip
               tone={orderTone(order.payment_status)}
               label={paymentStatusLabel(order.payment_status)}
@@ -152,6 +203,29 @@ export default async function Page({
             : 'Durum değiştirilemedi; geçiş kuralını ve gerekli onayları kontrol edin.'}
         </p>
       )}
+      <section
+        aria-label="Sipariş komuta özeti"
+        className="overflow-hidden rounded-card-lg bg-cherie-velvet text-white shadow-lift"
+      >
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          {commandSignals.map((signal, index) => (
+            <div
+              key={signal.label}
+              className={`min-h-28 p-4 ${index > 0 ? 'border-t border-white/10 sm:border-l sm:border-t-0' : ''}`}
+            >
+              <p className="text-[11px] font-bold uppercase tracking-[.14em] text-cherie-brass">
+                {signal.label}
+              </p>
+              <p className="mt-3 text-sm font-semibold leading-5 text-white">
+                {signal.value}
+              </p>
+              <div className="mt-3">
+                <AdminStatus value={signal.status} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
       <div className="grid gap-8 lg:grid-cols-[1.618fr_1fr]">
         <div className="space-y-6">
           <section className="rounded-card-lg border border-cherie-lace bg-cherie-ivory p-6">
@@ -279,7 +353,7 @@ export default async function Page({
                   <option value="">Atanmadı</option>
                   {(staffRows.data ?? []).map((person) => (
                     <option key={person.id} value={person.id}>
-                      {person.name} · {person.role}
+                      {person.name} · {roleLabel(person.role)}
                     </option>
                   ))}
                 </select>
@@ -332,23 +406,28 @@ export default async function Page({
           </section>
           <OperationalSection title="Yasal anlık görüntü" empty="Yasal snapshot yok">
             {order.legal_snapshot ? (
-              <pre className="max-h-64 overflow-auto whitespace-pre-wrap py-3 text-xs">
-                {JSON.stringify(order.legal_snapshot, null, 2)}
-              </pre>
+              <div className="py-3 text-sm leading-6 text-cherie-soft-ink">
+                Sipariş sırasında geçerli yasal içerik değiştirilemez biçimde sabitlendi.
+                Bu kayıt denetim ve müşteri kabulü için korunuyor.
+              </div>
             ) : null}
           </OperationalSection>
           <OperationalSection title="Bildirim zaman çizelgesi" empty="Bildirim yok">
             {(notifications.data ?? []).map((item) => (
               <Row
                 key={item.id}
-                label={`${item.channel} · ${item.event_type} · ${item.status}`}
+                label={`${adminValueLabel(item.channel)} · ${adminEventLabel(item.event_type)} · ${adminValueLabel(item.status)}`}
                 value={`${adminDate(item.sent_at ?? item.created_at)}${item.last_error ? ` · ${item.last_error}` : ''}`}
               />
             ))}
           </OperationalSection>
           <OperationalSection title="Tam denetim izi" empty="Denetim kaydı yok">
             {(audit.data ?? []).map((item) => (
-              <Row key={item.id} label={item.action} value={adminDate(item.created_at)} />
+              <Row
+                key={item.id}
+                label={adminEventLabel(item.action)}
+                value={adminDate(item.created_at)}
+              />
             ))}
           </OperationalSection>
         </aside>

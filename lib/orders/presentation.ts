@@ -57,23 +57,23 @@ const SHIPMENT_LABELS: Record<string, string> = {
 };
 
 export function orderStatusLabel(status: string) {
-  return ORDER_LABELS[status] ?? status;
+  return ORDER_LABELS[status] ?? adminValueLabel(status);
 }
 
 export function paymentStatusLabel(status: string) {
-  return PAYMENT_LABELS[status] ?? status;
+  return PAYMENT_LABELS[status] ?? adminValueLabel(status);
 }
 
 export function proofStatusLabel(status: string) {
-  return PROOF_LABELS[status] ?? status;
+  return PROOF_LABELS[status] ?? adminValueLabel(status);
 }
 
 export function productionStatusLabel(status: string) {
-  return PRODUCTION_LABELS[status] ?? status;
+  return PRODUCTION_LABELS[status] ?? adminValueLabel(status);
 }
 
 export function shipmentStatusLabel(status: string) {
-  return SHIPMENT_LABELS[status] ?? status;
+  return SHIPMENT_LABELS[status] ?? adminValueLabel(status);
 }
 
 export function orderTone(status: string) {
@@ -81,3 +81,4 @@ export function orderTone(status: string) {
   if (['cancelled', 'refunded', 'failed'].includes(status)) return 'error';
   return 'warning';
 }
+import { adminValueLabel } from '@/lib/admin/presentation';
