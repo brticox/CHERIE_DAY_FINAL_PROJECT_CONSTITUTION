@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import {
+  getCollectionBySlug,
   getDepartmentBySlug,
   getProductBySlug,
   getProducts,
@@ -47,7 +48,12 @@ export default async function ProductPage({
   ]);
   if (!product) notFound();
 
-  const related = await getRelatedProducts(product);
+  const [related, collection] = await Promise.all([
+    getRelatedProducts(product),
+    product.collection_slug
+      ? getCollectionBySlug(product.collection_slug)
+      : Promise.resolve(null),
+  ]);
   const path = `${ROUTES.magaza}/${department}/${slug}`;
 
   return (
@@ -62,7 +68,7 @@ export default async function ProductPage({
         ]}
       />
 
-      <ProductDetail product={product} department={dep} />
+      <ProductDetail product={product} department={dep} collection={collection} />
 
       {related.length > 0 && (
         <section className="mt-24 border-t border-cherie-lace pt-16">

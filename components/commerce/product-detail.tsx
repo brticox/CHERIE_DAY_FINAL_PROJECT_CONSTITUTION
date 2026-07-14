@@ -1,23 +1,26 @@
 import Link from 'next/link';
 
-import type { Department, Product } from '@/lib/data/types';
+import type { Collection, Department, Product } from '@/lib/data/types';
 import { ROUTES } from '@/lib/data/routes';
 import { formatTRY, productBehaviorBadge, productionTimeLabel } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
-import { MediaFrame } from './media-frame';
+import { ProductGallery } from './product-gallery';
 import { ProductOptions } from './product-options';
 import { BadgeCheck, Clock3, ShieldCheck } from 'lucide-react';
 
 /**
- * Read-only product detail (docs/13 product SEO, docs/26 commerce rules).
- * CTAs are PLACEHOLDERS — no cart/checkout/customization logic in Phase 3.
+ * Product decision environment (docs/13 product SEO, docs/26 commerce rules,
+ * docs Phase 4D). Media uses the honest ProductGallery; the CTA/cart behaviour
+ * lives in ProductOptions (server-validated). This component stays read-only.
  */
 export function ProductDetail({
   product,
   department,
+  collection,
 }: {
   product: Product;
   department: Department | null;
+  collection?: Collection | null;
 }) {
   const price = formatTRY(product.base_price);
   const productPath = `${ROUTES.magaza}/${product.department_slug}/${product.slug}`;
@@ -42,30 +45,13 @@ export function ProductDetail({
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(24rem,0.92fr)] lg:gap-16">
-      {/* Hero media */}
-      <div className="space-y-4">
-        <MediaFrame
-          label={product.name}
-          src={product.media?.[0]?.url}
-          alt={product.media?.[0]?.alt_text ?? product.name}
-          ratio="aspect-[4/5]"
-          className="relative"
-        />
-        <div className="grid grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <MediaFrame
-              key={i}
-              label={product.name}
-              src={product.media?.[i + 1]?.url}
-              alt={
-                product.media?.[i + 1]?.alt_text ?? `${product.name} — görünüm ${i + 2}`
-              }
-              ratio="aspect-square"
-              className="relative"
-            />
-          ))}
-        </div>
-      </div>
+      {/* Media */}
+      <ProductGallery
+        name={product.name}
+        media={product.media ?? []}
+        palette={collection?.palette ?? []}
+        materialStory={product.material_story}
+      />
 
       {/* Information */}
       <div className="lg:sticky lg:top-28 lg:h-fit">
@@ -76,7 +62,7 @@ export function ProductDetail({
               href={`${ROUTES.koleksiyonlar}/${product.collection_slug}`}
               className="text-xs text-cherie-brass hover:text-cherie-burgundy"
             >
-              {product.collection_slug} koleksiyonu
+              {collection?.name ?? product.collection_slug} koleksiyonu
             </Link>
           )}
         </div>
@@ -177,9 +163,81 @@ export function ProductDetail({
             </Row>
           )}
         </dl>
+
+        {/* Reassurance */}
+        <section className="mt-8">
+          <h2 className="text-h3 text-cherie-ink">Merak edilenler</h2>
+          <div className="mt-4 divide-y divide-cherie-lace border-y border-cherie-lace">
+            {reassuranceFaqs(product).map((faq, i) => (
+              <details key={i} className="group py-3.5">
+                <summary className="flex cursor-pointer items-center justify-between gap-4 text-sm font-medium text-cherie-ink [&::-webkit-details-marker]:hidden">
+                  {faq.q}
+                  <span className="text-cherie-brass transition-transform duration-control ease-cherie group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-2 text-sm leading-6 text-cherie-soft-ink">{faq.a}</p>
+              </details>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-cherie-soft-ink">
+            Başka bir sorunuz mu var?{' '}
+            <Link href={ROUTES.iletisim} className="text-cherie-burgundy hover:underline">
+              Bize danışın
+            </Link>
+            .
+          </p>
+        </section>
       </div>
     </div>
   );
+}
+
+function reassuranceFaqs(product: Product): { q: string; a: string }[] {
+  const faqs: { q: string; a: string }[] = [];
+
+  if (product.behavior_type === 'quote_required') {
+    faqs.push({
+      q: 'Fiyat nasıl belirleniyor?',
+      a: 'Bu ürün ölçü, adet ve konsepte göre değiştiğinden size özel bir teklif hazırlıyoruz. “Teklif Al” adımından detayları paylaşmanız yeterli.',
+    });
+  } else if (product.behavior_type === 'inquiry_only') {
+    faqs.push({
+      q: 'Nasıl sipariş veririm?',
+      a: 'Bu parça için önce sizinle bir görüşme planlıyor, ihtiyaçlarınızı birlikte netleştiriyoruz. “Randevu Al” ile başlayabilirsiniz.',
+    });
+  } else {
+    faqs.push({
+      q: 'Gördüğüm fiyatı mı öderim?',
+      a: 'Evet. Fiyat, seçimlerinizle birlikte hem sepete eklerken hem ödeme adımında sunucuda doğrulanır; sürpriz olmaz.',
+    });
+  }
+
+  if (product.proof_required) {
+    faqs.push({
+      q: 'Baskıdan önce tasarımı görebilir miyim?',
+      a: 'Evet. Kişiye özel ürünlerde tasarımı onayınıza sunarız; onaylamadan üretim başlamaz.',
+    });
+  } else if (product.is_personalizable) {
+    faqs.push({
+      q: 'Ürünü kişiselleştirebilir miyim?',
+      a: 'Evet. İstenen bilgileri sipariş sırasında girebilir, ürünü size özel hâle getirebilirsiniz.',
+    });
+  }
+
+  const production = productionTimeLabel(product.production_time_days);
+  if (production) {
+    faqs.push({
+      q: 'Ne kadar sürede hazır olur?',
+      a: `${production}. Kişiye özel ürünlerde bu süre, tasarım onayınızdan sonra başlar.`,
+    });
+  }
+
+  if (product.return_note) {
+    faqs.push({ q: 'İade koşulları nedir?', a: product.return_note });
+  }
+
+  return faqs.slice(0, 4);
 }
 
 function Row({ term, children }: { term: string; children: React.ReactNode }) {
