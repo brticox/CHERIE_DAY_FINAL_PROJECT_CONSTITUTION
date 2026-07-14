@@ -1,2 +1,82 @@
-import Link from 'next/link';import {ResourceList,StateBadge}from '@/components/admin/resource-list';import{requireStaff}from '@/lib/auth/guards';import{createAdminClient}from '@/lib/supabase/admin';
-export const dynamic='force-dynamic';export default async function Page({searchParams}:{searchParams:Promise<{q?:string}>}){const{q}=await searchParams;await requireStaff('/admin/legal/documents');const db=createAdminClient();let request=db.from('legal_documents').select('id,doc_key,title_tr,slug,status,legal_document_versions(id,lifecycle_state,is_current,needs_lawyer_review,approval_status)',{count:'exact'}).order('title_tr').limit(100);if(q)request=request.ilike('title_tr',`%${q.replace(/[,%]/g,'')}%`);const{data,count,error}=await request;return <ResourceList eyebrow="Hukuk" title="Yasal Belgeler" description="Taslak, hukuk incelemesi ve yayın bağımlılıklarını tarihsel sürümleri değiştirmeden yönetin." rows={data??[]} total={count??0} query={q} error={error?'Yasal belgeler okunamadı.':undefined} columns={[{label:'Belge',value:r=><><Link className="font-semibold text-cherie-burgundy hover:underline" href={`/admin/legal/documents/${r.doc_key}/versions`}>{r.title_tr}</Link><p className="text-xs text-cherie-soft-ink">{r.doc_key}</p></>},{label:'Sürüm',value:r=>`${r.legal_document_versions.length} kayıt`},{label:'Güncel',value:r=>{const v=r.legal_document_versions.find(x=>x.is_current);return v?<StateBadge value={v.lifecycle_state}/>:<StateBadge value="missing"/>}},{label:'Hukuk kontrolü',value:r=>r.legal_document_versions.some(x=>x.needs_lawyer_review)?'Bekliyor':'Hazır'},{label:'Kamu rotası',value:r=><Link className="text-cherie-burgundy hover:underline" href={`/kurumsal/${r.slug}`} target="_blank">Önizle</Link>}]} />}
+import Link from 'next/link';
+import { ResourceList, StateBadge } from '@/components/admin/resource-list';
+import { requireStaff } from '@/lib/auth/guards';
+import { createAdminClient } from '@/lib/supabase/admin';
+export const dynamic = 'force-dynamic';
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  await requireStaff('/admin/legal/documents');
+  const db = createAdminClient();
+  let request = db
+    .from('legal_documents')
+    .select(
+      'id,doc_key,title_tr,slug,status,legal_document_versions(id,lifecycle_state,is_current,needs_lawyer_review,approval_status)',
+      { count: 'exact' },
+    )
+    .order('title_tr')
+    .limit(100);
+  if (q) request = request.ilike('title_tr', `%${q.replace(/[,%]/g, '')}%`);
+  const { data, count, error } = await request;
+  return (
+    <ResourceList
+      eyebrow="Hukuk"
+      title="Yasal Belgeler"
+      description="Taslak, hukuk incelemesi ve yayın bağımlılıklarını tarihsel sürümleri değiştirmeden yönetin."
+      rows={data ?? []}
+      total={count ?? 0}
+      query={q}
+      error={error ? 'Yasal belgeler okunamadı.' : undefined}
+      columns={[
+        {
+          label: 'Belge',
+          value: (r) => (
+            <>
+              <Link
+                className="font-semibold text-cherie-burgundy hover:underline"
+                href={`/admin/legal/documents/${r.doc_key}/versions`}
+              >
+                {r.title_tr}
+              </Link>
+              <p className="text-xs text-cherie-soft-ink">{r.doc_key}</p>
+            </>
+          ),
+        },
+        { label: 'Sürüm', value: (r) => `${r.legal_document_versions.length} kayıt` },
+        {
+          label: 'Güncel',
+          value: (r) => {
+            const v = r.legal_document_versions.find((x) => x.is_current);
+            return v ? (
+              <StateBadge value={v.lifecycle_state} />
+            ) : (
+              <StateBadge value="missing" />
+            );
+          },
+        },
+        {
+          label: 'Hukuk kontrolü',
+          value: (r) =>
+            r.legal_document_versions.some((x) => x.needs_lawyer_review)
+              ? 'Bekliyor'
+              : 'Hazır',
+        },
+        {
+          label: 'Kamu rotası',
+          value: (r) => (
+            <Link
+              className="text-cherie-burgundy hover:underline"
+              href={`/kurumsal/${r.slug}`}
+              target="_blank"
+            >
+              Önizle
+            </Link>
+          ),
+        },
+      ]}
+    />
+  );
+}

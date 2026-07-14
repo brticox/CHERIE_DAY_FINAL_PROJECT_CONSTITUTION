@@ -61,15 +61,13 @@ export async function createLegalDraft(formData: FormData) {
     redirect(
       `${path(key)}?error=${encodeURIComponent(error?.message ?? 'create_failed')}`,
     );
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'legal.version.imported',
-      entity_type: 'legal_document_version',
-      entity_id: data.id,
-      diff: { document_id: documentId, version, content_hash: hash },
-    });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'legal.version.imported',
+    entity_type: 'legal_document_version',
+    entity_id: data.id,
+    diff: { document_id: documentId, version, content_hash: hash },
+  });
   revalidatePath(path(key));
   redirect(`${path(key)}?saved=1`);
 }
@@ -102,15 +100,13 @@ export async function approveLegalDraft(formData: FormData) {
     .eq('id', id)
     .in('lifecycle_state', ['draft', 'awaiting_review']);
   if (error) redirect(`${path(key)}?error=${encodeURIComponent(error.message)}`);
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'legal.version.approved',
-      entity_type: 'legal_document_version',
-      entity_id: id,
-      diff: { reviewer, reference },
-    });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'legal.version.approved',
+    entity_type: 'legal_document_version',
+    entity_id: id,
+    diff: { reviewer, reference },
+  });
   revalidatePath(path(key));
 }
 export async function publishLegalDraft(formData: FormData) {
@@ -143,13 +139,11 @@ export async function archiveLegalDraft(formData: FormData) {
     .eq('id', id)
     .in('lifecycle_state', ['draft', 'awaiting_review', 'approved']);
   if (error) redirect(`${path(key)}?error=${encodeURIComponent(error.message)}`);
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'legal.version.archived',
-      entity_type: 'legal_document_version',
-      entity_id: id,
-    });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'legal.version.archived',
+    entity_type: 'legal_document_version',
+    entity_id: id,
+  });
   revalidatePath(path(key));
 }

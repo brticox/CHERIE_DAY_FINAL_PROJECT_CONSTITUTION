@@ -29,7 +29,7 @@ export default async function Page({
       db.from('products').select('id,name').is('archived_at', null).order('name'),
       db.from('collections').select('id,name').order('name'),
       db.from('service_packages').select('id,name').order('name'),
-    db.from('service_cities').select('id,city_name').order('city_name'),
+      db.from('service_cities').select('id,city_name').order('city_name'),
       db
         .from('media_assets')
         .select('id,title,alt_text')

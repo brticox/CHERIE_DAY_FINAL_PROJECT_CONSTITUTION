@@ -34,23 +34,19 @@ export async function transitionShipment(formData: FormData) {
   if (next === 'delivered') patch.delivered_at = now;
   const { error } = await db.from('shipments').update(patch).eq('id', id);
   if (error) redirect('/admin/commerce/shipments?error=save');
-  await db
-    .from('tracking_events')
-    .insert({
-      shipment_id: id,
-      status: next,
-      message_tr: `Yönetim durumu: ${next}`,
-      occurred_at: now,
-    });
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'shipment.transitioned',
-      entity_type: 'shipment',
-      entity_id: id,
-      diff: { from: row.status, to: next, order_id: row.order_id },
-    });
+  await db.from('tracking_events').insert({
+    shipment_id: id,
+    status: next,
+    message_tr: `Yönetim durumu: ${next}`,
+    occurred_at: now,
+  });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'shipment.transitioned',
+    entity_type: 'shipment',
+    entity_id: id,
+    diff: { from: row.status, to: next, order_id: row.order_id },
+  });
   revalidatePath('/admin/commerce/shipments');
 }
 export async function createShipment(formData: FormData) {
@@ -91,22 +87,18 @@ export async function recordShipmentException(formData: FormData) {
     })
     .eq('id', id);
   if (error) redirect('/admin/commerce/shipments?error=save');
-  await db
-    .from('tracking_events')
-    .insert({
-      shipment_id: id,
-      status: null,
-      message_tr: `Teslimat istisnası: ${code}${note ? ` · ${note}` : ''}`,
-      occurred_at: now,
-    });
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'shipment.exception.recorded',
-      entity_type: 'shipment',
-      entity_id: id,
-      diff: { code, note },
-    });
+  await db.from('tracking_events').insert({
+    shipment_id: id,
+    status: null,
+    message_tr: `Teslimat istisnası: ${code}${note ? ` · ${note}` : ''}`,
+    occurred_at: now,
+  });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'shipment.exception.recorded',
+    entity_type: 'shipment',
+    entity_id: id,
+    diff: { code, note },
+  });
   revalidatePath('/admin/commerce/shipments');
 }

@@ -16,5 +16,7 @@ export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const { staff } = await requireStaff('/admin');
-  return <AdminShell staff={{ name: staff.name, role: staff.role }}>{children}</AdminShell>;
+  return (
+    <AdminShell staff={{ name: staff.name, role: staff.role }}>{children}</AdminShell>
+  );
 }

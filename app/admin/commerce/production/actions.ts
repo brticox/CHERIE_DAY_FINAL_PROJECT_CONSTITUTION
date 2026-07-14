@@ -35,15 +35,13 @@ export async function transitionProduction(formData: FormData) {
   if (next === 'completed') patch.completed_at = new Date().toISOString();
   const { error } = await db.from('production_jobs').update(patch).eq('id', id);
   if (error) redirect('/admin/commerce/production?error=save');
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'production.transitioned',
-      entity_type: 'production_job',
-      entity_id: id,
-      diff: { from: row.status, to: next },
-    });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'production.transitioned',
+    entity_type: 'production_job',
+    entity_id: id,
+    diff: { from: row.status, to: next },
+  });
   revalidatePath('/admin/commerce/production');
 }
 export async function updateProductionJob(formData: FormData) {
@@ -62,15 +60,13 @@ export async function updateProductionJob(formData: FormData) {
   };
   const { error } = await db.from('production_jobs').update(patch).eq('id', id);
   if (error) redirect('/admin/commerce/production?error=save');
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'production.updated',
-      entity_type: 'production_job',
-      entity_id: id,
-      diff: patch,
-    });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'production.updated',
+    entity_type: 'production_job',
+    entity_id: id,
+    diff: patch,
+  });
   revalidatePath('/admin/commerce/production');
 }
 export async function completeQualityCheck(formData: FormData) {
@@ -78,7 +74,7 @@ export async function completeQualityCheck(formData: FormData) {
   if (!can(staff.role, 'orders.transition'))
     redirect('/admin/commerce/production?error=permission');
   const id = String(formData.get('id'));
-  const labels: [string,string][] = [
+  const labels: [string, string][] = [
     ['print', 'Baskı ve renk'],
     ['personalization', 'Kişiselleştirme doğruluğu'],
     ['packaging', 'Paketleme hazırlığı'],

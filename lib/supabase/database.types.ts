@@ -240,29 +240,38 @@ export type Database = {
       audit_log: {
         Row: {
           action: string
+          context: Json
+          correlation_id: string
           created_at: string
           diff: Json | null
           entity_id: string | null
           entity_type: string | null
           id: string
+          source: string
           staff_user_id: string | null
         }
         Insert: {
           action: string
+          context?: Json
+          correlation_id?: string
           created_at?: string
           diff?: Json | null
           entity_id?: string | null
           entity_type?: string | null
           id?: string
+          source?: string
           staff_user_id?: string | null
         }
         Update: {
           action?: string
+          context?: Json
+          correlation_id?: string
           created_at?: string
           diff?: Json | null
           entity_id?: string | null
           entity_type?: string | null
           id?: string
+          source?: string
           staff_user_id?: string | null
         }
         Relationships: [
@@ -5673,6 +5682,12 @@ export type Database = {
         }
         Relationships: []
       }
+      system_settings: {
+        Row: { id: string; key: string; updated_at: string; updated_by: string | null; value: Json }
+        Insert: { id?: string; key: string; updated_at?: string; updated_by?: string | null; value?: Json }
+        Update: { id?: string; key?: string; updated_at?: string; updated_by?: string | null; value?: Json }
+        Relationships: []
+      }
       suppliers: {
         Row: {
           capability_tags: string[]
@@ -7304,6 +7319,8 @@ export type Database = {
       }
     }
     Functions: {
+      admin_retry_notification: { Args: { p_notification_id: string }; Returns: undefined }
+      admin_update_staff: { Args: { p_is_active: boolean; p_role: Database["public"]["Enums"]["staff_role"]; p_staff_id: string }; Returns: undefined }
       admin_convert_lead: { Args: { p_lead_id: string; p_target: string }; Returns: string }
       admin_update_lead: { Args: { p_assigned_staff_id: string | null; p_lead_id: string; p_lost_reason: string; p_next_follow_up_at: string | null; p_note: string; p_priority: string; p_status: Database["public"]["Enums"]["lead_status"] }; Returns: undefined }
       admin_complete_quality_check: { Args: { p_items: Json; p_job_id: string; p_note: string }; Returns: string }

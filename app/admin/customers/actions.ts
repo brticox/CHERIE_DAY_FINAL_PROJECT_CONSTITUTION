@@ -17,14 +17,12 @@ export async function addCustomerNote(formData: FormData) {
     .from('customer_notes')
     .insert({ customer_id: id, author_staff_id: staff.id, note });
   if (error) redirect(`/admin/customers/${id}?error=save`);
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'customer.note.added',
-      entity_type: 'customer',
-      entity_id: id,
-    });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'customer.note.added',
+    entity_type: 'customer',
+    entity_id: id,
+  });
   revalidatePath(`/admin/customers/${id}`);
 }
 export async function updateCustomerStatus(formData: FormData) {
@@ -42,14 +40,12 @@ export async function updateCustomerStatus(formData: FormData) {
     .single();
   const { error } = await db.from('customers').update({ status }).eq('id', id);
   if (error) redirect(`/admin/customers/${id}?error=save`);
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'customer.status.updated',
-      entity_type: 'customer',
-      entity_id: id,
-      diff: { before, after: { status } },
-    });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'customer.status.updated',
+    entity_type: 'customer',
+    entity_id: id,
+    diff: { before, after: { status } },
+  });
   revalidatePath(`/admin/customers/${id}`);
 }

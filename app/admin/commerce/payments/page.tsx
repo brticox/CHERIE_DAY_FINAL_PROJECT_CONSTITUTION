@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle2, Clock3, CreditCard, XCircle } from 'lucide
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatTRY } from '@/lib/format';
+import { requireStaff } from '@/lib/auth/guards';
 
 type PaymentRow = {
   id: string;
@@ -13,6 +14,17 @@ type PaymentRow = {
   last_error_code?: string | null;
   created_at: string;
   orders: { order_number?: string } | null;
+};
+type PaymentEvent = {
+  id: string;
+  provider: string;
+  event_type: string | null;
+  processing_status: string;
+  signature_valid: boolean;
+  payment_id: string | null;
+  provider_event_id: string | null;
+  error_code: string | null;
+  received_at: string;
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -27,19 +39,44 @@ const STATUS_LABELS: Record<string, string> = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; provider?: string; q?: string }>;
+}) {
+  const filters = await searchParams;
+  await requireStaff('/admin/commerce/payments');
   let rows: PaymentRow[] = [];
+  let events: PaymentEvent[] = [];
   let unavailable = false;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     const admin = createAdminClient();
-    const { data, error } = await admin
+    let query = admin
       .from('payments')
       .select(
         'id,provider,status,amount,currency,provider_conversation_id,last_error_code,created_at,orders(order_number)',
       )
       .order('created_at', { ascending: false })
       .limit(100);
+    if (filters.status) query = query.eq('status', filters.status as never);
+    if (filters.provider) query = query.eq('provider', filters.provider as never);
+    if (filters.q)
+      query = query.ilike(
+        'provider_conversation_id',
+        `%${filters.q.replace(/[,%]/g, '')}%`,
+      );
+    const { data, error } = await query;
     rows = (data ?? []) as PaymentRow[];
+    events =
+      (
+        await admin
+          .from('payment_events')
+          .select(
+            'id,provider,event_type,processing_status,signature_valid,payment_id,provider_event_id,error_code,received_at',
+          )
+          .order('received_at', { ascending: false })
+          .limit(100)
+      ).data ?? [];
     unavailable = Boolean(error);
   } else {
     unavailable = true;
@@ -81,6 +118,36 @@ export default async function Page() {
           tone="error"
         />
       </section>
+      <form className="grid gap-3 rounded-card-lg border border-cherie-lace p-4 md:grid-cols-4">
+        <input
+          name="q"
+          defaultValue={filters.q}
+          placeholder="Sağlayıcı referansı"
+          className="cherie-field"
+        />
+        <select
+          name="status"
+          defaultValue={filters.status ?? ''}
+          className="cherie-field"
+        >
+          <option value="">Tüm durumlar</option>
+          {Object.keys(STATUS_LABELS).map((x) => (
+            <option key={x}>{x}</option>
+          ))}
+        </select>
+        <select
+          name="provider"
+          defaultValue={filters.provider ?? ''}
+          className="cherie-field"
+        >
+          <option value="">Tüm sağlayıcılar</option>
+          <option value="paytr">PayTR</option>
+          <option value="iyzico">Iyzico</option>
+          <option value="bank_transfer">Banka transferi</option>
+          <option value="manual">Manuel kayıt</option>
+        </select>
+        <button className="cherie-button-primary">Filtrele</button>
+      </form>
 
       {unavailable ? (
         <div className="rounded-card-lg border border-cherie-warning/30 bg-cherie-warning/10 p-5 text-sm text-cherie-soft-ink">
@@ -147,6 +214,50 @@ export default async function Page() {
           </div>
         </div>
       )}
+      <section className="rounded-card-lg border border-cherie-lace p-5">
+        <h2 className="font-display text-2xl">Sağlayıcı olayları ve callback durumu</h2>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[760px] text-sm">
+            <thead>
+              <tr>
+                <th className="text-left">Olay</th>
+                <th>İmza</th>
+                <th>Eşleşme</th>
+                <th>İşleme</th>
+                <th>Hata</th>
+                <th>Zaman</th>
+              </tr>
+            </thead>
+            <tbody>
+              {events.map((x) => (
+                <tr key={x.id} className="border-t border-cherie-lace">
+                  <td className="py-3">
+                    {x.provider} · {x.event_type || 'callback'}
+                    <small className="block">
+                      {x.provider_event_id?.slice(0, 12) ?? 'Referans yok'}
+                    </small>
+                  </td>
+                  <td className="text-center">
+                    {x.signature_valid ? 'Geçerli' : 'UYUŞMAZLIK'}
+                  </td>
+                  <td className="text-center">
+                    {x.payment_id ? 'Bağlı' : 'Uygulanmamış'}
+                  </td>
+                  <td className="text-center">{x.processing_status}</td>
+                  <td className="text-center text-cherie-error">{x.error_code ?? '—'}</td>
+                  <td className="text-center">
+                    {new Intl.DateTimeFormat('tr-TR', {
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                      timeZone: 'Europe/Istanbul',
+                    }).format(new Date(x.received_at))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

@@ -16,14 +16,12 @@ export async function updateProofAssignment(formData: FormData) {
   const db = createAdminClient();
   const { error } = await db.from('product_proofs').update(patch).eq('id', id);
   if (error) redirect('/admin/commerce/proofs?error=save');
-  await db
-    .from('audit_log')
-    .insert({
-      staff_user_id: staff.id,
-      action: 'proof.assignment.updated',
-      entity_type: 'product_proof',
-      entity_id: id,
-      diff: patch,
-    });
+  await db.from('audit_log').insert({
+    staff_user_id: staff.id,
+    action: 'proof.assignment.updated',
+    entity_type: 'product_proof',
+    entity_id: id,
+    diff: patch,
+  });
   revalidatePath('/admin/commerce/proofs');
 }
