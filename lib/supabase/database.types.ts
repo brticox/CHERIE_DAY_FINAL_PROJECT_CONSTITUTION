@@ -901,6 +901,12 @@ export type Database = {
         }
         Relationships: []
       }
+      content_revisions: {
+        Row: { action: string; actor_staff_id: string | null; created_at: string; entity_id: string; entity_type: string; id: string; snapshot: Json; version: number }
+        Insert: { action?: string; actor_staff_id?: string | null; created_at?: string; entity_id: string; entity_type: string; id?: string; snapshot: Json; version: number }
+        Update: { action?: string; actor_staff_id?: string | null; created_at?: string; entity_id?: string; entity_type?: string; id?: string; snapshot?: Json; version?: number }
+        Relationships: [{ foreignKeyName: "content_revisions_actor_staff_id_fkey"; columns: ["actor_staff_id"]; isOneToOne: false; referencedRelation: "staff_users"; referencedColumns: ["id"] }]
+      }
       consent_records: {
         Row: {
           checkbox_label_snapshot: string | null
@@ -7253,6 +7259,9 @@ export type Database = {
       }
     }
     Functions: {
+      admin_publish_page: { Args: { p_page_id: string }; Returns: undefined }
+      admin_rollback_page: { Args: { p_page_id: string; p_revision_id: string }; Returns: undefined }
+      admin_save_page: { Args: { p_body: Json; p_page_id: string; p_slug: string; p_title: string }; Returns: Database["public"]["Tables"]["pages"]["Row"] }
       admin_archive_media: { Args: { p_media_id: string }; Returns: undefined }
       admin_archive_product: { Args: { p_product_id: string }; Returns: undefined }
       admin_publish_legal_version: { Args: { p_approval_metadata?: Json; p_version_id: string }; Returns: undefined }
