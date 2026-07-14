@@ -5,7 +5,7 @@ import { z } from 'zod';
 export type CustomerAuthProvider = 'google' | 'apple';
 
 const schema = z.object({
-  APP_ENV: z.enum(['development', 'preview', 'production']).default('development'),
+  APP_ENV: z.enum(['development', 'preview', 'staging', 'production']).default('development'),
   NEXT_PUBLIC_SITE_URL: z.string().url(),
   AUTH_REDIRECT_ORIGINS: z.string().optional(),
   AUTH_GOOGLE_ENABLED: z.enum(['true', 'false']).default('false'),
@@ -23,7 +23,7 @@ export function getAuthConfig() {
   );
   allowedOrigins.add(siteUrl.origin);
 
-  if (value.APP_ENV === 'production') {
+  if (value.APP_ENV !== 'development') {
     if (siteUrl.protocol !== 'https:' || siteUrl.hostname === 'localhost') {
       throw new Error('Üretim kimlik yapılandırması güvenli HTTPS adresi gerektirir.');
     }

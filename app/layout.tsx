@@ -17,6 +17,7 @@ const ui = Inter({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+const isProduction = process.env.APP_ENV === 'production';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -28,6 +29,7 @@ export const metadata: Metadata = {
     'CHERIE DAY; davetiye, dijital davetiye, hediyelik, nişan & söz, organizasyon ve şehir hizmetleriyle Türkiye’ye özel lüks kutlama maison’u.',
   applicationName: 'CHERIE DAY',
   icons: { icon: '/brand/CDD.svg' },
+  robots: isProduction ? undefined : { index: false, follow: false },
 };
 
 export const viewport: Viewport = {

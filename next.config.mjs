@@ -32,6 +32,18 @@ const nextConfig = {
       { source: '/quote-request', destination: '/teklif', permanent: true },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: '/auth/:path*',
+        headers: [{ key: 'Cache-Control', value: 'no-store, max-age=0' }],
+      },
+      {
+        source: '/api/:path*',
+        headers: [{ key: 'Cache-Control', value: 'no-store, max-age=0' }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -7,7 +7,7 @@ import { processNotificationBatch } from '@/lib/notifications/processor';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request) {
+async function handleNotificationWorker(request: Request) {
   if (!authorized(request.headers.get('authorization'))) {
     return NextResponse.json({ ok: false, code: 'unauthorized' }, { status: 401 });
   }
@@ -22,8 +22,14 @@ export async function POST(request: Request) {
   }
 }
 
+export const POST = handleNotificationWorker;
+export const GET = handleNotificationWorker;
+
 function authorized(header: string | null) {
-  const secret = process.env.NOTIFICATION_WORKER_SECRET ?? process.env.INTERNAL_CRON_SECRET;
+  const secret =
+    process.env.NOTIFICATION_WORKER_SECRET ??
+    process.env.INTERNAL_CRON_SECRET ??
+    process.env.CRON_SECRET;
   const token = header?.startsWith('Bearer ') ? header.slice(7) : '';
   if (!secret || !token) return false;
   const left = Buffer.from(secret);

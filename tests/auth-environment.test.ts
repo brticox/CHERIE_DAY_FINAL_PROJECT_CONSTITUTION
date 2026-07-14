@@ -23,6 +23,12 @@ describe('kimlik ortam yapılandırması', () => {
     expect(() => getAuthConfig()).toThrow();
   });
 
+  it('staging ortamında HTTP ve localhost adresini reddeder', () => {
+    vi.stubEnv('APP_ENV', 'staging');
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000');
+    expect(() => getAuthConfig()).toThrow();
+  });
+
   it('callback adresine yalnız güvenli iç sonraki yolu taşır', () => {
     vi.stubEnv('APP_ENV', 'preview');
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://staging.example.test');

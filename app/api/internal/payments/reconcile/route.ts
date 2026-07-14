@@ -6,7 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export async function POST(request: Request) {
+async function reconcile(request: Request) {
   if (!authorizeInternalRequest(request.headers.get('authorization')))
     return NextResponse.json({ ok: false, code: 'unauthorized' }, { status: 401 });
   const admin = createAdminClient();
@@ -28,3 +28,6 @@ export async function POST(request: Request) {
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }
+
+export const POST = reconcile;
+export const GET = reconcile;
