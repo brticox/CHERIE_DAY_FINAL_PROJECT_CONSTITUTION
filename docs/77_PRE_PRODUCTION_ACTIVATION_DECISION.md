@@ -2,6 +2,6 @@
 
 Decision: **not approved**.
 
-Production deployment, Google/Apple activation, transactional email, real-money payments, and Phase 4 must remain disabled. Preconditions missing are Cloudflare/registrar authority, Vercel project/domain configuration, separate Staging Supabase project, deployed/migrated Staging validation, Resend DNS verification/webhook proof, Sentry project/alerts, Google Workspace ownership evidence, and provider console access.
+Production deployment, Google/Apple activation, transactional email, real-money payments, and Phase 4 must remain disabled. Preconditions missing are live registrar delegation to Cloudflare, Vercel project/domain configuration, a separate Staging Supabase project, deployed/migrated Staging validation, Resend webhook proof, Sentry project/alerts, and Google provider-console access. Supabase Staging creation is presently blocked by the two-active-free-project limit for owner `brticox`.
 
-Exact next step: grant Cloudflare Zone:Edit/Create access or configure the documented DNS records at Squarespace, then confirm the recurring Supabase Staging project cost and organization `wqtfqhzywcnktkakaqvz`.
+Exact next step: either upgrade `brticox's Org` or explicitly approve pausing/deleting a named unrelated Supabase project, then create `CHERIE DAY Staging` in `eu-central-1`. Separately, change registrar delegation from Squarespace nameservers to Cloudflare's assigned nameservers before treating Cloudflare DNS as live.
