@@ -1,0 +1,176 @@
+.admin-root {
+  --admin-canvas: rgb(var(--cherie-ivory-rgb) / 1);
+  --admin-surface: rgb(255 253 249 / 0.92);
+  --admin-surface-muted: rgb(var(--cherie-paper-rgb) / 0.72);
+  --admin-line: rgb(var(--cherie-lace-rgb) / 0.82);
+  --admin-line-strong: rgb(var(--cherie-brass-rgb) / 0.58);
+  --admin-text: rgb(var(--cherie-ink-rgb) / 1);
+  --admin-text-muted: rgb(var(--cherie-soft-ink-rgb) / 1);
+  --admin-focus: rgb(var(--cherie-focus-rgb) / 1);
+  --admin-shadow-surface: 0 20px 60px rgb(var(--cherie-ink-rgb) / 0.08);
+  --admin-motion-fast: 140ms;
+  --admin-motion-base: 260ms;
+  --admin-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  min-height: 100dvh;
+  background:
+    radial-gradient(
+      circle at 74% -6%,
+      rgb(var(--cherie-brass-rgb) / 0.085),
+      transparent 28rem
+    ),
+    var(--admin-canvas);
+  color: var(--admin-text);
+  font-family: var(--font-ui);
+}
+
+.admin-root :is(button, a, summary, select, input[type='checkbox'], input[type='radio']) {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.admin-root :is(button, a, [role='button']) {
+  transition:
+    color var(--admin-motion-fast) var(--admin-ease),
+    background-color var(--admin-motion-fast) var(--admin-ease),
+    border-color var(--admin-motion-fast) var(--admin-ease),
+    opacity var(--admin-motion-fast) var(--admin-ease),
+    box-shadow var(--admin-motion-fast) var(--admin-ease),
+    transform var(--admin-motion-fast) var(--admin-ease);
+}
+.admin-root :is(button, a, [role='button']):active:not(:disabled) {
+  transform: translateY(1px);
+}
+.admin-root :is(button, input, select, textarea, a, summary):focus-visible {
+  outline: 2px solid var(--admin-focus);
+  outline-offset: 3px;
+}
+.admin-root :is(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+}
+.admin-root input[readonly],
+.admin-root textarea[readonly] {
+  background: var(--admin-surface-muted);
+  color: var(--admin-text-muted);
+}
+.admin-main {
+  min-width: 0;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.32), transparent 18rem);
+}
+.admin-main > * {
+  animation: admin-enter var(--admin-motion-base) var(--admin-ease) both;
+}
+.admin-number,
+.admin-root :is(table, time, [data-admin-number]) {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
+}
+.admin-surface {
+  border: 1px solid var(--admin-line);
+  border-radius: 18px;
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow-surface);
+}
+.admin-root table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.admin-root thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.admin-root th {
+  color: var(--admin-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.admin-root tbody tr {
+  transition: background-color var(--admin-motion-fast) var(--admin-ease);
+}
+.admin-root tbody tr:hover {
+  background: rgb(var(--cherie-paper-rgb) / 0.58);
+}
+.admin-root .cherie-field {
+  min-height: 3rem;
+  border-color: var(--admin-line);
+  background: rgb(255 253 249 / 0.9);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.8) inset;
+}
+.admin-root .cherie-field:hover {
+  border-color: var(--admin-line-strong);
+}
+.admin-root .cherie-field:focus-visible {
+  border-color: var(--admin-focus);
+  box-shadow: 0 0 0 3px rgb(var(--cherie-focus-rgb) / 0.13);
+  outline: none;
+}
+.admin-root .cherie-button-primary {
+  box-shadow: 0 10px 26px rgb(var(--cherie-burgundy-rgb) / 0.16);
+}
+.admin-eyebrow {
+  color: rgb(var(--cherie-focus-rgb) / 1);
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.admin-page-title {
+  max-width: 20ch;
+  color: var(--admin-text);
+  font-family: var(--font-display);
+  font-size: clamp(2.35rem, 3.6vw, 4.75rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+}
+.admin-section-title {
+  color: var(--admin-text);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 2.2vw, 2.65rem);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+}
+.admin-mobile-entity {
+  border-top: 1px solid var(--admin-line);
+  padding-block: 1rem;
+}
+.admin-mobile-entity:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.admin-mobile-entity:last-child {
+  padding-bottom: 0;
+}
+@keyframes admin-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 767px) {
+  .admin-page-title {
+    max-width: 16ch;
+    font-size: clamp(2.25rem, 11vw, 3.45rem);
+  }
+  .admin-root :is(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+    font-size: 1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-root *,
+  .admin-root *::before,
+  .admin-root *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
