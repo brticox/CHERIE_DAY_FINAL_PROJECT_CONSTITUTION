@@ -2898,6 +2898,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          assigned_staff_id: string | null
           balance_amount: number | null
           billing_address_snapshot: Json | null
           checkout_session_id: string | null
@@ -2925,6 +2926,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_staff_id?: string | null
           balance_amount?: number | null
           billing_address_snapshot?: Json | null
           checkout_session_id?: string | null
@@ -2952,6 +2954,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_staff_id?: string | null
           balance_amount?: number | null
           billing_address_snapshot?: Json | null
           checkout_session_id?: string | null
@@ -3721,9 +3724,11 @@ export type Database = {
       product_proofs: {
         Row: {
           approved_at: string | null
+          assigned_staff_id: string | null
           created_at: string
           created_by: string | null
           customer_comment: string | null
+          due_at: string | null
           file_name: string | null
           file_size_bytes: number | null
           id: string
@@ -3739,9 +3744,11 @@ export type Database = {
         }
         Insert: {
           approved_at?: string | null
+          assigned_staff_id?: string | null
           created_at?: string
           created_by?: string | null
           customer_comment?: string | null
+          due_at?: string | null
           file_name?: string | null
           file_size_bytes?: number | null
           id?: string
@@ -3757,9 +3764,11 @@ export type Database = {
         }
         Update: {
           approved_at?: string | null
+          assigned_staff_id?: string | null
           created_at?: string
           created_by?: string | null
           customer_comment?: string | null
+          due_at?: string | null
           file_name?: string | null
           file_size_bytes?: number | null
           id?: string
@@ -3943,6 +3952,9 @@ export type Database = {
           due_at: string | null
           id: string
           internal_note: string | null
+          material_ready: boolean
+          blocker: string | null
+          paused_at: string | null
           order_id: string
           order_item_id: string
           priority: number
@@ -3958,6 +3970,9 @@ export type Database = {
           due_at?: string | null
           id?: string
           internal_note?: string | null
+          material_ready?: boolean
+          blocker?: string | null
+          paused_at?: string | null
           order_id: string
           order_item_id: string
           priority?: number
@@ -3973,6 +3988,9 @@ export type Database = {
           due_at?: string | null
           id?: string
           internal_note?: string | null
+          material_ready?: boolean
+          blocker?: string | null
+          paused_at?: string | null
           order_id?: string
           order_item_id?: string
           priority?: number
@@ -5477,9 +5495,12 @@ export type Database = {
           carrier_name: string | null
           created_at: string
           delivered_at: string | null
+          exception_code: string | null
+          failed_delivery_at: string | null
           id: string
           internal_note: string | null
           order_id: string
+          package_count: number
           shipped_at: string | null
           shipping_method_id: string | null
           status: Database["public"]["Enums"]["shipment_status"]
@@ -5489,9 +5510,12 @@ export type Database = {
           carrier_name?: string | null
           created_at?: string
           delivered_at?: string | null
+          exception_code?: string | null
+          failed_delivery_at?: string | null
           id?: string
           internal_note?: string | null
           order_id: string
+          package_count?: number
           shipped_at?: string | null
           shipping_method_id?: string | null
           status?: Database["public"]["Enums"]["shipment_status"]
@@ -5501,9 +5525,12 @@ export type Database = {
           carrier_name?: string | null
           created_at?: string
           delivered_at?: string | null
+          exception_code?: string | null
+          failed_delivery_at?: string | null
           id?: string
           internal_note?: string | null
           order_id?: string
+          package_count?: number
           shipped_at?: string | null
           shipping_method_id?: string | null
           status?: Database["public"]["Enums"]["shipment_status"]
@@ -7259,6 +7286,9 @@ export type Database = {
       }
     }
     Functions: {
+      admin_complete_quality_check: { Args: { p_items: Json; p_job_id: string; p_note: string }; Returns: string }
+      admin_create_shipment: { Args: { p_carrier: string; p_internal_note: string; p_order_id: string; p_package_count: number; p_tracking: string }; Returns: string }
+      admin_update_order_operations: { Args: { p_assigned_staff_id: string | null; p_customer_note: string; p_internal_note: string; p_order_id: string }; Returns: undefined }
       admin_publish_page: { Args: { p_page_id: string }; Returns: undefined }
       admin_rollback_page: { Args: { p_page_id: string; p_revision_id: string }; Returns: undefined }
       admin_save_page: { Args: { p_body: Json; p_page_id: string; p_slug: string; p_title: string }; Returns: Database["public"]["Tables"]["pages"]["Row"] }

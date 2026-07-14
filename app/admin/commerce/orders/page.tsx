@@ -5,11 +5,19 @@ import { formatTRY } from '@/lib/format';
 import { orderStatusLabel, paymentStatusLabel } from '@/lib/orders/presentation';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
+import { SavedOrderViews } from '@/components/admin/saved-order-views';
+import { requireStaff } from '@/lib/auth/guards';
 
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 export const dynamic = 'force-dynamic';
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; status?: string; payment?: string; view?: string }>;
+}) {
+  await requireStaff('/admin/commerce/orders');
+  const filters = await searchParams;
   let orders: OrderRow[] = [];
   let unavailable = false;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -22,6 +30,18 @@ export default async function Page() {
     unavailable = Boolean(error);
   } else unavailable = true;
 
+  orders = orders.filter(
+    (order) =>
+      (!filters.q ||
+        order.order_number.toLowerCase().includes(filters.q.toLowerCase())) &&
+      (!filters.status || order.status === filters.status) &&
+      (!filters.payment || order.payment_status === filters.payment) &&
+      (!filters.view ||
+        filters.view !== 'action' ||
+        ['pending_payment', 'revision_requested', 'quality_check'].includes(
+          order.status,
+        )),
+  );
   const active = orders.filter(
     (order) => !['completed', 'cancelled', 'refunded'].includes(order.status),
   );
@@ -48,6 +68,65 @@ export default async function Page() {
         <Metric icon={PackageCheck} label="Üretim / kalite" value={production.length} />
         <Metric icon={Truck} label="Kargo / teslimat" value={shipping.length} />
       </section>
+      <form className="grid gap-3 rounded-card-lg border border-cherie-lace bg-white/60 p-4 md:grid-cols-5">
+        <input
+          name="q"
+          defaultValue={filters.q}
+          placeholder="Sipariş no ara"
+          className="cherie-field"
+        />
+        <select
+          name="status"
+          defaultValue={filters.status ?? ''}
+          className="cherie-field"
+        >
+          <option value="">Tüm durumlar</option>
+          {[
+            'pending_payment',
+            'paid',
+            'in_design',
+            'proof_sent',
+            'revision_requested',
+            'proof_approved',
+            'in_production',
+            'quality_check',
+            'packed',
+            'shipped',
+            'delivered',
+            'completed',
+            'cancelled',
+          ].map((x) => (
+            <option key={x} value={x}>
+              {orderStatusLabel(x as Database['public']['Enums']['order_status'])}
+            </option>
+          ))}
+        </select>
+        <select
+          name="payment"
+          defaultValue={filters.payment ?? ''}
+          className="cherie-field"
+        >
+          <option value="">Tüm ödemeler</option>
+          {[
+            'pending',
+            'paid',
+            'failed',
+            'cancelled',
+            'refunded',
+            'partially_refunded',
+          ].map((x) => (
+            <option key={x} value={x}>
+              {paymentStatusLabel(x as Database['public']['Enums']['payment_status'])}
+            </option>
+          ))}
+        </select>
+        <select name="view" defaultValue={filters.view ?? ''} className="cherie-field">
+          <option value="">Standart görünüm</option>
+          <option value="action">Aksiyon gerekenler</option>
+        </select>
+        <button className="cherie-button-primary">Filtrele</button>
+      </form>
+      <SavedOrderViews />
       {unavailable ? (
         <Notice />
       ) : orders.length === 0 ? (
