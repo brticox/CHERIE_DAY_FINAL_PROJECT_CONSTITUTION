@@ -104,7 +104,10 @@ export async function prepareCheckoutAction(
   const { data: legalRows } = await admin
     .from('legal_document_versions')
     .select('id, version, legal_documents!inner(doc_key)')
-    .eq('is_current', true);
+    .eq('is_current', true)
+    .eq('lifecycle_state', 'published')
+    .eq('approval_status', 'approved')
+    .eq('needs_lawyer_review', false);
   type LegalRow = { id: string; version: string; legal_documents: { doc_key: string } };
   const legalVersions = Object.fromEntries(
     (legalRows ?? []).map((row: LegalRow) => [

@@ -20,6 +20,7 @@ export default async function Page({
   if (!detail) notFound();
   const { order, items, events, shipments, proofs } = detail;
   const proofMessage = proofFeedback((await searchParams).proof);
+  const legalVersions = orderLegalVersions(order.legal_snapshot);
   return (
     <div className="cherie-container py-12 md:py-16">
       <Link
@@ -118,6 +119,22 @@ export default async function Page({
               </p>
             ))}
           </Section>
+          {legalVersions.length > 0 && (
+            <Section title="Kabul ettiğiniz metinler" icon={CheckCircle2}>
+              <ul className="space-y-3 text-sm">
+                {legalVersions.map((version) => (
+                  <li key={version.id}>
+                    <Link
+                      href={`/hesap/siparisler/${order.order_number}/yasal/${version.id}`}
+                      className="font-semibold text-cherie-burgundy hover:underline"
+                    >
+                      {legalDocumentLabel(version.key)} · {version.version}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
           {proofs.length > 0 && (
             <Section title="Tasarım onayı" icon={CheckCircle2}>
               {proofMessage && (
@@ -185,6 +202,27 @@ export default async function Page({
       </div>
     </div>
   );
+}
+
+function orderLegalVersions(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
+  return Object.entries(value).flatMap(([key, entry]) => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return [];
+    const record = entry as { id?: unknown; version?: unknown };
+    return typeof record.id === 'string' && typeof record.version === 'string'
+      ? [{ key, id: record.id, version: record.version }]
+      : [];
+  });
+}
+
+function legalDocumentLabel(key: string) {
+  const labels: Record<string, string> = {
+    on_bilgilendirme: 'Ön Bilgilendirme Formu',
+    mesafeli_satis: 'Mesafeli Satış Sözleşmesi',
+    kvkk_aydinlatma: 'KVKK Aydınlatma Metni',
+    kisisellestirilmis_urun: 'Kişiselleştirilmiş Ürün Şartları',
+  };
+  return labels[key] ?? key;
 }
 
 function proofFeedback(value?: string) {

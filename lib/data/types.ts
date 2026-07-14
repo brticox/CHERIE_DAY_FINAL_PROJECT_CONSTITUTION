@@ -214,6 +214,7 @@ export interface LegalDocument {
   body_tr: string;
   needs_lawyer_review: boolean;
   effective_from: string | null;
+  publication_state: 'placeholder' | 'review' | 'published';
 }
 
 export type SearchEntityType =

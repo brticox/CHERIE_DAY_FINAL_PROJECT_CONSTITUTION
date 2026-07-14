@@ -4,6 +4,8 @@ import { ROUTES } from '@/lib/data/routes';
 
 /** Legal document layout (docs/24). Flags placeholder text awaiting lawyer review. */
 export function LegalLayout({ document }: { document: LegalDocument }) {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const unavailable = document.publication_state !== 'published';
   return (
     <article className="cherie-container max-w-3xl py-16">
       <Breadcrumbs
@@ -16,17 +18,21 @@ export function LegalLayout({ document }: { document: LegalDocument }) {
 
       <h1 className="text-h2 text-cherie-ink">{document.title_tr}</h1>
 
-      {document.needs_lawyer_review && (
+      {unavailable && (
         <p className="mt-4 rounded-card border border-cherie-warning/40 bg-cherie-warning/10 px-4 py-3 text-sm text-cherie-soft-ink">
-          Bu metin yer tutucudur ve yürürlüğe girmeden önce hukuk danışmanı onayından geçecektir.
+          {isProduction
+            ? 'Bu belgenin onaylı güncel sürümü henüz yayımlanmamıştır. İşlem yapmadan önce destek ekibimizle iletişime geçebilirsiniz.'
+            : 'İnceleme görünümü: Bu metin yer tutucudur ve hukuk danışmanı onayından geçmemiştir.'}
         </p>
       )}
 
-      <div className="prose-cherie mt-8 space-y-4 text-cherie-soft-ink">
-        {document.body_tr.split('\n\n').map((para, i) => (
-          <p key={i} className="leading-relaxed">{para}</p>
-        ))}
-      </div>
+      {(!isProduction || !unavailable) && (
+        <div className="prose-cherie mt-8 space-y-4 text-cherie-soft-ink">
+          {document.body_tr.split('\n\n').map((para, i) => (
+            <p key={i} className="leading-relaxed">{para}</p>
+          ))}
+        </div>
+      )}
     </article>
   );
 }

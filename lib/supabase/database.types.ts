@@ -2220,36 +2220,63 @@ export type Database = {
       }
       legal_document_versions: {
         Row: {
+          approval_status: string
           body: Json
+          content_hash: string | null
           created_at: string
           effective_from: string | null
           id: string
           is_current: boolean
           legal_document_id: string
+          lifecycle_state: string
+          locale: string
+          needs_lawyer_review: boolean
           published_at: string | null
           published_by: string | null
+          source_metadata: Json
+          summary: string | null
+          supersedes_version_id: string | null
+          updated_at: string
           version: string
         }
         Insert: {
+          approval_status?: string
           body?: Json
+          content_hash?: string | null
           created_at?: string
           effective_from?: string | null
           id?: string
           is_current?: boolean
           legal_document_id: string
+          lifecycle_state?: string
+          locale?: string
+          needs_lawyer_review?: boolean
           published_at?: string | null
           published_by?: string | null
+          source_metadata?: Json
+          summary?: string | null
+          supersedes_version_id?: string | null
+          updated_at?: string
           version: string
         }
         Update: {
+          approval_status?: string
           body?: Json
+          content_hash?: string | null
           created_at?: string
           effective_from?: string | null
           id?: string
           is_current?: boolean
           legal_document_id?: string
+          lifecycle_state?: string
+          locale?: string
+          needs_lawyer_review?: boolean
           published_at?: string | null
           published_by?: string | null
+          source_metadata?: Json
+          summary?: string | null
+          supersedes_version_id?: string | null
+          updated_at?: string
           version?: string
         }
         Relationships: [
@@ -6204,10 +6231,14 @@ export type Database = {
       legal_documents_public: {
         Row: {
           body: Json | null
+          content_hash: string | null
           doc_key: Database["public"]["Enums"]["legal_doc_key"] | null
           document_id: string | null
           effective_from: string | null
+          locale: string | null
+          published_at: string | null
           slug: string | null
+          summary: string | null
           title_tr: string | null
           version: string | null
           version_id: string | null
