@@ -30,12 +30,25 @@ import { ADMIN_NAVIGATION, type AdminNavGroup } from '@/lib/admin/navigation';
 import { can, roleLabel } from '@/lib/admin/permissions';
 
 type Props = { children: React.ReactNode; staff: { name: string; role: string } };
-type PaletteItem = { key: string; label: string; hint?: string; href: string; group: string };
+type PaletteItem = {
+  key: string;
+  label: string;
+  hint?: string;
+  href: string;
+  group: string;
+};
 type IconType = React.ComponentType<{ className?: string }>;
 
 const routePath = (href: string) => href.split('?')[0] ?? href;
 const routeQuery = (href: string) => href.split('?')[1];
 const GROUP_ORDER = ['Sayfalar', 'Siparişler', 'Ürünler', 'Müşteriler'];
+const PRIMARY_ROUTES = new Set([
+  '/admin/dashboard',
+  '/admin/commerce/orders',
+  '/admin/commerce/production',
+  '/admin/commerce/products',
+  '/admin/crm/leads',
+]);
 
 function matchesNavItem(href: string, pathname: string, query: string) {
   const base = routePath(href);
@@ -43,7 +56,9 @@ function matchesNavItem(href: string, pathname: string, query: string) {
   if (itemQuery) {
     return pathname === base && new URLSearchParams(itemQuery).toString() === query;
   }
-  return pathname === base || (href !== '/admin/dashboard' && pathname.startsWith(`${base}/`));
+  return (
+    pathname === base || (href !== '/admin/dashboard' && pathname.startsWith(`${base}/`))
+  );
 }
 
 // One restrained icon per top-level group — clarifies hierarchy without noise.
@@ -79,6 +94,7 @@ export function AdminShell({ children, staff }: Props) {
   const [drawer, setDrawer] = useState(false);
   const [palette, setPalette] = useState(false);
   const drawerTrigger = useRef<HTMLButtonElement>(null);
+  const drawerPanel = useRef<HTMLElement>(null);
   const paletteTrigger = useRef<HTMLElement | null>(null);
   const groups = useMemo(
     () => ADMIN_NAVIGATION.filter((group) => can(staff.role, group.capability)),
@@ -112,6 +128,22 @@ export function AdminShell({ children, staff }: Props) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  useEffect(() => {
+    if (!drawer) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => {
+      drawerPanel.current
+        ?.querySelector<HTMLElement>(
+          'button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        )
+        ?.focus();
+    });
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [drawer]);
 
   const env = process.env.NODE_ENV === 'production' ? 'Canlı' : 'Yerel';
 
@@ -165,7 +197,11 @@ export function AdminShell({ children, staff }: Props) {
               }}
               aria-label={drawerMode ? 'Menüyü kapat' : 'Menüyü daralt'}
             >
-              {drawerMode ? <X className="size-5" /> : <PanelLeftClose className="size-5" />}
+              {drawerMode ? (
+                <X className="size-5" />
+              ) : (
+                <PanelLeftClose className="size-5" />
+              )}
             </button>
           )}
         </div>
@@ -205,7 +241,10 @@ export function AdminShell({ children, staff }: Props) {
         {/* Pinned identity footer */}
         <div className="shrink-0 border-t border-white/15 p-3">
           {isCollapsed ? (
-            <div className="flex flex-col items-center gap-2" title={`${staff.name} · ${roleLabel(staff.role)}`}>
+            <div
+              className="flex flex-col items-center gap-2"
+              title={`${staff.name} · ${roleLabel(staff.role)}`}
+            >
               <span className="grid size-9 place-items-center rounded-full bg-cherie-brass/20 text-xs font-semibold text-cherie-brass">
                 {initials(staff.name)}
               </span>
@@ -222,7 +261,9 @@ export function AdminShell({ children, staff }: Props) {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-white">{staff.name}</p>
-                <p className="truncate text-xs font-medium leading-5 text-cherie-lace">{roleLabel(staff.role)}</p>
+                <p className="truncate text-xs font-medium leading-5 text-cherie-lace">
+                  {roleLabel(staff.role)}
+                </p>
               </div>
               <span className="rounded-full border border-cherie-warning/40 bg-cherie-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cherie-warning">
                 {env}
@@ -236,11 +277,13 @@ export function AdminShell({ children, staff }: Props) {
 
   const breadcrumb = groups
     .flatMap((group) => group.items.map((item) => ({ ...item, group: group.label })))
-    .sort((a, b) => Number(Boolean(routeQuery(b.href))) - Number(Boolean(routeQuery(a.href))))
+    .sort(
+      (a, b) => Number(Boolean(routeQuery(b.href))) - Number(Boolean(routeQuery(a.href))),
+    )
     .find((item) => matchesNavItem(item.href, pathname, query));
 
   return (
-    <div className="min-h-dvh bg-cherie-ivory text-cherie-ink">
+    <div data-admin-root className="admin-root min-h-dvh bg-cherie-ivory text-cherie-ink">
       <a
         href="#admin-content"
         className="fixed left-3 top-3 z-[100] -translate-y-24 rounded-control bg-cherie-velvet px-4 py-3 text-sm text-white focus:translate-y-0"
@@ -248,7 +291,7 @@ export function AdminShell({ children, staff }: Props) {
         Ana içeriğe geç
       </a>
       <aside
-        className={`fixed inset-y-0 left-0 z-40 hidden bg-cherie-velvet shadow-lift transition-[width] duration-drawer ease-cherie md:block ${collapsed ? 'w-20' : 'w-72'}`}
+        className={`fixed inset-y-0 left-0 z-40 hidden bg-cherie-velvet shadow-lift md:block ${collapsed ? 'w-20' : 'w-72'}`}
       >
         {sidebar(false)}
       </aside>
@@ -259,14 +302,18 @@ export function AdminShell({ children, staff }: Props) {
             className="absolute inset-0 bg-cherie-ink/55"
             onClick={() => setDrawer(false)}
           />
-          <aside className="relative h-full w-[min(88vw,320px)] bg-cherie-velvet">
+          <aside
+            ref={drawerPanel}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Yönetim menüsü"
+            className="relative h-full w-[min(88vw,320px)] bg-cherie-velvet shadow-lift"
+          >
             {sidebar(true)}
           </aside>
         </div>
       )}
-      <div
-        className={`transition-[padding] duration-drawer ease-cherie ${collapsed ? 'md:pl-20' : 'md:pl-72'}`}
-      >
+      <div className={collapsed ? 'md:pl-20' : 'md:pl-72'}>
         <header className="sticky top-0 z-30 flex min-h-20 items-center gap-3 border-b border-cherie-lace/80 bg-cherie-ivory/95 px-4 backdrop-blur md:px-7">
           <button
             ref={drawerTrigger}
@@ -301,15 +348,27 @@ export function AdminShell({ children, staff }: Props) {
           >
             <Search className="size-5" />
           </button>
-          <button
-            className="relative grid size-11 place-items-center rounded-control border border-cherie-lace"
-            aria-label="Operasyon bildirimleri"
+          <Link
+            href="/admin/marketing/notifications"
+            className="relative grid size-11 place-items-center rounded-control border border-cherie-lace bg-white/45 text-cherie-soft-ink hover:border-cherie-brass hover:bg-white hover:text-cherie-burgundy"
+            aria-label="Bildirim merkezini aç"
           >
             <Bell className="size-5" />
-            <span className="absolute right-2 top-2 size-2 rounded-full bg-cherie-cherry" />
-          </button>
+          </Link>
+          <div className="hidden min-w-0 border-l border-cherie-lace pl-3 xl:block">
+            <p className="max-w-40 truncate text-sm font-semibold text-cherie-ink">
+              {staff.name}
+            </p>
+            <p className="max-w-40 truncate text-xs text-cherie-soft-ink">
+              {roleLabel(staff.role)}
+            </p>
+          </div>
         </header>
-        <main id="admin-content" tabIndex={-1} className="min-h-[calc(100dvh-5rem)]">
+        <main
+          id="admin-content"
+          tabIndex={-1}
+          className="admin-main min-h-[calc(100dvh-5rem)]"
+        >
           {children}
         </main>
       </div>
@@ -337,9 +396,12 @@ function NavGroup({
 }) {
   const [open, setOpen] = useState(initiallyOpen);
   const Icon = GROUP_ICONS[group.label] ?? LayoutDashboard;
-  const groupActive = group.items.some((item) => matchesNavItem(item.href, pathname, query));
+  const groupActive = group.items.some((item) =>
+    matchesNavItem(item.href, pathname, query),
+  );
   const specificMatch = group.items.some(
-    (item) => Boolean(routeQuery(item.href)) && matchesNavItem(item.href, pathname, query),
+    (item) =>
+      Boolean(routeQuery(item.href)) && matchesNavItem(item.href, pathname, query),
   );
 
   if (collapsed) {
@@ -376,7 +438,8 @@ function NavGroup({
       {open && (
         <ul className="mb-1.5 mt-1 space-y-1">
           {group.items.map((item, itemIndex) => {
-            const active = matchesNavItem(item.href, pathname, query) &&
+            const active =
+              matchesNavItem(item.href, pathname, query) &&
               (Boolean(routeQuery(item.href)) || !specificMatch);
             return (
               <li key={item.href}>
@@ -388,7 +451,7 @@ function NavGroup({
                     active
                       ? 'border-cherie-brass bg-white/10 font-semibold text-white'
                       : 'border-transparent text-cherie-lace hover:border-white/25 hover:bg-white/5 hover:text-white'
-                  } ${itemIndex === 0 ? 'font-semibold' : 'font-medium'}`}
+                  } ${PRIMARY_ROUTES.has(routePath(item.href)) || itemIndex === 0 ? 'font-semibold' : 'font-medium'}`}
                 >
                   {item.label}
                 </Link>
@@ -423,7 +486,9 @@ function CommandPalette({
     return navGroups
       .flatMap((group) => group.items)
       .filter((item) =>
-        `${item.label} ${item.keywords?.join(' ') ?? ''}`.toLocaleLowerCase('tr').includes(q),
+        `${item.label} ${item.keywords?.join(' ') ?? ''}`
+          .toLocaleLowerCase('tr')
+          .includes(q),
       )
       .slice(0, q ? 8 : 6)
       .map((item) => ({
@@ -520,7 +585,11 @@ function CommandPalette({
       aria-modal="true"
       aria-label="Komut paleti"
     >
-      <button aria-label="Komut paletini kapat" className="absolute inset-0" onClick={onClose} />
+      <button
+        aria-label="Komut paletini kapat"
+        className="absolute inset-0"
+        onClick={onClose}
+      />
       <div className="relative w-full max-w-2xl overflow-hidden rounded-card-lg border border-cherie-lace bg-cherie-ivory shadow-lift">
         <div className="flex items-center gap-3 border-b border-cherie-lace px-4">
           <Command className="size-5 text-cherie-brass" />
@@ -579,7 +648,9 @@ function CommandPalette({
                     >
                       <span className="min-w-0 flex-1 truncate">{item.label}</span>
                       {item.hint && (
-                        <span className="shrink-0 text-xs text-cherie-soft-ink">{item.hint}</span>
+                        <span className="shrink-0 text-xs text-cherie-soft-ink">
+                          {item.hint}
+                        </span>
                       )}
                       {index === active && (
                         <CornerDownLeft className="size-3.5 shrink-0 text-cherie-brass" />
