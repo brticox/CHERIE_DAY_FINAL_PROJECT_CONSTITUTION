@@ -42,6 +42,8 @@ alter table public.payment_events
       'currency_mismatch','ignored_conflict','orphaned','failed'
     )),
   add column if not exists payload_digest text;
+create index if not exists payment_events_payment_received_idx
+  on public.payment_events (payment_id, received_at desc);
 
 alter table public.refunds
   add column if not exists amount_minor bigint,
