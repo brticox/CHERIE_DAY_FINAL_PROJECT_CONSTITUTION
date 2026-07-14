@@ -1,9 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { CheckCircle2, CircleAlert } from 'lucide-react';
 import { ProductForm } from '@/components/admin/product-form';
 import { ProductConfiguration } from '@/components/admin/product-configuration';
 import { ProductMediaManager } from '@/components/admin/product-media-manager';
 import { AdminDate } from '@/components/admin/resource-list';
+import { AdminPageHeader, AdminStatus } from '@/components/admin/admin-workspace';
+import { adminEventLabel } from '@/lib/admin/presentation';
 import { requireCapability } from '@/lib/auth/guards';
 import { can } from '@/lib/admin/permissions';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -17,7 +20,10 @@ export default async function EditProductPage({
 }) {
   const { id } = await params;
   const state = await searchParams;
-  const { staff } = await requireCapability('catalog.read', `/admin/commerce/products/${id}`);
+  const { staff } = await requireCapability(
+    'catalog.read',
+    `/admin/commerce/products/${id}`,
+  );
   const db = createAdminClient();
   const [
     productQ,
@@ -87,32 +93,63 @@ export default async function EditProductPage({
     ],
     ['Medya', product.media_ids.length > 0],
   ] as const;
+  const readinessScore = Math.round(
+    (readiness.filter(([, ready]) => ready).length / readiness.length) * 100,
+  );
   return (
-    <div className="mx-auto max-w-[1380px] space-y-6 p-4 md:p-7 xl:p-9">
-      <header>
-        <Link
-          href="/admin/commerce/products"
-          className="text-sm text-cherie-burgundy hover:underline"
-        >
-          ← Ürünlere dön
-        </Link>
-        <div className="mt-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
-              Ürün kaydı
-            </p>
-            <h1 className="font-display text-4xl">{product.name}</h1>
+    <div className="mx-auto max-w-[1480px] space-y-7 p-4 md:p-7 xl:p-9">
+      <Link
+        href="/admin/commerce/products"
+        className="inline-flex min-h-11 items-center text-sm font-semibold text-cherie-burgundy"
+      >
+        ← Ürünlere dön
+      </Link>
+      <AdminPageHeader
+        eyebrow="Ürün çalışma alanı"
+        title={product.name}
+        description={`Yayın hazırlığı %${readinessScore}. İçerik, ticaret, medya ve bulunabilirlik kararlarını tek akışta yönetin.`}
+        action={
+          <div className="flex flex-col items-end gap-2">
+            <AdminStatus value={product.archived_at ? 'archived' : product.status} />
+            <span className="text-sm font-semibold tabular-nums text-cherie-burgundy">
+              %{readinessScore} hazır
+            </span>
           </div>
-          {state.saved && (
-            <p
-              role="status"
-              className="rounded-control bg-cherie-success/10 px-4 py-2 text-sm font-semibold text-cherie-success"
+        }
+      />
+      {state.saved && (
+        <p
+          role="status"
+          className="flex items-center gap-2 rounded-card border border-cherie-success/25 bg-cherie-success/10 p-4 text-sm font-semibold text-cherie-success"
+        >
+          <CheckCircle2 className="size-4" aria-hidden="true" />
+          Değişiklikler güvenle kaydedildi.
+        </p>
+      )}
+      <nav
+        aria-label="Ürün düzenleme bölümleri"
+        className="sticky top-20 z-20 -mx-1 overflow-x-auto bg-cherie-ivory/95 px-1 py-3 backdrop-blur"
+      >
+        <div className="flex min-w-max gap-2">
+          {[
+            ['#kimlik', 'Kimlik'],
+            ['#ticaret', 'Ticaret'],
+            ['#medya', 'Medya'],
+            ['#secenekler', 'Seçenekler'],
+            ['#siniflandirma', 'Malzeme ve renk'],
+            ['#seo', 'Arama görünümü'],
+            ['#hazirlik', 'Hazırlık ve geçmiş'],
+          ].map(([href, label]) => (
+            <a
+              key={href}
+              href={href}
+              className="inline-flex min-h-11 items-center rounded-full border border-cherie-lace bg-white/70 px-4 text-sm font-semibold text-cherie-soft-ink hover:border-cherie-brass hover:text-cherie-burgundy"
             >
-              Değişiklikler kaydedildi.
-            </p>
-          )}
+              {label}
+            </a>
+          ))}
         </div>
-      </header>
+      </nav>
       <ProductForm
         product={product}
         categories={(categoriesQ.data ?? []).map((x) => ({ id: x.id, label: x.name }))}
@@ -143,33 +180,58 @@ export default async function EditProductPage({
         seo={seo}
         product={product}
       />
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-card-lg border border-cherie-lace p-5">
-          <h2 className="font-display text-2xl">Yayın hazırlığı</h2>
+      <section id="hazirlik" className="grid scroll-mt-28 gap-6 lg:grid-cols-2">
+        <div className="admin-surface p-5 md:p-7">
+          <p className="admin-eyebrow">07 · Son kontrol</p>
+          <h2 className="mt-1 font-display text-3xl">Yayın hazırlığı</h2>
+          <p className="mt-2 text-sm text-cherie-soft-ink">
+            Tamamlanan gereksinimler: {readiness.filter(([, ready]) => ready).length}/
+            {readiness.length}
+          </p>
           <ul className="mt-4 space-y-2">
             {readiness.map(([label, ok]) => (
-              <li key={label} className="flex items-center justify-between text-sm">
-                <span>{label}</span>
-                <strong className={ok ? 'text-cherie-success' : 'text-cherie-error'}>
-                  {ok ? 'Hazır' : 'Eksik'}
+              <li
+                key={label}
+                className="flex min-h-11 items-center justify-between gap-3 border-t border-cherie-lace py-2 text-sm first:border-t-0"
+              >
+                <span className="flex items-center gap-2">
+                  {ok ? (
+                    <CheckCircle2
+                      className="size-4 text-cherie-success"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <CircleAlert
+                      className="size-4 text-cherie-warning"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {label}
+                </span>
+                <strong className={ok ? 'text-cherie-success' : 'text-cherie-warning'}>
+                  {ok ? 'Hazır' : 'Tamamlanmalı'}
                 </strong>
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-card-lg border border-cherie-lace p-5">
-          <h2 className="font-display text-2xl">Yayın ve değişiklik geçmişi</h2>
+        <div className="admin-surface p-5 shadow-none md:p-7">
+          <p className="admin-eyebrow">Değişiklik izi</p>
+          <h2 className="mt-1 font-display text-3xl">Yayın ve değişiklik geçmişi</h2>
           <ol className="mt-4 space-y-3">
             {(auditQ.data ?? []).map((event) => (
               <li key={event.id} className="border-l-2 border-cherie-lace pl-3 text-sm">
-                <strong>{event.action}</strong>
+                <strong>{adminEventLabel(event.action)}</strong>
                 <p className="text-xs text-cherie-soft-ink">
                   <AdminDate value={event.created_at} />
                 </p>
               </li>
             ))}
             {!auditQ.data?.length && (
-              <li className="text-sm text-cherie-soft-ink">Henüz kayıt yok.</li>
+              <li className="rounded-control bg-cherie-paper/55 p-4 text-sm leading-6 text-cherie-soft-ink">
+                Bu ürün için henüz değişiklik kaydı oluşmadı. İlk kaydetme işlemi burada
+                tarihçeye eklenecek.
+              </li>
             )}
           </ol>
         </div>
