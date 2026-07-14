@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import { checkoutSchema, type CheckoutState } from '@/lib/validation/checkout';
 import { getPaymentProviderReadiness, isOnlineProvider } from '@/lib/payments';
 import { startPaymentAttempt } from '@/lib/payments/orchestrator';
+import { addMinor, minorToTryDecimal, tryToMinor } from '@/lib/payments/money';
 import type { Database } from '@/lib/supabase/database.types';
 
 type CheckoutSessionInsert = Database['public']['Tables']['checkout_sessions']['Insert'];
@@ -45,6 +46,7 @@ export async function prepareCheckoutAction(
   const active = cart.items.filter((item) => !item.removed_at);
   if (!active.length)
     return { status: 'error', message: 'Seçimleriniz boş. Önce bir ürün ekleyin.' };
+  const submittedCartTotalMinor = cart.totalMinor;
   for (const item of active) await updateCartItem(String(item.id), Number(item.quantity));
   cart = await getCart();
   if (!cart.id)
@@ -52,6 +54,13 @@ export async function prepareCheckoutAction(
       status: 'error',
       message: 'Seçimleriniz doğrulanamadı. Lütfen sepetinizi yenileyin.',
     };
+  if (cart.totalMinor !== submittedCartTotalMinor) {
+    return {
+      status: 'error',
+      message:
+        'Fiyatlarınız güncellendi. Yeni toplamı kontrol edip ödemeyi yeniden onaylayın.',
+    };
+  }
 
   const { data: shipping } = await admin
     .from('shipping_methods')
@@ -99,8 +108,12 @@ export async function prepareCheckoutAction(
           name: parsed.data.invoiceName,
           identity_number: parsed.data.identityNumber || null,
         };
-  const shippingAmount = Number(shipping.base_price ?? 0);
-  const total = Number(cart.total) + shippingAmount;
+  const shippingAmountMinor = tryToMinor(String(shipping.base_price ?? 0), {
+    allowZero: true,
+  });
+  const totalMinor = addMinor(cart.totalMinor, shippingAmountMinor);
+  const shippingAmount = Number(minorToTryDecimal(shippingAmountMinor));
+  const total = Number(minorToTryDecimal(totalMinor));
   const { data: legalRows } = await admin
     .from('legal_document_versions')
     .select('id, version, legal_documents!inner(doc_key)')
