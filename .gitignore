@@ -5,6 +5,7 @@ dist/
 build/
 .vercel/
 coverage/
+artifacts/email-previews/
 .eslintcache
 *.tsbuildinfo
 
