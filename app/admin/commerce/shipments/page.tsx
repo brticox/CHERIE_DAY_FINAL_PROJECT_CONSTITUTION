@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { OperationList, OperationalStatus } from '@/components/admin/operation-list';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
+import { transitionShipment } from './actions';
 type Shipment = Database['public']['Tables']['shipments']['Row'] & {
   orders: { order_number: string } | null;
 };
@@ -51,10 +52,13 @@ export default async function Page() {
         { label: 'Durum', render: (r) => <OperationalStatus value={r.status} /> },
         { label: 'Çıkış', render: (r) => (r.shipped_at ? date(r.shipped_at) : '—') },
         { label: 'Teslim', render: (r) => (r.delivered_at ? date(r.delivered_at) : '—') },
+        { label: 'Sonraki adım', render: (r) => <ShipmentAction row={r} /> },
       ]}
     />
   );
 }
+const nextState:Record<string,string|undefined>={preparing:'shipped',shipped:'in_transit',in_transit:'delivered'};
+function ShipmentAction({row}:{row:Shipment}){const next=nextState[row.status];if(!next)return <span className="text-xs text-cherie-soft-ink">İşlem yok</span>;return <form action={transitionShipment}><input type="hidden" name="id" value={row.id}/><input type="hidden" name="status" value={next}/><button className="min-h-10 rounded-control border border-cherie-burgundy px-3 text-xs font-bold text-cherie-burgundy">{next}</button></form>}
 function date(v: string) {
   return new Intl.DateTimeFormat('tr-TR', {
     dateStyle: 'medium',
