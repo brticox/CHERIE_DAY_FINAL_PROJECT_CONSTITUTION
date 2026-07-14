@@ -2448,46 +2448,97 @@ export type Database = {
       }
       notification_outbox: {
         Row: {
+          aggregate_id: string | null
+          aggregate_type: string
           attempts: number
           available_at: string
+          category: string
           channel: Database["public"]["Enums"]["notification_channel"]
           created_at: string
-          customer_id: string
+          customer_id: string | null
+          event_type: string
+          failed_at: string | null
           id: string
+          idempotency_key: string
+          last_error_code: string | null
           last_error: string | null
+          locale: string
+          locked_at: string | null
+          locked_by: string | null
+          max_attempts: number
+          next_attempt_at: string
           order_id: string | null
           payload: Json
+          provider: string | null
+          provider_message_id: string | null
+          recipient_email: string | null
+          recipient_kind: string
           sent_at: string | null
           status: string
           template_key: string
+          updated_at: string
         }
         Insert: {
+          aggregate_id?: string | null
+          aggregate_type: string
           attempts?: number
           available_at?: string
+          category?: string
           channel: Database["public"]["Enums"]["notification_channel"]
           created_at?: string
-          customer_id: string
+          customer_id?: string | null
+          event_type: string
+          failed_at?: string | null
           id?: string
+          idempotency_key: string
+          last_error_code?: string | null
           last_error?: string | null
+          locale?: string
+          locked_at?: string | null
+          locked_by?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
           order_id?: string | null
           payload?: Json
+          provider?: string | null
+          provider_message_id?: string | null
+          recipient_email?: string | null
+          recipient_kind?: string
           sent_at?: string | null
           status?: string
           template_key: string
+          updated_at?: string
         }
         Update: {
+          aggregate_id?: string | null
+          aggregate_type?: string
           attempts?: number
           available_at?: string
+          category?: string
           channel?: Database["public"]["Enums"]["notification_channel"]
           created_at?: string
-          customer_id?: string
+          customer_id?: string | null
+          event_type?: string
+          failed_at?: string | null
           id?: string
+          idempotency_key?: string
+          last_error_code?: string | null
           last_error?: string | null
+          locale?: string
+          locked_at?: string | null
+          locked_by?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
           order_id?: string | null
           payload?: Json
+          provider?: string | null
+          provider_message_id?: string | null
+          recipient_email?: string | null
+          recipient_kind?: string
           sent_at?: string | null
           status?: string
           template_key?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -7163,6 +7214,27 @@ export type Database = {
       }
     }
     Functions: {
+      claim_notification_outbox: {
+        Args: { p_batch_size?: number; p_stale_after_seconds?: number; p_worker_id: string }
+        Returns: Database["public"]["Tables"]["notification_outbox"]["Row"][]
+      }
+      enqueue_notification: {
+        Args: {
+          p_aggregate_id: string
+          p_aggregate_type: string
+          p_category?: string
+          p_customer_id: string | null
+          p_event_type: string
+          p_idempotency_key: string
+          p_locale?: string
+          p_order_id: string | null
+          p_payload: Json
+          p_recipient_email: string | null
+          p_recipient_kind: string
+          p_template_key: string
+        }
+        Returns: string
+      }
       apply_payment_event: {
         Args: {
           p_amount: number
