@@ -112,9 +112,11 @@ export async function saveProduct(formData: FormData) {
   redirect(`/admin/commerce/products/${data.id}?saved=1`);
 }
 
-export async function changeProductLifecycle(formData: FormData) {
+export async function changeProductLifecycle(
+  intent: 'publish' | 'archive' | 'restore',
+  formData: FormData,
+) {
   const id = String(formData.get('id'));
-  const intent = String(formData.get('intent'));
   const { staff } = await requireStaff(productPath(id));
   const needed = intent === 'publish' ? 'catalog.publish' : 'catalog.write';
   if (!can(staff.role, needed)) redirect(`${productPath(id)}?error=permission`);
