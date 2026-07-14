@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,7 @@ export default async function Page({
   searchParams: Promise<{ q?: string; status?: string }>;
 }) {
   const { q, status } = await searchParams;
-  await requireStaff('/admin/customers');
+  await requireCapability('crm.read', '/admin/customers');
   const db = createAdminClient();
   let query = db
     .from('customers')

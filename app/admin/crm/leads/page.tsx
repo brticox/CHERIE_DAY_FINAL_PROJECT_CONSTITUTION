@@ -1,4 +1,4 @@
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
 import { convertLead, updateLead } from './actions';
@@ -35,7 +35,7 @@ export default async function Page({
   }>;
 }) {
   const filters = await searchParams;
-  await requireStaff('/admin/crm/leads');
+  await requireCapability('crm.read', '/admin/crm/leads');
   const db = createAdminClient();
   let query = db
     .from('leads')

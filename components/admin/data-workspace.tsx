@@ -1,4 +1,5 @@
-import { requireStaff } from '@/lib/auth/guards';
+import type { AdminCapability } from '@/lib/admin/permissions';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from './resource-list';
 type Config = {
@@ -6,6 +7,7 @@ type Config = {
   title: string;
   description: string;
   table: string;
+  capability: AdminCapability;
   fields: readonly { key: string; label: string }[];
   statusKey?: string;
   dateKey?: string;
@@ -17,7 +19,7 @@ export async function DataWorkspace({
   config: Config;
   query?: string;
 }) {
-  await requireStaff(config.path);
+  await requireCapability(config.capability, config.path);
   const db = createAdminClient();
   let request = db
     .from(config.table as 'faqs')

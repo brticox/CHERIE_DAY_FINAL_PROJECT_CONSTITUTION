@@ -1,5 +1,16 @@
 import { notFound } from 'next/navigation';
 import { DataWorkspace } from '@/components/admin/data-workspace';
+import type { AdminCapability } from '@/lib/admin/permissions';
+
+// Read-side capability per module (fail-closed to the most restrictive).
+const CAPS: Record<string, AdminCapability> = {
+  'abandoned-carts': 'crm.read',
+  analytics: 'finance.read',
+  coupons: 'content.read',
+  'digital-products': 'catalog.read',
+  inventory: 'catalog.read',
+  refunds: 'finance.read',
+};
 const configs = {
   'abandoned-carts': {
     title: 'Terk edilen sepetler',
@@ -80,6 +91,7 @@ export default async function Page({
     <DataWorkspace
       config={{
         path: `/admin/commerce/${module}`,
+        capability: CAPS[module] ?? 'system.read',
         description: 'Durum değişikliği sunmadan gerçek operasyon kayıtlarının görünümü.',
         ...config,
       }}

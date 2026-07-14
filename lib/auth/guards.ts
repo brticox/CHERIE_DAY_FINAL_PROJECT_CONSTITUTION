@@ -3,6 +3,7 @@ import 'server-only';
 import { redirect } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
+import { can, type AdminCapability } from '@/lib/admin/permissions';
 import { isSupabaseConfigured } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase/server';
 
@@ -39,5 +40,20 @@ export async function requireStaff(next = '/admin') {
 
   if (!staffData) redirect('/hesap?error=staff_required');
   return { ...session, staff: staffData as StaffSummary };
+}
+
+/**
+ * Read-side authorization for admin routes. Most admin pages read data with the
+ * service-role client, which bypasses RLS — so the capability check MUST happen
+ * here, at the server boundary, not only in navigation or RLS. Denies land on
+ * the dashboard (a surface every role can read) with a `denied` marker so the
+ * operator gets a calm Turkish explanation instead of a silent bounce.
+ */
+export async function requireCapability(capability: AdminCapability, next = '/admin') {
+  const session = await requireStaff(next);
+  if (!can(session.staff.role, capability)) {
+    redirect(`/admin/dashboard?denied=${encodeURIComponent(capability)}`);
+  }
+  return session;
 }
 

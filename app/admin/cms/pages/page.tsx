@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ResourceList, AdminDate, StateBadge } from '@/components/admin/resource-list';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 export const dynamic = 'force-dynamic';
 export default async function Page({
@@ -9,7 +9,7 @@ export default async function Page({
   searchParams: Promise<{ q?: string; slug?: string }>;
 }) {
   const { q, slug } = await searchParams;
-  await requireStaff('/admin/cms/pages');
+  await requireCapability('content.read', '/admin/cms/pages');
   const db = createAdminClient();
   let request = db
     .from('pages')

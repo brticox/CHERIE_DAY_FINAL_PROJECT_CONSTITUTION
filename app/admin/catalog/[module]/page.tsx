@@ -1,5 +1,13 @@
 import { notFound } from 'next/navigation';
 import { DataWorkspace } from '@/components/admin/data-workspace';
+import type { AdminCapability } from '@/lib/admin/permissions';
+
+// Read-side capability per module (fail-closed to the most restrictive).
+const CAPS: Record<string, AdminCapability> = {
+  'collection-sets': 'catalog.read',
+  'event-types': 'catalog.read',
+  'materials-colors-tags': 'catalog.read',
+};
 const configs = {
   'collection-sets': {
     title: 'Koleksiyon setleri',
@@ -44,6 +52,7 @@ export default async function Page({
     <DataWorkspace
       config={{
         path: `/admin/catalog/${module}`,
+        capability: CAPS[module] ?? 'system.read',
         description: 'Katalog sınıflandırmasının gerçek veritabanı kayıtları.',
         ...config,
       }}

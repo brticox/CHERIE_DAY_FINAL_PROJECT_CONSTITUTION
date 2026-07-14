@@ -1,5 +1,5 @@
 import { ResourceList, AdminDate, StateBadge } from '@/components/admin/resource-list';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 export const dynamic = 'force-dynamic';
 export default async function Page({
@@ -8,7 +8,7 @@ export default async function Page({
   searchParams: Promise<{ q?: string; status?: string }>;
 }) {
   const { q, status } = await searchParams;
-  await requireStaff('/admin/crm/quote-requests');
+  await requireCapability('crm.read', '/admin/crm/quote-requests');
   const db = createAdminClient();
   let query = db
     .from('quote_requests')

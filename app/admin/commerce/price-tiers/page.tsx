@@ -1,10 +1,10 @@
 import { ResourceList } from '@/components/admin/resource-list';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatTRY } from '@/lib/format';
 export const dynamic = 'force-dynamic';
 export default async function Page() {
-  await requireStaff('/admin/commerce/price-tiers');
+  await requireCapability('catalog.read', '/admin/commerce/price-tiers');
   const { data, count, error } = await createAdminClient()
     .from('product_price_tiers')
     .select('id,min_qty,unit_price,products(name),product_variants(title)', {

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { publishPage, rollbackPage, savePage } from '../actions';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { can } from '@/lib/admin/permissions';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
@@ -21,7 +21,7 @@ export default async function Page({
 }) {
   const { id } = await params;
   const state = await searchParams;
-  const { staff } = await requireStaff(`/admin/cms/pages/${id}`);
+  const { staff } = await requireCapability('content.read', `/admin/cms/pages/${id}`);
   const db = createAdminClient();
   const [pageQ, productsQ, collectionsQ, servicesQ, citiesQ, mediaQ, revisionsQ] =
     await Promise.all([

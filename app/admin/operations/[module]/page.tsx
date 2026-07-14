@@ -1,5 +1,13 @@
 import { notFound } from 'next/navigation';
 import { DataWorkspace } from '@/components/admin/data-workspace';
+import type { AdminCapability } from '@/lib/admin/permissions';
+
+// Read-side capability per module (fail-closed to the most restrictive).
+const CAPS: Record<string, AdminCapability> = {
+  assignments: 'system.read',
+  suppliers: 'system.read',
+  teams: 'system.read',
+};
 const configs = {
   assignments: {
     title: 'Atamalar',
@@ -47,6 +55,7 @@ export default async function Page({
     <DataWorkspace
       config={{
         path: `/admin/operations/${module}`,
+        capability: CAPS[module] ?? 'system.read',
         description: 'Operasyon kaynaklarının gerçek veritabanı görünümü.',
         ...config,
       }}

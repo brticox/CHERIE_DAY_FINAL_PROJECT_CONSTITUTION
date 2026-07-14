@@ -4,7 +4,7 @@ import { ProductForm } from '@/components/admin/product-form';
 import { ProductConfiguration } from '@/components/admin/product-configuration';
 import { ProductMediaManager } from '@/components/admin/product-media-manager';
 import { AdminDate } from '@/components/admin/resource-list';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { can } from '@/lib/admin/permissions';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -17,7 +17,7 @@ export default async function EditProductPage({
 }) {
   const { id } = await params;
   const state = await searchParams;
-  const { staff } = await requireStaff(`/admin/commerce/products/${id}`);
+  const { staff } = await requireCapability('catalog.read', `/admin/commerce/products/${id}`);
   const db = createAdminClient();
   const [
     productQ,

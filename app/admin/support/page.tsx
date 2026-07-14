@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
 export const dynamic = 'force-dynamic';
 export default async function Page() {
-  await requireStaff('/admin/support');
+  await requireCapability('crm.read', '/admin/support');
   const { data, error } = await createAdminClient()
     .from('customer_support_threads')
     .select(

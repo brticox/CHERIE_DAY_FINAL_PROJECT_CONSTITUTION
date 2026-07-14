@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
 export const dynamic = 'force-dynamic';
 export default async function Page() {
-  await requireStaff('/admin/services/calendar');
+  await requireCapability('services.read', '/admin/services/calendar');
   const db = createAdminClient();
   const from = new Date().toISOString().slice(0, 10);
   const [reservations, consultations, blocks] = await Promise.all([

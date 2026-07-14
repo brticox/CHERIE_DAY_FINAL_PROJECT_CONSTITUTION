@@ -1,5 +1,12 @@
 import { notFound } from 'next/navigation';
 import { DataWorkspace } from '@/components/admin/data-workspace';
+import type { AdminCapability } from '@/lib/admin/permissions';
+
+// Read-side capability per module (fail-closed to the most restrictive).
+const CAPS: Record<string, AdminCapability> = {
+  'consent-log': 'legal.read',
+  'cookie-log': 'legal.read',
+};
 const configs = {
   'consent-log': {
     title: 'Onay kayıtları',
@@ -36,6 +43,7 @@ export default async function Page({
     <DataWorkspace
       config={{
         path: `/admin/legal/${module}`,
+        capability: CAPS[module] ?? 'system.read',
         description:
           'Gizlilik ve onay kanıtlarının salt-okunur, denetlenebilir kayıtları.',
         ...config,

@@ -1,4 +1,4 @@
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { StateBadge } from '@/components/admin/resource-list';
 import { saveServicePackage } from '../actions';
@@ -17,7 +17,7 @@ const categories: Database['public']['Enums']['service_category'][] = [
 ];
 export const dynamic = 'force-dynamic';
 export default async function Page() {
-  await requireStaff('/admin/services/packages');
+  await requireCapability('services.read', '/admin/services/packages');
   const { data, error } = await createAdminClient()
     .from('service_packages')
     .select('*')

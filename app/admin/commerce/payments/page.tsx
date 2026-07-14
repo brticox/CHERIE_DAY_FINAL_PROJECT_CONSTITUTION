@@ -2,7 +2,7 @@ import { AlertTriangle, CheckCircle2, Clock3, CreditCard, XCircle } from 'lucide
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatTRY } from '@/lib/format';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 
 type PaymentRow = {
   id: string;
@@ -45,7 +45,7 @@ export default async function Page({
   searchParams: Promise<{ status?: string; provider?: string; q?: string }>;
 }) {
   const filters = await searchParams;
-  await requireStaff('/admin/commerce/payments');
+  await requireCapability('finance.read', '/admin/commerce/payments');
   let rows: PaymentRow[] = [];
   let events: PaymentEvent[] = [];
   let unavailable = false;

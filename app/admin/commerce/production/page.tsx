@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { OperationList, OperationalStatus } from '@/components/admin/operation-list';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
 import {
@@ -15,6 +16,7 @@ type Job = Database['public']['Tables']['production_jobs']['Row'] & {
 };
 export const dynamic = 'force-dynamic';
 export default async function Page() {
+  await requireCapability('orders.read', '/admin/commerce/production');
   let rows: Job[] = [];
   let staffRows: { id: string; name: string }[] = [];
   let unavailable = true;

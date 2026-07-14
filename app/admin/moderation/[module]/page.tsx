@@ -1,5 +1,13 @@
 import { notFound } from 'next/navigation';
 import { DataWorkspace } from '@/components/admin/data-workspace';
+import type { AdminCapability } from '@/lib/admin/permissions';
+
+// Read-side capability per module (fail-closed to the most restrictive).
+const CAPS: Record<string, AdminCapability> = {
+  gallery: 'content.read',
+  queue: 'content.read',
+  reviews: 'content.read',
+};
 const configs = {
   gallery: {
     title: 'Galeri moderasyonu',
@@ -49,6 +57,7 @@ export default async function Page({
     <DataWorkspace
       config={{
         path: `/admin/moderation/${module}`,
+        capability: CAPS[module] ?? 'system.read',
         description: 'İnceleme gerektiren gerçek içerik kayıtları.',
         ...config,
       }}

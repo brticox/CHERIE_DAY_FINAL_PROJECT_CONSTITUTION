@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { can } from '@/lib/admin/permissions';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
@@ -20,7 +20,7 @@ export default async function Page({
 }) {
   const { key } = await params;
   const state = await searchParams;
-  const { staff } = await requireStaff(`/admin/legal/documents/${key}/versions`);
+  const { staff } = await requireCapability('legal.read', `/admin/legal/documents/${key}/versions`);
   const db = createAdminClient();
   const { data: document } = await db
     .from('legal_documents')

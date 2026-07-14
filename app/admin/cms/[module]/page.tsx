@@ -1,5 +1,20 @@
 import { notFound } from 'next/navigation';
 import { DataWorkspace } from '@/components/admin/data-workspace';
+import type { AdminCapability } from '@/lib/admin/permissions';
+
+// Read-side capability per module (fail-closed to the most restrictive).
+const CAPS: Record<string, AdminCapability> = {
+  articles: 'content.read',
+  digital: 'content.read',
+  experiences: 'content.read',
+  faqs: 'content.read',
+  galleries: 'content.read',
+  memory: 'content.read',
+  portfolio: 'content.read',
+  seo: 'content.read',
+  settings: 'system.read',
+  testimonials: 'content.read',
+};
 const configs = {
   articles: {
     title: 'Makaleler',
@@ -122,6 +137,7 @@ export default async function Page({
     <DataWorkspace
       config={{
         path: `/admin/cms/${module}`,
+        capability: CAPS[module] ?? 'system.read',
         description:
           'İçerik kayıtlarının gerçek veritabanı görünümü; yayın durumu açıkça gösterilir.',
         ...config,

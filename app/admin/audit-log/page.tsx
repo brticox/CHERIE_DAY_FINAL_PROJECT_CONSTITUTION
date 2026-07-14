@@ -1,4 +1,4 @@
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate } from '@/components/admin/resource-list';
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export default async function Page({
   }>;
 }) {
   const f = await searchParams;
-  await requireStaff('/admin/audit-log');
+  await requireCapability('audit.read', '/admin/audit-log');
   const db = createAdminClient();
   let query = db
     .from('audit_log')

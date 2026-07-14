@@ -1,4 +1,4 @@
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { notificationReadiness } from '@/lib/notifications/config';
 import { saveSettings } from './actions';
@@ -10,7 +10,7 @@ export default async function Page({
   searchParams: Promise<{ error?: string }>;
 }) {
   const state = await searchParams;
-  await requireStaff('/admin/settings');
+  await requireCapability('system.read', '/admin/settings');
   const db = createAdminClient();
   const [siteQ, systemQ, failedNotifications, failedPayments, legalQ, recentAudit] =
     await Promise.all([

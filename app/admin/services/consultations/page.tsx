@@ -1,10 +1,10 @@
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { updateConsultation } from '../actions';
 import { StateBadge } from '@/components/admin/resource-list';
 export const dynamic = 'force-dynamic';
 export default async function Page() {
-  await requireStaff('/admin/services/consultations');
+  await requireCapability('services.read', '/admin/services/consultations');
   const db = createAdminClient();
   const [rows, staff] = await Promise.all([
     db

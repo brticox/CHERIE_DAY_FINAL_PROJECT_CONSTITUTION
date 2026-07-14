@@ -1,7 +1,7 @@
 import { ResourceList, AdminDate, StateBadge } from '@/components/admin/resource-list';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { archiveMedia, updateMediaMetadata } from './actions';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,7 @@ export default async function Page({
   searchParams: Promise<{ q?: string; state?: string; error?: string }>;
 }) {
   const { q, state, error: message } = await searchParams;
-  await requireStaff('/admin/media');
+  await requireCapability('catalog.read', '/admin/media');
   const db = createAdminClient();
   let request = db
     .from('media_assets')

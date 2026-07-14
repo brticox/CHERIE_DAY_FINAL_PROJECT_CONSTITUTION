@@ -1,5 +1,13 @@
 import { notFound } from 'next/navigation';
 import { DataWorkspace } from '@/components/admin/data-workspace';
+import type { AdminCapability } from '@/lib/admin/permissions';
+
+// Read-side capability per module (fail-closed to the most restrictive).
+const CAPS: Record<string, AdminCapability> = {
+  'abandoned-carts': 'crm.read',
+  campaigns: 'content.read',
+  coupons: 'content.read',
+};
 const configs = {
   'abandoned-carts': {
     title: 'Terk edilen sepetler',
@@ -48,6 +56,7 @@ export default async function Page({
     <DataWorkspace
       config={{
         path: `/admin/marketing/${module}`,
+        capability: CAPS[module] ?? 'system.read',
         description: 'Pazarlama kayıtlarının izinli ve gerçek veritabanı görünümü.',
         ...config,
       }}

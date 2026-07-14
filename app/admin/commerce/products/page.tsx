@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Copy, PackageOpen, Plus, Search } from 'lucide-react';
 import { duplicateProduct } from './actions';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatTRY } from '@/lib/format';
 
@@ -14,7 +14,7 @@ export default async function ProductsPage({
   const params = await searchParams;
   const page = Math.max(1, Number(params.page) || 1);
   const size = 25;
-  await requireStaff('/admin/commerce/products');
+  await requireCapability('catalog.read', '/admin/commerce/products');
   const supabase = createAdminClient();
   let query = supabase
     .from('products')

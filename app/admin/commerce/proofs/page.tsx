@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { OperationList, OperationalStatus } from '@/components/admin/operation-list';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
 import { ProofUploader } from '@/components/admin/proof-uploader';
@@ -11,6 +12,7 @@ type Proof = Database['public']['Tables']['product_proofs']['Row'] & {
 };
 export const dynamic = 'force-dynamic';
 export default async function Page() {
+  await requireCapability('orders.read', '/admin/commerce/proofs');
   let rows: Proof[] = [];
   let proofItems: { id: string; label: string }[] = [];
   let staffRows: { id: string; name: string }[] = [];

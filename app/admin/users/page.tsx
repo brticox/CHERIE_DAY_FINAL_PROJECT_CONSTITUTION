@@ -1,4 +1,4 @@
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ADMIN_ROLES, can, roleLabel } from '@/lib/admin/permissions';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
@@ -10,7 +10,7 @@ export default async function Page({
   searchParams: Promise<{ error?: string }>;
 }) {
   const state = await searchParams;
-  const { staff } = await requireStaff('/admin/users');
+  const { staff } = await requireCapability('system.read', '/admin/users');
   const { data, error } = await createAdminClient()
     .from('staff_users')
     .select('id,name,email,role,is_active,created_at,updated_at')

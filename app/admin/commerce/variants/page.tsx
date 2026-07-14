@@ -1,5 +1,5 @@
 import { ResourceList, StateBadge } from '@/components/admin/resource-list';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatTRY } from '@/lib/format';
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,7 @@ export default async function Page({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  await requireStaff('/admin/commerce/variants');
+  await requireCapability('catalog.read', '/admin/commerce/variants');
   const db = createAdminClient();
   let request = db
     .from('product_variants')

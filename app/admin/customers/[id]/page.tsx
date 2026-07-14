@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
 import { addCustomerNote, updateCustomerStatus } from '../actions';
@@ -14,7 +14,7 @@ export default async function Page({
 }) {
   const { id } = await params;
   const state = await searchParams;
-  await requireStaff(`/admin/customers/${id}`);
+  await requireCapability('crm.read', `/admin/customers/${id}`);
   const db = createAdminClient();
   const [
     customerQ,

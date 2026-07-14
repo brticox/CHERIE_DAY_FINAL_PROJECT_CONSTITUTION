@@ -6,7 +6,7 @@ import { orderStatusLabel, paymentStatusLabel } from '@/lib/orders/presentation'
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
 import { SavedOrderViews } from '@/components/admin/saved-order-views';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,7 @@ export default async function Page({
 }: {
   searchParams: Promise<{ q?: string; status?: string; payment?: string; view?: string }>;
 }) {
-  await requireStaff('/admin/commerce/orders');
+  await requireCapability('orders.read', '/admin/commerce/orders');
   const filters = await searchParams;
   let orders: OrderRow[] = [];
   let unavailable = false;

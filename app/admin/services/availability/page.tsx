@@ -1,4 +1,4 @@
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { saveAvailability } from '../actions';
 import type { Database } from '@/lib/supabase/database.types';
@@ -17,7 +17,7 @@ const categories: Database['public']['Enums']['service_category'][] = [
 ];
 export const dynamic = 'force-dynamic';
 export default async function Page() {
-  await requireStaff('/admin/services/availability');
+  await requireCapability('services.read', '/admin/services/availability');
   const db = createAdminClient();
   const [blocks, cities] = await Promise.all([
     db

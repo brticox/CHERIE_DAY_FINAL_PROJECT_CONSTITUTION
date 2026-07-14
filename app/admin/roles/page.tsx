@@ -5,7 +5,7 @@ import {
   roleLabel,
   type AdminCapability,
 } from '@/lib/admin/permissions';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 const capabilities: AdminCapability[] = [
   'dashboard.read',
   'catalog.read',
@@ -29,7 +29,7 @@ const capabilities: AdminCapability[] = [
   'audit.read',
 ];
 export default async function Page() {
-  await requireStaff('/admin/roles');
+  await requireCapability('system.read', '/admin/roles');
   return (
     <div className="space-y-6 p-4 md:p-8">
       <header>

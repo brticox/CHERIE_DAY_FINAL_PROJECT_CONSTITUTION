@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ProductForm } from '@/components/admin/product-form';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { can } from '@/lib/admin/permissions';
 import { createAdminClient } from '@/lib/supabase/admin';
 export default async function NewProductPage({
@@ -9,7 +9,7 @@ export default async function NewProductPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const { staff } = await requireStaff('/admin/commerce/products/new');
+  const { staff } = await requireCapability('catalog.write', '/admin/commerce/products/new');
   const supabase = createAdminClient();
   const [{ data: categories }, { data: collections }] = await Promise.all([
     supabase.from('categories').select('id,name').order('name'),

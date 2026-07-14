@@ -1,10 +1,10 @@
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { saveServiceCity } from '../actions';
 import type { Database } from '@/lib/supabase/database.types';
 export const dynamic = 'force-dynamic';
 export default async function Page() {
-  await requireStaff('/admin/services/cities');
+  await requireCapability('services.read', '/admin/services/cities');
   const { data } = await createAdminClient()
     .from('service_cities')
     .select('*')

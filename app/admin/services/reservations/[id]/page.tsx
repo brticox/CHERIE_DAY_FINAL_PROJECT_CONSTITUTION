@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
 import {
@@ -18,7 +18,7 @@ export default async function Page({
 }) {
   const { id } = await params;
   const state = await searchParams;
-  await requireStaff(`/admin/services/reservations/${id}`);
+  await requireCapability('services.read', `/admin/services/reservations/${id}`);
   const db = createAdminClient();
   const [reservationQ, briefQ, milestonesQ, tasksQ, staffQ] = await Promise.all([
     db
