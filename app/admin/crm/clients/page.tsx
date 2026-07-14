@@ -1,11 +1,4 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
-
+import { redirect } from 'next/navigation';
 export default function Page() {
-  return (
-    <PagePlaceholder
-      title="CRM · Müşteriler"
-      eyebrow="Yönetim"
-      note="Yönetim modülü — iş mantığı sonraki fazda eklenecek."
-    />
-  );
+  redirect('/admin/customers');
 }

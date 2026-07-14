@@ -1335,6 +1335,12 @@ export type Database = {
           },
         ]
       }
+      customer_notes: {
+        Row: { author_staff_id: string | null; created_at: string; customer_id: string; id: string; note: string }
+        Insert: { author_staff_id?: string | null; created_at?: string; customer_id: string; id?: string; note: string }
+        Update: { author_staff_id?: string | null; created_at?: string; customer_id?: string; id?: string; note?: string }
+        Relationships: []
+      }
       customer_support_messages: {
         Row: {
           attachment_ids: string[]
@@ -2155,6 +2161,7 @@ export type Database = {
           assigned_staff_id: string | null
           budget_band: Database["public"]["Enums"]["price_band"] | null
           created_at: string
+          converted_customer_id: string | null
           email: string | null
           event_date_or_season: string | null
           event_type: string | null
@@ -2162,6 +2169,9 @@ export type Database = {
           id: string
           location: string | null
           message: string | null
+          lost_reason: string | null
+          next_follow_up_at: string | null
+          priority: string
           metadata: Json
           name: string | null
           phone: string | null
@@ -2176,6 +2186,7 @@ export type Database = {
           assigned_staff_id?: string | null
           budget_band?: Database["public"]["Enums"]["price_band"] | null
           created_at?: string
+          converted_customer_id?: string | null
           email?: string | null
           event_date_or_season?: string | null
           event_type?: string | null
@@ -2183,6 +2194,9 @@ export type Database = {
           id?: string
           location?: string | null
           message?: string | null
+          lost_reason?: string | null
+          next_follow_up_at?: string | null
+          priority?: string
           metadata?: Json
           name?: string | null
           phone?: string | null
@@ -2197,6 +2211,7 @@ export type Database = {
           assigned_staff_id?: string | null
           budget_band?: Database["public"]["Enums"]["price_band"] | null
           created_at?: string
+          converted_customer_id?: string | null
           email?: string | null
           event_date_or_season?: string | null
           event_type?: string | null
@@ -2204,6 +2219,9 @@ export type Database = {
           id?: string
           location?: string | null
           message?: string | null
+          lost_reason?: string | null
+          next_follow_up_at?: string | null
+          priority?: string
           metadata?: Json
           name?: string | null
           phone?: string | null
@@ -7286,6 +7304,8 @@ export type Database = {
       }
     }
     Functions: {
+      admin_convert_lead: { Args: { p_lead_id: string; p_target: string }; Returns: string }
+      admin_update_lead: { Args: { p_assigned_staff_id: string | null; p_lead_id: string; p_lost_reason: string; p_next_follow_up_at: string | null; p_note: string; p_priority: string; p_status: Database["public"]["Enums"]["lead_status"] }; Returns: undefined }
       admin_complete_quality_check: { Args: { p_items: Json; p_job_id: string; p_note: string }; Returns: string }
       admin_create_shipment: { Args: { p_carrier: string; p_internal_note: string; p_order_id: string; p_package_count: number; p_tracking: string }; Returns: string }
       admin_update_order_operations: { Args: { p_assigned_staff_id: string | null; p_customer_note: string; p_internal_note: string; p_order_id: string }; Returns: undefined }
@@ -7527,7 +7547,9 @@ export type Database = {
         | "new"
         | "contacted"
         | "qualified"
+        | "appointment"
         | "proposal_sent"
+        | "negotiation"
         | "won"
         | "lost"
       legal_doc_key:
@@ -7944,7 +7966,9 @@ export const Constants = {
         "new",
         "contacted",
         "qualified",
+        "appointment",
         "proposal_sent",
+        "negotiation",
         "won",
         "lost",
       ],
