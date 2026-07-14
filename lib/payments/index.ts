@@ -36,26 +36,11 @@ export type ProviderReadiness = {
 };
 
 export function getPaymentProviderReadiness(): ProviderReadiness[] {
-  const paytrConfigured = Boolean(
-    process.env.PAYTR_MERCHANT_ID &&
-    process.env.PAYTR_MERCHANT_KEY &&
-    process.env.PAYTR_MERCHANT_SALT,
-  );
   const iyzicoCredentials = Boolean(
     process.env.IYZICO_API_KEY && process.env.IYZICO_SECRET_KEY,
   );
   return [
-    {
-      provider: 'paytr',
-      configured: paytrConfigured,
-      label: 'PayTR Güvenli Ödeme',
-      mode: !paytrConfigured
-        ? 'unavailable'
-        : process.env.PAYTR_TEST_MODE === '0'
-          ? 'live'
-          : 'sandbox',
-      reason: paytrConfigured ? undefined : 'PayTR mağaza anahtarları bekleniyor.',
-    },
+    paytrReadiness(),
     {
       provider: 'iyzico',
       configured: false,
@@ -71,3 +56,4 @@ export function getPaymentProviderReadiness(): ProviderReadiness[] {
 export function isOnlineProvider(value: string): value is OnlinePaymentProvider {
   return value === 'iyzico' || value === 'paytr';
 }
+import { paytrReadiness } from './environment';
