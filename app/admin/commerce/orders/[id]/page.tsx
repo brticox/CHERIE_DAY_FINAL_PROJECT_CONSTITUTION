@@ -4,9 +4,16 @@ import { ArrowLeft, PackageCheck } from 'lucide-react';
 
 import { formatTRY } from '@/lib/format';
 import { jsonText } from '@/lib/orders/customer';
-import { orderStatusLabel, paymentStatusLabel } from '@/lib/orders/presentation';
+import {
+  orderStatusLabel,
+  orderTone,
+  paymentStatusLabel,
+  productionStatusLabel,
+  proofStatusLabel,
+  shipmentStatusLabel,
+} from '@/lib/orders/presentation';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import type { Database } from '@/lib/supabase/database.types';
 import { transitionOrderAction, updateOrderOperations } from './actions';
 
@@ -45,7 +52,7 @@ export default async function Page({
   searchParams: Promise<{ transition?: string }>;
 }) {
   const { id } = await params;
-  await requireStaff(`/admin/commerce/orders/${id}`);
+  await requireCapability('orders.read', `/admin/commerce/orders/${id}`);
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)
     notFound();
   const admin = createAdminClient();
@@ -125,9 +132,14 @@ export default async function Page({
             Sipariş operasyonu
           </p>
           <h1 className="mt-2 font-display text-4xl">{order.order_number}</h1>
-          <p className="mt-2 text-sm text-cherie-soft-ink">
-            {orderStatusLabel(order.status)} · {paymentStatusLabel(order.payment_status)}
-          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <StatusChip tone={orderTone(order.status)} label={orderStatusLabel(order.status)} />
+            <StatusChip
+              tone={orderTone(order.payment_status)}
+              label={paymentStatusLabel(order.payment_status)}
+              subtle
+            />
+          </div>
         </div>
         <p className="cherie-price font-display text-3xl text-cherie-burgundy">
           {formatTRY(Number(order.total_amount))}
@@ -145,26 +157,32 @@ export default async function Page({
           <section className="rounded-card-lg border border-cherie-lace bg-cherie-ivory p-6">
             <h2 className="font-display text-2xl">Ürünler</h2>
             <div className="mt-4 divide-y divide-cherie-lace">
-              {items.map((item) => (
-                <div key={item.id} className="grid grid-cols-[1fr_auto] gap-3 py-4">
-                  <div>
-                    <p className="font-semibold">
-                      {jsonText(item.product_snapshot, 'name', 'CHERIE DAY ürünü')}
+              {items.length === 0 ? (
+                <p className="py-4 text-sm text-cherie-soft-ink">
+                  Bu siparişte kayıtlı ürün kalemi bulunmuyor.
+                </p>
+              ) : (
+                items.map((item) => (
+                  <div key={item.id} className="grid grid-cols-[1fr_auto] gap-3 py-4">
+                    <div>
+                      <p className="font-semibold">
+                        {jsonText(item.product_snapshot, 'name', 'CHERIE DAY ürünü')}
+                      </p>
+                      <p className="text-sm text-cherie-soft-ink">{item.quantity} adet</p>
+                    </div>
+                    <p className="cherie-price font-semibold">
+                      {formatTRY(Number(item.total_price))}
                     </p>
-                    <p className="text-sm text-cherie-soft-ink">{item.quantity} adet</p>
                   </div>
-                  <p className="cherie-price font-semibold">
-                    {formatTRY(Number(item.total_price))}
-                  </p>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </section>
           <OperationalSection title="Ödeme" empty="Ödeme kaydı yok">
             {payments.map((payment) => (
               <Row
                 key={payment.id}
-                label={`${payment.provider} · ${payment.status}`}
+                label={`${payment.provider} · ${paymentStatusLabel(payment.status)}`}
                 value={`${formatTRY(Number(payment.amount))}${payment.masked_card ? ` · ${payment.masked_card}` : ''}`}
               />
             ))}
@@ -173,7 +191,7 @@ export default async function Page({
             {proofs.map((proof) => (
               <Row
                 key={proof.id}
-                label={`v${proof.version} · ${proof.status}`}
+                label={`v${proof.version} · ${proofStatusLabel(proof.status)}`}
                 value={proof.customer_comment ?? 'Müşteri notu yok'}
               />
             ))}
@@ -182,7 +200,7 @@ export default async function Page({
             {production.map((job) => (
               <Row
                 key={job.id}
-                label={job.status}
+                label={productionStatusLabel(job.status)}
                 value={
                   job.due_at ? `Termin ${adminDate(job.due_at)}` : 'Termin belirlenmedi'
                 }
@@ -193,7 +211,7 @@ export default async function Page({
             {shipments.map((shipment) => (
               <Row
                 key={shipment.id}
-                label={`${shipment.carrier_name ?? 'Kargo belirlenmedi'} · ${shipment.status}`}
+                label={`${shipment.carrier_name ?? 'Kargo belirlenmedi'} · ${shipmentStatusLabel(shipment.status)}`}
                 value={shipment.tracking_number ?? 'Takip numarası yok'}
               />
             ))}
@@ -209,6 +227,44 @@ export default async function Page({
           </OperationalSection>
         </div>
         <aside className="space-y-6">
+          <section className="rounded-card-lg border border-cherie-brass/40 bg-white/70 p-6 shadow-card">
+            <h2 className="flex items-center gap-2 font-display text-2xl">
+              <PackageCheck className="size-5 text-cherie-brass" />
+              Sonraki adım
+            </h2>
+            {(NEXT[order.status] ?? []).length ? (
+              <form action={transitionOrderAction} className="mt-5 space-y-4">
+                <input type="hidden" name="orderId" value={order.id} />
+                <label className="block text-sm font-semibold" htmlFor="status">
+                  Yeni durum
+                </label>
+                <select id="status" name="status" className="cherie-field">
+                  {(NEXT[order.status] ?? []).map((status) => (
+                    <option key={status} value={status}>
+                      {orderStatusLabel(status)}
+                    </option>
+                  ))}
+                </select>
+                <label className="block text-sm font-semibold" htmlFor="detail">
+                  Müşteriye görünen not
+                </label>
+                <textarea
+                  id="detail"
+                  name="detail"
+                  maxLength={1000}
+                  className="cherie-field min-h-24"
+                />
+                <button className="min-h-11 w-full rounded-control bg-cherie-burgundy px-4 text-sm font-semibold text-white transition-colors hover:bg-cherie-cherry">
+                  Durumu güncelle
+                </button>
+              </form>
+            ) : (
+              <p className="mt-4 text-sm text-cherie-soft-ink">
+                Bu sipariş için sıradaki operasyon adımı bulunmuyor. Mevcut durum:{' '}
+                {orderStatusLabel(order.status)}.
+              </p>
+            )}
+          </section>
           <section className="rounded-card-lg border border-cherie-lace bg-cherie-ivory p-6">
             <h2 className="font-display text-2xl">Sorumlu ve notlar</h2>
             <form action={updateOrderOperations} className="mt-4 grid gap-3">
@@ -274,43 +330,6 @@ export default async function Page({
               )}
             </ul>
           </section>
-          <section className="rounded-card-lg border border-cherie-lace bg-cherie-ivory p-6">
-            <h2 className="flex items-center gap-2 font-display text-2xl">
-              <PackageCheck className="size-5 text-cherie-brass" />
-              Sonraki adım
-            </h2>
-            {(NEXT[order.status] ?? []).length ? (
-              <form action={transitionOrderAction} className="mt-5 space-y-4">
-                <input type="hidden" name="orderId" value={order.id} />
-                <label className="block text-sm font-semibold" htmlFor="status">
-                  Yeni durum
-                </label>
-                <select id="status" name="status" className="cherie-field">
-                  {(NEXT[order.status] ?? []).map((status) => (
-                    <option key={status} value={status}>
-                      {orderStatusLabel(status)}
-                    </option>
-                  ))}
-                </select>
-                <label className="block text-sm font-semibold" htmlFor="detail">
-                  Müşteriye görünen not
-                </label>
-                <textarea
-                  id="detail"
-                  name="detail"
-                  maxLength={1000}
-                  className="cherie-field min-h-24"
-                />
-                <button className="min-h-11 w-full rounded-control bg-cherie-burgundy px-4 text-sm font-semibold text-white">
-                  Durumu güncelle
-                </button>
-              </form>
-            ) : (
-              <p className="mt-4 text-sm text-cherie-soft-ink">
-                Bu sipariş için sıradaki operasyon adımı bulunmuyor.
-              </p>
-            )}
-          </section>
           <OperationalSection title="Yasal anlık görüntü" empty="Yasal snapshot yok">
             {order.legal_snapshot ? (
               <pre className="max-h-64 overflow-auto whitespace-pre-wrap py-3 text-xs">
@@ -354,6 +373,29 @@ function OperationalSection({
         {has ? children : <p className="py-4 text-sm text-cherie-soft-ink">{empty}</p>}
       </div>
     </section>
+  );
+}
+function StatusChip({
+  tone,
+  label,
+  subtle = false,
+}: {
+  tone: string;
+  label: string;
+  subtle?: boolean;
+}) {
+  const map: Record<string, string> = {
+    success: 'border-cherie-success/30 bg-cherie-success/12 text-cherie-success',
+    warning: 'border-cherie-warning/30 bg-cherie-warning/12 text-cherie-warning',
+    error: 'border-cherie-error/30 bg-cherie-error/12 text-cherie-error',
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-semibold ${map[tone] ?? map.warning} ${subtle ? 'text-xs' : 'text-sm'}`}
+    >
+      <span className="size-1.5 rounded-full bg-current" />
+      {label}
+    </span>
   );
 }
 function Row({ label, value }: { label: string; value: string }) {
