@@ -9,14 +9,16 @@ import {
   CheckCircle2,
   CircleDollarSign,
   Database,
+  Lock,
   PackageCheck,
   Sparkles,
   Truck,
   Users,
 } from 'lucide-react';
 
+import { can, roleLabel, type AdminCapability } from '@/lib/admin/permissions';
+import { requireStaff } from '@/lib/auth/guards';
 import { formatTRY } from '@/lib/format';
-import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,8 +26,24 @@ type Metric = {
   label: string;
   value: number | null;
   href: string;
+  capability: AdminCapability;
   urgent?: boolean;
   icon: React.ComponentType<{ className?: string }>;
+};
+
+// Turkish module name for the "access denied" explanation shown when a deep
+// link redirects here because the operator's role lacks the capability.
+const CAPABILITY_MODULE_TR: Partial<Record<AdminCapability, string>> = {
+  'catalog.read': 'Katalog',
+  'catalog.write': 'Katalog düzenleme',
+  'orders.read': 'Siparişler',
+  'finance.read': 'Ödemeler ve Finans',
+  'crm.read': 'Müşteriler ve CRM',
+  'services.read': 'Hizmetler',
+  'content.read': 'İçerik',
+  'legal.read': 'Hukuk',
+  'system.read': 'Sistem',
+  'audit.read': 'Denetim kaydı',
 };
 
 async function countRows(query: PromiseLike<{ count: number | null; error: unknown }>) {
@@ -33,14 +51,31 @@ async function countRows(query: PromiseLike<{ count: number | null; error: unkno
   return result.error ? null : result.count;
 }
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ denied?: string; view?: string }>;
+}) {
+  const { supabase, staff } = await requireStaff('/admin/dashboard');
+  const role = staff.role;
+  const deniedRaw = (await searchParams).denied;
+  const deniedModule =
+    deniedRaw && deniedRaw in CAPABILITY_MODULE_TR
+      ? CAPABILITY_MODULE_TR[deniedRaw as AdminCapability]
+      : deniedRaw
+        ? 'İstenen bölüm'
+        : null;
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const week = new Date(today);
   week.setDate(week.getDate() - 6);
   const month = new Date(today.getFullYear(), today.getMonth(), 1);
   const isoToday = today.toISOString();
+  const dateLabel = new Intl.DateTimeFormat('tr-TR', {
+    day: 'numeric',
+    month: 'long',
+  }).format(today);
   const [
     newOrders,
     paidOrders,
@@ -146,30 +181,35 @@ export default async function DashboardPage() {
     weekRevenue = sumSince(week),
     monthRevenue = sumSince(month);
   const partialRevenue = revenueRows.length === 1000;
-  const todayMetrics: Metric[] = [
+
+  const todayMetrics: Metric[] = ([
     {
       label: 'Yeni sipariş',
       value: newOrders,
       href: '/admin/commerce/orders',
+      capability: 'orders.read',
       icon: PackageCheck,
     },
     {
       label: 'Ödemesi alınan',
       value: paidOrders,
       href: '/admin/commerce/orders?status=paid',
+      capability: 'orders.read',
       icon: CircleDollarSign,
     },
     {
       label: 'Başarısız ödeme',
       value: failedPayments,
       href: '/admin/commerce/payments?status=failed',
-      urgent: true,
+      capability: 'finance.read',
+      urgent: (failedPayments ?? 0) > 0,
       icon: AlertTriangle,
     },
     {
       label: 'Bekleyen prova',
       value: pendingProofs,
       href: '/admin/commerce/proofs',
+      capability: 'orders.read',
       urgent: (pendingProofs ?? 0) > 0,
       icon: Sparkles,
     },
@@ -177,29 +217,91 @@ export default async function DashboardPage() {
       label: 'Üretim kuyruğu',
       value: productionDue,
       href: '/admin/commerce/production',
+      capability: 'orders.read',
       icon: Boxes,
     },
     {
       label: 'Kargoya hazır',
       value: shipmentsDue,
       href: '/admin/commerce/shipments',
+      capability: 'orders.read',
       icon: Truck,
     },
-    { label: 'Yeni lead', value: newLeads, href: '/admin/crm/leads', icon: Users },
+    {
+      label: 'Yeni lead',
+      value: newLeads,
+      href: '/admin/crm/leads',
+      capability: 'crm.read',
+      icon: Users,
+    },
     {
       label: 'Randevu',
       value: appointments,
       href: '/admin/services/consultations',
+      capability: 'services.read',
       icon: CalendarClock,
     },
     {
       label: 'Kalıcı bildirim hatası',
       value: failedNotifications,
       href: '/admin/marketing/notifications?status=permanently_failed',
+      capability: 'system.read',
       urgent: (failedNotifications ?? 0) > 0,
       icon: BellRing,
     },
-  ];
+  ] as Metric[]).filter((metric) => can(role, metric.capability));
+
+  const signals = [
+    {
+      label: 'Açık üretim işi',
+      value: productionQueue,
+      href: '/admin/commerce/production',
+      capability: 'orders.read' as AdminCapability,
+    },
+    {
+      label: 'Atanmamış lead',
+      value: unassignedLeads,
+      href: '/admin/crm/leads?assignment=unassigned',
+      capability: 'crm.read' as AdminCapability,
+    },
+    {
+      label: 'Bekleyen prova',
+      value: pendingProofs,
+      href: '/admin/commerce/proofs',
+      capability: 'orders.read' as AdminCapability,
+    },
+    {
+      label: 'Kargo hazırlığı',
+      value: shipmentsDue,
+      href: '/admin/commerce/shipments',
+      capability: 'orders.read' as AdminCapability,
+    },
+  ].filter((signal) => can(role, signal.capability));
+
+  const ctas = [
+    {
+      label: 'Ürün oluştur',
+      href: '/admin/commerce/products/new',
+      capability: 'catalog.write' as AdminCapability,
+      primary: true,
+    },
+    {
+      label: 'Lead kutusunu aç',
+      href: '/admin/crm/leads',
+      capability: 'crm.read' as AdminCapability,
+      primary: false,
+    },
+    {
+      label: 'Siparişleri aç',
+      href: '/admin/commerce/orders',
+      capability: 'orders.read' as AdminCapability,
+      primary: false,
+    },
+  ].filter((cta) => can(role, cta.capability));
+
+  const showRevenue = can(role, 'finance.read');
+  const showHealth = can(role, 'system.read');
+
   const dbReady = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
@@ -207,188 +309,218 @@ export default async function DashboardPage() {
     process.env.PAYTR_MERCHANT_ID || process.env.IYZICO_API_KEY,
   );
   const notificationReady = process.env.NOTIFICATION_SEND_ENABLED === 'true';
+
   return (
     <div className="mx-auto max-w-[1680px] space-y-8 p-4 md:p-7 xl:p-9">
+      {deniedModule && (
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-card-lg border border-cherie-warning/40 bg-cherie-warning/10 p-4"
+        >
+          <Lock className="mt-0.5 size-5 shrink-0 text-cherie-warning" />
+          <div>
+            <p className="text-sm font-semibold text-cherie-ink">
+              “{deniedModule}” bölümüne erişim yetkiniz yok
+            </p>
+            <p className="mt-1 text-sm leading-6 text-cherie-soft-ink">
+              Rolünüz ({roleLabel(role)}) bu bölümü görüntüleyemiyor. Yetki gerekiyorsa
+              bir yöneticiden talep edebilirsiniz. Kontrol paneline yönlendirildiniz.
+            </p>
+          </div>
+        </div>
+      )}
       <header className="flex flex-col justify-between gap-5 border-b border-cherie-lace pb-7 lg:flex-row lg:items-end">
         <div>
           <p className="text-xs font-bold uppercase tracking-[.2em] text-cherie-brass">
-            14 Temmuz · Operasyon Özeti
+            {dateLabel} · Operasyon Özeti
           </p>
           <h1 className="mt-2 font-display text-4xl leading-none md:text-5xl">
             Bugün neye dikkat etmeliyiz?
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-cherie-soft-ink">
             Sipariş, müşteri ve sistem sinyalleri doğrudan operasyon tablolarından okunur.
-            Veri yoksa tahmin gösterilmez.
+            Veri yoksa tahmin gösterilmez. Panel, rolünüze göre uyarlanır.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/admin/commerce/products/new"
-            className="inline-flex min-h-11 items-center rounded-control bg-cherie-burgundy px-4 text-sm font-semibold text-white"
-          >
-            Ürün oluştur
-          </Link>
-          <Link
-            href="/admin/crm/leads"
-            className="inline-flex min-h-11 items-center rounded-control border border-cherie-lace px-4 text-sm font-semibold"
-          >
-            Lead kutusunu aç
-          </Link>
-        </div>
+        {ctas.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {ctas.map((cta) => (
+              <Link
+                key={cta.href}
+                href={cta.href}
+                className={
+                  cta.primary
+                    ? 'inline-flex min-h-11 items-center rounded-control bg-cherie-burgundy px-4 text-sm font-semibold text-white transition-colors hover:bg-cherie-cherry'
+                    : 'inline-flex min-h-11 items-center rounded-control border border-cherie-lace px-4 text-sm font-semibold transition-colors hover:border-cherie-brass'
+                }
+              >
+                {cta.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </header>
-      <section aria-labelledby="today-heading">
-        <div className="mb-4 flex items-end justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
-              A · Bugün
-            </p>
-            <h2 id="today-heading" className="font-display text-3xl">
-              Eylem radarı
-            </h2>
+
+      {todayMetrics.length > 0 && (
+        <section aria-labelledby="today-heading">
+          <div className="mb-4 flex items-end justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
+                A · Bugün
+              </p>
+              <h2 id="today-heading" className="font-display text-3xl">
+                Eylem radarı
+              </h2>
+            </div>
+            <span className="text-xs text-cherie-soft-ink">Canlı operasyon verisi</span>
           </div>
-          <span className="text-xs text-cherie-soft-ink">Canlı operasyon verisi</span>
-        </div>
-        <div className="grid gap-px overflow-hidden rounded-card-lg border border-cherie-lace bg-cherie-lace sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {todayMetrics.map((metric) => (
-            <Link
-              key={metric.label}
-              href={metric.href}
-              className={`group min-h-32 bg-cherie-ivory p-4 transition-colors hover:bg-white ${metric.urgent ? 'border-l-4 border-cherie-cherry' : ''}`}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {todayMetrics.map((metric) => (
+              <Link
+                key={metric.label}
+                href={metric.href}
+                className={`group min-h-32 rounded-card border bg-cherie-ivory p-4 transition-colors hover:bg-white ${
+                  metric.urgent
+                    ? 'border-cherie-cherry/60 shadow-[inset_3px_0_0_0_var(--cherie-cherry)]'
+                    : 'border-cherie-lace'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <metric.icon
+                    className={`size-5 ${metric.urgent ? 'text-cherie-cherry' : 'text-cherie-brass'}`}
+                  />
+                  <ArrowRight className="size-4 text-cherie-soft-ink opacity-0 transition-opacity group-hover:opacity-100" />
+                </div>
+                <p
+                  className={`mt-5 text-3xl font-semibold tabular-nums ${metric.urgent && (metric.value ?? 0) > 0 ? 'text-cherie-cherry' : ''}`}
+                >
+                  {metric.value ?? '—'}
+                </p>
+                <p className="mt-1 text-xs text-cherie-soft-ink">
+                  {metric.value === null ? 'Veri okunamadı' : metric.label}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {(showRevenue || signals.length > 0) && (
+        <div
+          className={`grid gap-6 ${showRevenue && signals.length > 0 ? 'xl:grid-cols-[1.618fr_1fr]' : ''}`}
+        >
+          {showRevenue && (
+            <section
+              className="rounded-card-lg border border-cherie-lace bg-white/55 p-5 md:p-7"
+              aria-labelledby="business-heading"
             >
-              <div className="flex items-start justify-between">
-                <metric.icon
-                  className={`size-5 ${metric.urgent ? 'text-cherie-cherry' : 'text-cherie-brass'}`}
-                />
-                <ArrowRight className="size-4 text-cherie-soft-ink opacity-0 transition-opacity group-hover:opacity-100" />
+              <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
+                B · İş
+              </p>
+              <h2 id="business-heading" className="font-display text-3xl">
+                Gelir akışı
+              </h2>
+              <div className="mt-7 grid gap-6 sm:grid-cols-3">
+                <Revenue label="Bugün" value={todayRevenue} />
+                <Revenue label="Son 7 gün" value={weekRevenue} />
+                <Revenue label="Bu ay" value={monthRevenue} dominant />
               </div>
-              <p className="mt-5 text-3xl font-semibold tabular-nums">
-                {metric.value ?? '—'}
-              </p>
-              <p className="mt-1 text-xs text-cherie-soft-ink">
-                {metric.value === null ? 'Veri okunamadı' : metric.label}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
-      <div className="grid gap-6 xl:grid-cols-[1.618fr_1fr]">
-        <section
-          className="rounded-card-lg border border-cherie-lace bg-white/55 p-5 md:p-7"
-          aria-labelledby="business-heading"
-        >
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
-            B · İş
-          </p>
-          <h2 id="business-heading" className="font-display text-3xl">
-            Gelir akışı
-          </h2>
-          <div className="mt-7 grid gap-6 sm:grid-cols-3">
-            <Revenue label="Bugün" value={todayRevenue} />
-            <Revenue label="Son 7 gün" value={weekRevenue} />
-            <Revenue label="Bu ay" value={monthRevenue} dominant />
-          </div>
-          {partialRevenue && (
-            <p className="mt-5 rounded-control bg-cherie-warning/10 p-3 text-xs text-cherie-warning">
-              Bu ay 1.000’den fazla ödeme var. Toplam, ilk 1.000 kayıtla sınırlı; kesin
-              muhasebe raporu değildir.
-            </p>
+              {partialRevenue && (
+                <p className="mt-5 rounded-control bg-cherie-warning/10 p-3 text-xs text-cherie-warning">
+                  Bu ay 1.000’den fazla ödeme var. Toplam, ilk 1.000 kayıtla sınırlı; kesin
+                  muhasebe raporu değildir.
+                </p>
+              )}
+              <div className="mt-7 border-t border-cherie-lace pt-5">
+                <p className="text-sm text-cherie-soft-ink">
+                  Ödenen sipariş sayısı{' '}
+                  <strong className="text-cherie-ink">{revenueRows.length}</strong>. Zaman
+                  serisi için yeterli ve güvenilir veri oluştuğunda burada trend
+                  gösterilecektir.
+                </p>
+              </div>
+            </section>
           )}
-          <div className="mt-7 border-t border-cherie-lace pt-5">
-            <p className="text-sm text-cherie-soft-ink">
-              Ödenen sipariş sayısı{' '}
-              <strong className="text-cherie-ink">{revenueRows.length}</strong>. Zaman
-              serisi için yeterli ve güvenilir veri oluştuğunda burada trend
-              gösterilecektir.
-            </p>
-          </div>
-        </section>
+          {signals.length > 0 && (
+            <section
+              className="rounded-card-lg bg-cherie-velvet p-5 text-white md:p-7"
+              aria-labelledby="ops-heading"
+            >
+              <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
+                C · Operasyon
+              </p>
+              <h2 id="ops-heading" className="font-display text-3xl">
+                Darboğazlar
+              </h2>
+              <div className="mt-6 divide-y divide-white/10">
+                {signals.map((signal) => (
+                  <Signal
+                    key={signal.label}
+                    label={signal.label}
+                    value={signal.value}
+                    href={signal.href}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+
+      {showHealth && (
         <section
-          className="rounded-card-lg bg-cherie-velvet p-5 text-white md:p-7"
-          aria-labelledby="ops-heading"
+          className="rounded-card-lg border border-cherie-lace bg-cherie-paper/55 p-5 md:p-7"
+          aria-labelledby="system-heading"
         >
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
-            C · Operasyon
-          </p>
-          <h2 id="ops-heading" className="font-display text-3xl">
-            Darboğazlar
-          </h2>
-          <div className="mt-6 divide-y divide-white/10">
-            <Signal
-              label="Açık üretim işi"
-              value={productionQueue}
-              href="/admin/commerce/production"
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
+                D · Sistem
+              </p>
+              <h2 id="system-heading" className="font-display text-3xl">
+                Hazırlık durumu
+              </h2>
+            </div>
+            <p className="text-xs text-cherie-soft-ink">
+              Gizli değerler hiçbir zaman gösterilmez.
+            </p>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <Health
+              icon={Database}
+              label="Veritabanı"
+              ready={dbReady}
+              detail={
+                dbReady
+                  ? 'Ortam değişkenleri yapılandırılmış'
+                  : 'Bağlantı yapılandırılmamış'
+              }
             />
-            <Signal
-              label="Atanmamış lead"
-              value={unassignedLeads}
-              href="/admin/crm/leads?assignment=unassigned"
+            <Health
+              icon={BellRing}
+              label="Bildirim gönderimi"
+              ready={notificationReady}
+              detail={
+                notificationReady ? 'Gönderim etkin' : 'Gönderim kapalı veya prova modunda'
+              }
             />
-            <Signal
-              label="Bekleyen prova"
-              value={pendingProofs}
-              href="/admin/commerce/proofs"
+            <Health
+              icon={Banknote}
+              label="Ödeme sağlayıcısı"
+              ready={paymentReady}
+              detail={
+                paymentReady ? 'Sağlayıcı yapılandırılmış' : 'Canlı sağlayıcı kanıtlanmadı'
+              }
             />
-            <Signal
-              label="Kargo hazırlığı"
-              value={shipmentsDue}
-              href="/admin/commerce/shipments"
+            <Health
+              icon={AlertTriangle}
+              label="Migration kanıtı"
+              ready={false}
+              detail="Staging üzerinde henüz doğrulanmadı"
             />
           </div>
         </section>
-      </div>
-      <section
-        className="rounded-card-lg border border-cherie-lace bg-cherie-paper/55 p-5 md:p-7"
-        aria-labelledby="system-heading"
-      >
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
-              D · Sistem
-            </p>
-            <h2 id="system-heading" className="font-display text-3xl">
-              Hazırlık durumu
-            </h2>
-          </div>
-          <p className="text-xs text-cherie-soft-ink">
-            Gizli değerler hiçbir zaman gösterilmez.
-          </p>
-        </div>
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <Health
-            icon={Database}
-            label="Veritabanı"
-            ready={dbReady}
-            detail={
-              dbReady
-                ? 'Ortam değişkenleri yapılandırılmış'
-                : 'Bağlantı yapılandırılmamış'
-            }
-          />
-          <Health
-            icon={BellRing}
-            label="Bildirim gönderimi"
-            ready={notificationReady}
-            detail={
-              notificationReady ? 'Gönderim etkin' : 'Gönderim kapalı veya prova modunda'
-            }
-          />
-          <Health
-            icon={Banknote}
-            label="Ödeme sağlayıcısı"
-            ready={paymentReady}
-            detail={
-              paymentReady ? 'Sağlayıcı yapılandırılmış' : 'Canlı sağlayıcı kanıtlanmadı'
-            }
-          />
-          <Health
-            icon={AlertTriangle}
-            label="Migration kanıtı"
-            ready={false}
-            detail="Staging üzerinde henüz doğrulanmadı"
-          />
-        </div>
-      </section>
+      )}
     </div>
   );
 }
