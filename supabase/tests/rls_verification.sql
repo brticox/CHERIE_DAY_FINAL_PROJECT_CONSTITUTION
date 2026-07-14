@@ -50,6 +50,26 @@ begin
 end;
 $$;
 
+-- A private table may be protected either by removing SELECT entirely or by
+-- granting SELECT with a fail-closed RLS policy. Both are safe; visible rows
+-- are never safe.
+create or replace function pg_temp.assert_no_visible_rows(table_name regclass, label text)
+returns void language plpgsql security invoker as $$
+declare visible_rows bigint;
+begin
+  begin
+    execute format('select count(*) from %s', table_name) into visible_rows;
+  exception when insufficient_privilege then
+    raise notice 'ok: % (SELECT denied)', label;
+    return;
+  end;
+  if visible_rows <> 0 then
+    raise exception 'RLS CHECK FAILED: %', label;
+  end if;
+  raise notice 'ok: % (0 visible rows)', label;
+end;
+$$;
+
 -- SECURITY INVOKER helper: succeeds only when a direct anon table insert is
 -- rejected by RLS. Public submissions must go through the whitelisted RPC.
 create or replace function pg_temp.assert_direct_lead_insert_blocked()
@@ -108,15 +128,15 @@ set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 
 -- Base private/content tables must leak no rows to anon through RLS.
-select pg_temp.assert((select count(*) from public.leads) = 0,            'anon cannot read leads');
-select pg_temp.assert((select count(*) from public.orders) = 0,           'anon cannot read orders');
-select pg_temp.assert((select count(*) from public.payments) = 0,         'anon cannot read payments');
-select pg_temp.assert((select count(*) from public.payment_events) = 0,   'anon cannot read payment_events');
-select pg_temp.assert((select count(*) from public.suppliers) = 0,        'anon cannot read suppliers');
-select pg_temp.assert((select count(*) from public.consent_records) = 0,  'anon cannot read consent_records');
-select pg_temp.assert((select count(*) from public.reviews) = 0,          'anon cannot read reviews base table');
+select pg_temp.assert_no_visible_rows('public.leads',           'anon cannot read leads');
+select pg_temp.assert_no_visible_rows('public.orders',          'anon cannot read orders');
+select pg_temp.assert_no_visible_rows('public.payments',        'anon cannot read payments');
+select pg_temp.assert_no_visible_rows('public.payment_events',  'anon cannot read payment_events');
+select pg_temp.assert_no_visible_rows('public.suppliers',       'anon cannot read suppliers');
+select pg_temp.assert_no_visible_rows('public.consent_records', 'anon cannot read consent_records');
+select pg_temp.assert_no_visible_rows('public.reviews',         'anon cannot read reviews base table');
 -- Even published products are accessible only through the sanitized view.
-select pg_temp.assert((select count(*) from public.products) = 0,         'anon cannot read products base table');
+select pg_temp.assert_no_visible_rows('public.products',        'anon cannot read products base table');
 
 -- Public views DO expose published-safe data.
 select pg_temp.assert((select count(*) from public.products_public) > 0,          'anon reads products_public');
@@ -141,7 +161,7 @@ select public.submit_public_intake(
   p_source_slug := 'test-product',
   p_source_label := 'Test Product'
 );
-select pg_temp.assert((select count(*) from public.leads) = 0, 'anon cannot read leads created by RPC');
+select pg_temp.assert_no_visible_rows('public.leads', 'anon cannot read leads created by RPC');
 
 reset role;
 
@@ -167,8 +187,8 @@ select set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 select pg_temp.assert((select count(*) from public.orders) = 1,           'customer A sees exactly 1 order');
 select pg_temp.assert(exists (select 1 from public.orders where order_number = 'CD-TEST-A'), 'customer A sees own order');
 select pg_temp.assert(not exists (select 1 from public.orders where order_number = 'CD-TEST-B'), 'customer A cannot see customer B order');
-select pg_temp.assert((select count(*) from public.payment_events) = 0,   'customer A cannot read payment_events');
-select pg_temp.assert((select count(*) from public.suppliers) = 0,        'customer A cannot read suppliers');
+select pg_temp.assert_no_visible_rows('public.payment_events', 'customer A cannot read payment_events');
+select pg_temp.assert_no_visible_rows('public.suppliers',      'customer A cannot read suppliers');
 select pg_temp.assert((select count(*) from public.cart_items) = 1,       'customer A sees own cart item');
 update public.cart_items set unit_price_snapshot = 1, total_price_snapshot = 2
 where id = 'dddd1111-0000-0000-0000-000000000001';

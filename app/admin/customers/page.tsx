@@ -35,12 +35,13 @@ export default async function Page({
       </header>
       <form className="grid gap-3 rounded-card-lg border border-cherie-lace p-4 md:grid-cols-[1fr_220px_auto]">
         <input
+          aria-label="Müşteri ara"
           name="q"
           defaultValue={q}
           placeholder="Ad, e-posta veya telefon"
           className="cherie-field"
         />
-        <select name="status" defaultValue={status ?? ''} className="cherie-field">
+        <select aria-label="Müşteri durumu" name="status" defaultValue={status ?? ''} className="cherie-field">
           <option value="">Tüm durumlar</option>
           <option value="active">Aktif</option>
           <option value="inactive">Pasif</option>

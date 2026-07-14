@@ -72,6 +72,7 @@ export default async function ProductsPage({
           />
         </label>
         <select
+          aria-label="Ürün durumu"
           name="status"
           defaultValue={params.status ?? ''}
           className="cherie-field sm:w-44"

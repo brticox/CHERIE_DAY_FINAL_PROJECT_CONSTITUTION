@@ -92,12 +92,14 @@ export default async function Page({
       )}
       <form className="grid gap-3 rounded-card-lg border border-cherie-lace p-4 md:grid-cols-4">
         <input
+          aria-label="Lead ara"
           name="q"
           defaultValue={filters.q}
           placeholder="Ad, iletişim, mesaj"
           className="cherie-field"
         />
         <select
+          aria-label="Lead kaynağı"
           name="source"
           defaultValue={filters.source ?? ''}
           className="cherie-field"
@@ -116,6 +118,7 @@ export default async function Page({
           ))}
         </select>
         <select
+          aria-label="Lead önceliği"
           name="priority"
           defaultValue={filters.priority ?? ''}
           className="cherie-field"
@@ -187,6 +190,7 @@ export default async function Page({
                           <form action={updateLead} className="mt-3 grid gap-2">
                             <input type="hidden" name="id" value={lead.id} />
                             <select
+                              aria-label={`${lead.name || 'İsimsiz lead'} lead durumu`}
                               name="status"
                               defaultValue={lead.status}
                               className="cherie-field"
@@ -198,6 +202,7 @@ export default async function Page({
                               ))}
                             </select>
                             <select
+                              aria-label={`${lead.name || 'İsimsiz lead'} lead önceliği`}
                               name="priority"
                               defaultValue={lead.priority}
                               className="cherie-field"
@@ -207,6 +212,7 @@ export default async function Page({
                               ))}
                             </select>
                             <select
+                              aria-label={`${lead.name || 'İsimsiz lead'} lead sorumlusu`}
                               name="assigned_staff_id"
                               defaultValue={lead.assigned_staff_id ?? ''}
                               className="cherie-field"
@@ -219,17 +225,20 @@ export default async function Page({
                               ))}
                             </select>
                             <input
+                              aria-label={`${lead.name || 'İsimsiz lead'} sonraki takip zamanı`}
                               type="datetime-local"
                               name="next_follow_up_at"
                               defaultValue={lead.next_follow_up_at?.slice(0, 16)}
                               className="cherie-field"
                             />
                             <textarea
+                              aria-label={`${lead.name || 'İsimsiz lead'} aktivite notu`}
                               name="note"
                               placeholder="Aktivite notu"
                               className="cherie-field"
                             />
                             <input
+                              aria-label={`${lead.name || 'İsimsiz lead'} kayıp nedeni`}
                               name="lost_reason"
                               defaultValue={lead.lost_reason ?? ''}
                               placeholder="Kayıp nedeni (lost için zorunlu)"

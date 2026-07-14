@@ -35,7 +35,7 @@ export default async function Page() {
         action={createShipment}
         className="mx-4 mt-4 grid gap-3 rounded-card-lg border border-cherie-lace bg-white/60 p-5 md:mx-8 md:mt-8 md:grid-cols-5"
       >
-        <select name="order_id" required className="cherie-field">
+        <select aria-label="Gönderi siparişi" name="order_id" required className="cherie-field">
           <option value="">Sipariş seçin</option>
           {orders.map((x) => (
             <option key={x.id} value={x.id}>
@@ -44,18 +44,21 @@ export default async function Page() {
           ))}
         </select>
         <input
+          aria-label="Kargo firması"
           name="carrier"
           required
           placeholder="Kargo firması"
           className="cherie-field"
         />
         <input
+          aria-label="Takip numarası"
           name="tracking"
           required
           placeholder="Takip numarası"
           className="cherie-field"
         />
         <input
+          aria-label="Paket sayısı"
           name="package_count"
           type="number"
           min="1"
@@ -64,6 +67,7 @@ export default async function Page() {
         />
         <button className="cherie-button-primary">Gönderi oluştur</button>
         <textarea
+          aria-label="Gönderi iç notu"
           name="internal_note"
           placeholder="İç not"
           className="cherie-field md:col-span-5"
@@ -131,11 +135,13 @@ export default async function Page() {
                     >
                       <input type="hidden" name="id" value={r.id} />
                       <input
+                        aria-label="Teslimat istisna kodu"
                         name="exception_code"
                         placeholder="Kod"
                         className="cherie-field"
                       />
                       <textarea
+                        aria-label="Teslimat istisna açıklaması"
                         name="note"
                         placeholder="Açıklama"
                         className="cherie-field"

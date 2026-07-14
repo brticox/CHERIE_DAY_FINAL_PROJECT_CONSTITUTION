@@ -127,7 +127,7 @@ export default async function Page({
           <p>Pazarlama: {customer.marketing_consent_at ? 'Açık' : 'Kapalı'}</p>
           <form action={updateCustomerStatus} className="mt-3 flex gap-2">
             <input type="hidden" name="id" value={id} />
-            <select name="status" defaultValue={customer.status} className="cherie-field">
+            <select aria-label="Müşteri durumu" name="status" defaultValue={customer.status} className="cherie-field">
               <option value="active">Aktif</option>
               <option value="inactive">Pasif</option>
               <option value="blocked">Engelli</option>
@@ -238,6 +238,7 @@ export default async function Page({
         <form action={addCustomerNote} className="mt-4 flex flex-col gap-3 sm:flex-row">
           <input type="hidden" name="id" value={id} />
           <textarea
+            aria-label="Dahili müşteri notu"
             name="note"
             required
             maxLength={4000}

@@ -58,6 +58,7 @@ function PackageForm({
     >
       {row && <input type="hidden" name="id" value={row.id} />}
       <input
+        aria-label="Paket adı"
         name="name"
         required
         defaultValue={row?.name}
@@ -65,6 +66,7 @@ function PackageForm({
         className="cherie-field"
       />
       <select
+        aria-label="Fiyat gösterimi"
         name="price_display"
         defaultValue={row?.price_display ?? 'quote_only'}
         className="cherie-field"
@@ -74,6 +76,7 @@ function PackageForm({
         <option value="quote_only">Yalnızca teklif</option>
       </select>
       <select
+        aria-label="Depozito modeli"
         name="deposit_model"
         defaultValue={row?.deposit_model ?? 'none'}
         className="cherie-field"
@@ -83,6 +86,7 @@ function PackageForm({
         <option value="percentage">Yüzde depozito</option>
       </select>
       <input
+        aria-label="Depozito değeri"
         name="deposit_value"
         type="number"
         min="0"
@@ -92,12 +96,14 @@ function PackageForm({
         className="cherie-field"
       />
       <input
+        aria-label="SEO başlığı"
         name="seo_title"
         defaultValue=""
         placeholder="SEO başlığı"
         className="cherie-field"
       />
       <textarea
+        aria-label="SEO açıklaması"
         name="seo_description"
         placeholder="SEO açıklaması"
         className="cherie-field sm:col-span-2"
@@ -106,6 +112,7 @@ function PackageForm({
         <input type="checkbox" name="seo_noindex" /> Noindex
       </label>
       <input
+        aria-label="Paket slug"
         name="slug"
         required
         defaultValue={row?.slug}
@@ -113,6 +120,7 @@ function PackageForm({
         className="cherie-field"
       />
       <select
+        aria-label="Hizmet kategorisi"
         name="service_category"
         defaultValue={row?.service_category ?? 'organizasyon'}
         className="cherie-field"
@@ -122,6 +130,7 @@ function PackageForm({
         ))}
       </select>
       <select
+        aria-label="Hizmet davranışı"
         name="behavior_type"
         defaultValue={row?.behavior_type ?? 'quote_required'}
         className="cherie-field"
@@ -132,6 +141,7 @@ function PackageForm({
         <option value="inquiry_only">Talep</option>
       </select>
       <input
+        aria-label="Başlangıç fiyatı"
         name="base_from_price"
         type="number"
         min="0"
@@ -141,6 +151,7 @@ function PackageForm({
         className="cherie-field"
       />
       <input
+        aria-label="Minimum hazırlık günü"
         name="min_lead_time_days"
         type="number"
         min="0"
@@ -149,12 +160,14 @@ function PackageForm({
         className="cherie-field"
       />
       <input
+        aria-label="Paket özeti"
         name="summary"
         defaultValue={row?.summary ?? ''}
         placeholder="Kısa özet"
         className="cherie-field sm:col-span-2"
       />
       <textarea
+        aria-label="Paket açıklaması"
         name="description"
         defaultValue={row?.description ?? ''}
         placeholder="Açıklama / kapsam / booking kuralları"
@@ -187,6 +200,7 @@ function PackageForm({
         </label>
       </div>
       <select
+        aria-label="Paket durumu"
         name="status"
         defaultValue={row?.status ?? 'draft'}
         className="cherie-field"

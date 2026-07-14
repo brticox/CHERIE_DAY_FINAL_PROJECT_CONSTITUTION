@@ -80,6 +80,7 @@ export default async function Page() {
                 <form action={updateProductionJob} className="mt-2 grid min-w-72 gap-2">
                   <input type="hidden" name="id" value={r.id} />
                   <select
+                    aria-label="Üretim sorumlusu"
                     name="assigned_staff_id"
                     defaultValue={r.assigned_staff_id ?? ''}
                     className="cherie-field"
@@ -92,12 +93,14 @@ export default async function Page() {
                     ))}
                   </select>
                   <input
+                    aria-label="Üretim teslim zamanı"
                     type="datetime-local"
                     name="due_at"
                     defaultValue={r.due_at?.slice(0, 16)}
                     className="cherie-field"
                   />
                   <input
+                    aria-label="Üretim önceliği"
                     type="number"
                     name="priority"
                     defaultValue={r.priority}
@@ -115,12 +118,14 @@ export default async function Page() {
                     Malzeme hazır
                   </label>
                   <input
+                    aria-label="Üretim engeli"
                     name="blocker"
                     defaultValue={r.blocker ?? ''}
                     placeholder="Engel"
                     className="cherie-field"
                   />
                   <textarea
+                    aria-label="Üretim iç notu"
                     name="internal_note"
                     defaultValue={r.internal_note ?? ''}
                     placeholder="İç not"
@@ -145,6 +150,7 @@ export default async function Page() {
                       </label>
                     ))}
                     <textarea
+                      aria-label="Kalite kontrol notu"
                       name="note"
                       placeholder="Kalite notu"
                       className="cherie-field"

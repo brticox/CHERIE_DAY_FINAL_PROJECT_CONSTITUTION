@@ -101,6 +101,7 @@ export default async function Page() {
                 <form action={updateProofAssignment} className="mt-2 grid min-w-64 gap-2">
                   <input type="hidden" name="id" value={r.id} />
                   <select
+                    aria-label="Prova sorumlusu"
                     name="assigned_staff_id"
                     defaultValue={r.assigned_staff_id ?? ''}
                     className="cherie-field"
@@ -113,6 +114,7 @@ export default async function Page() {
                     ))}
                   </select>
                   <input
+                    aria-label="Prova teslim zamanı"
                     type="datetime-local"
                     name="due_at"
                     defaultValue={r.due_at?.slice(0, 16)}

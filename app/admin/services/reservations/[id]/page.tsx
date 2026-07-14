@@ -73,7 +73,7 @@ export default async function Page({
           className="grid gap-3 rounded-card-lg border border-cherie-lace p-5 sm:grid-cols-2"
         >
           <input type="hidden" name="id" value={id} />
-          <select name="status" defaultValue={r.status} className="cherie-field">
+          <select aria-label="Rezervasyon durumu" name="status" defaultValue={r.status} className="cherie-field">
             {[
               'requested',
               'quote_pending',
@@ -91,6 +91,7 @@ export default async function Page({
             ))}
           </select>
           <select
+            aria-label="Rezervasyon sorumlusu"
             name="assigned_staff_id"
             defaultValue={r.assigned_staff_id ?? ''}
             className="cherie-field"
@@ -103,18 +104,21 @@ export default async function Page({
             ))}
           </select>
           <input
+            aria-label="Etkinlik tarihi"
             type="date"
             name="event_date"
             defaultValue={r.event_date ?? ''}
             className="cherie-field"
           />
           <input
+            aria-label="Etkinlik saati"
             type="time"
             name="event_time"
             defaultValue={r.event_time ?? ''}
             className="cherie-field"
           />
           <input
+            aria-label="Konuk sayısı"
             type="number"
             name="guest_count"
             defaultValue={r.guest_count ?? ''}
@@ -122,6 +126,7 @@ export default async function Page({
             className="cherie-field"
           />
           <input
+            aria-label="Rezervasyon toplamı"
             type="number"
             name="total_amount"
             step="0.01"
@@ -130,6 +135,7 @@ export default async function Page({
             className="cherie-field"
           />
           <input
+            aria-label="Depozito tutarı"
             type="number"
             name="deposit_amount"
             step="0.01"
@@ -138,12 +144,14 @@ export default async function Page({
             className="cherie-field"
           />
           <input
+            aria-label="Bakiye son ödeme tarihi"
             type="date"
             name="balance_due_date"
             defaultValue={r.balance_due_date ?? ''}
             className="cherie-field"
           />
           <textarea
+            aria-label="İptal veya yeniden planlama nedeni"
             name="cancellation_reason"
             defaultValue={r.cancellation_reason ?? ''}
             placeholder="İptal / yeniden planlama nedeni"
@@ -187,9 +195,9 @@ export default async function Page({
           <h2 className="font-display text-2xl">Checklist ve ekip</h2>
           <form action={addReservationTask} className="mt-3 grid gap-2 sm:grid-cols-2">
             <input type="hidden" name="reservation_id" value={id} />
-            <input name="item_tr" required placeholder="Görev" className="cherie-field" />
-            <input type="date" name="due_date" className="cherie-field" />
-            <select name="owner_staff_id" className="cherie-field">
+            <input aria-label="Checklist görevi" name="item_tr" required placeholder="Görev" className="cherie-field" />
+            <input aria-label="Görev son tarihi" type="date" name="due_date" className="cherie-field" />
+            <select aria-label="Görev sorumlusu" name="owner_staff_id" className="cherie-field">
               <option value="">Sorumlu yok</option>
               {(staffQ.data ?? []).map((x) => (
                 <option key={x.id} value={x.id}>

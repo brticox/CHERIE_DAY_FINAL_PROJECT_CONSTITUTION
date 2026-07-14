@@ -46,20 +46,22 @@ export default async function Page({
         </p>
       </header>
       <form className="grid gap-3 rounded-card-lg border border-cherie-lace p-4 md:grid-cols-6">
-        <input name="q" defaultValue={f.q} placeholder="Ara" className="cherie-field" />
+        <input aria-label="Denetim günlüğünde ara" name="q" defaultValue={f.q} placeholder="Ara" className="cherie-field" />
         <input
+          aria-label="Aksiyon filtresi"
           name="action"
           defaultValue={f.action}
           placeholder="Aksiyon"
           className="cherie-field"
         />
         <input
+          aria-label="Varlık filtresi"
           name="entity"
           defaultValue={f.entity}
           placeholder="Entity"
           className="cherie-field"
         />
-        <select name="actor" defaultValue={f.actor ?? ''} className="cherie-field">
+        <select aria-label="Aktör filtresi" name="actor" defaultValue={f.actor ?? ''} className="cherie-field">
           <option value="">Tüm aktörler</option>
           {(staff.data ?? []).map((x) => (
             <option key={x.id} value={x.id}>
@@ -68,6 +70,7 @@ export default async function Page({
           ))}
         </select>
         <input
+          aria-label="Kaynak filtresi"
           name="source"
           defaultValue={f.source}
           placeholder="Kaynak"

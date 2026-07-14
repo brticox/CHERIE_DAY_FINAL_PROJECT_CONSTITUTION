@@ -222,6 +222,7 @@ export default async function Page({
             Yalnızca yapılandırılmış alanların kapsamadığı ek anahtarlar için.
           </p>
           <textarea
+            aria-label="Gelişmiş JSON içeriği"
             name="advanced_json"
             rows={10}
             defaultValue={JSON.stringify(body, null, 2)}

@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { retryNotification } from './actions';
 
 const allowedRoles = new Set([
+  'superadmin',
   'admin',
   'order_operations',
   'commerce_manager',
@@ -80,12 +81,14 @@ export default async function Page({
       )}
       <form className="mt-5 grid gap-3 rounded-card border border-cherie-lace p-4 md:grid-cols-5">
         <input
+          aria-label="Bildirim ara"
           name="q"
           defaultValue={filters.q}
           placeholder="Şablon veya aggregate"
           className="cherie-field"
         />
         <select
+          aria-label="Bildirim durumu"
           name="status"
           defaultValue={filters.status ?? ''}
           className="cherie-field"
@@ -103,6 +106,7 @@ export default async function Page({
           ))}
         </select>
         <select
+          aria-label="Bildirim kanalı"
           name="channel"
           defaultValue={filters.channel ?? ''}
           className="cherie-field"
@@ -113,6 +117,7 @@ export default async function Page({
           <option value="whatsapp">WhatsApp</option>
         </select>
         <input
+          aria-label="Bildirim sağlayıcısı"
           name="provider"
           defaultValue={filters.provider}
           placeholder="Sağlayıcı"

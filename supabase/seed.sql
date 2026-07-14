@@ -6,6 +6,27 @@
 -- staff_users rows carry auth_user_id = NULL for role/permission testing.
 -- =============================================================================
 
+-- A catalog migration also ships production-safe baseline rows. Local reset
+-- intentionally replaces that baseline with the richer QA fixture below so
+-- this seed remains deterministic and replay-safe.
+truncate table
+  public.site_settings,
+  public.staff_users,
+  public.departments,
+  public.event_types,
+  public.collections,
+  public.service_cities,
+  public.service_packages,
+  public.digital_products,
+  public.articles,
+  public.legal_documents,
+  public.faqs,
+  public.testimonials,
+  public.portfolio_projects,
+  public.coupons,
+  public.shipping_methods
+restart identity cascade;
+
 -- ---- Site settings (singleton) ---------------------------------------------
 insert into public.site_settings (business_name, contact_email, contact_phone, whatsapp_number, service_area_text)
 values ('CHERIE DAY', 'merhaba@cherieday.example', '+90 000 000 00 00', '+900000000000', 'Türkiye geneli');
