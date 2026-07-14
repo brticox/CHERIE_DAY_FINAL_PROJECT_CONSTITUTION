@@ -1,11 +1,2 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
-
-export default function Page() {
-  return (
-    <PagePlaceholder
-      title="Medya Kütüphanesi"
-      eyebrow="Yönetim"
-      note="Yönetim modülü — iş mantığı sonraki fazda eklenecek."
-    />
-  );
-}
+import { ResourceList, AdminDate, StateBadge } from '@/components/admin/resource-list';import { requireStaff } from '@/lib/auth/guards';import { createAdminClient } from '@/lib/supabase/admin';
+export const dynamic='force-dynamic';export default async function Page({searchParams}:{searchParams:Promise<{q?:string}>}){const{q}=await searchParams;await requireStaff('/admin/media');const db=createAdminClient();let request=db.from('media_assets').select('id,alt_text,type,bucket,storage_path,tags,is_public,linked_entity_type,created_at',{count:'exact'}).order('created_at',{ascending:false}).limit(100);if(q)request=request.ilike('alt_text',`%${q.replace(/[,%]/g,'')}%`);const{data,count,error}=await request;return <ResourceList eyebrow="İçerik" title="Medya Kütüphanesi" description="Yüklenen dosyaların erişim alanını, alternatif metnini, etiketlerini ve kullanım ilişkisini denetleyin. Depolama sırları gösterilmez." rows={data??[]} total={count??0} query={q} error={error?'Medya kayıtları okunamadı.':undefined} columns={[{label:'Dosya',value:r=><><strong>{r.alt_text||'Alternatif metin eksik'}</strong><p className="max-w-xs truncate text-xs text-cherie-soft-ink">{r.storage_path??'Harici kayıt'}</p></>},{label:'Tür',value:r=>r.type},{label:'Erişim',value:r=><StateBadge value={r.is_public?'published':'internal'}/>},{label:'Kullanım',value:r=>r.linked_entity_type??'Bağımsız'},{label:'Etiket',value:r=>r.tags.join(', ')||'—'},{label:'Yükleme',value:r=><AdminDate value={r.created_at}/>}]} />}
