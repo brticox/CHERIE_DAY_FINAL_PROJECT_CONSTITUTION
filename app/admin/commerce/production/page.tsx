@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { OperationList, OperationalStatus } from '@/components/admin/operation-list';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
+import { transitionProduction } from './actions';
 type Job = Database['public']['Tables']['production_jobs']['Row'] & {
   orders: { order_number: string } | null;
   order_items: {
@@ -46,10 +47,13 @@ export default async function Page() {
         { label: 'Öncelik', render: (r) => r.priority },
         { label: 'Termin', render: (r) => (r.due_at ? date(r.due_at) : 'Belirlenmedi') },
         { label: 'Başlangıç', render: (r) => (r.started_at ? date(r.started_at) : '—') },
+        { label: 'Sonraki adım', render: (r) => <ProductionAction row={r} /> },
       ]}
     />
   );
 }
+const nextState:Record<string,string|undefined>={blocked:'ready',ready:'in_production',in_production:'quality_check',quality_check:'passed',rework:'in_production',passed:'packed',packed:'completed'};
+function ProductionAction({row}:{row:Job}){const next=nextState[row.status];if(!next)return <span className="text-xs text-cherie-soft-ink">İşlem yok</span>;return <form action={transitionProduction}><input type="hidden" name="id" value={row.id}/><input type="hidden" name="status" value={next}/><button className="min-h-10 rounded-control border border-cherie-burgundy px-3 text-xs font-bold text-cherie-burgundy">{next}</button></form>}
 function productName(v: unknown) {
   return v &&
     typeof v === 'object' &&
