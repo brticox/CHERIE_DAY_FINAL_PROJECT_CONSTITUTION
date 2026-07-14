@@ -182,74 +182,76 @@ export default async function DashboardPage({
     monthRevenue = sumSince(month);
   const partialRevenue = revenueRows.length === 1000;
 
-  const todayMetrics: Metric[] = ([
-    {
-      label: 'Yeni sipariş',
-      value: newOrders,
-      href: '/admin/commerce/orders',
-      capability: 'orders.read',
-      icon: PackageCheck,
-    },
-    {
-      label: 'Ödemesi alınan',
-      value: paidOrders,
-      href: '/admin/commerce/orders?status=paid',
-      capability: 'orders.read',
-      icon: CircleDollarSign,
-    },
-    {
-      label: 'Başarısız ödeme',
-      value: failedPayments,
-      href: '/admin/commerce/payments?status=failed',
-      capability: 'finance.read',
-      urgent: (failedPayments ?? 0) > 0,
-      icon: AlertTriangle,
-    },
-    {
-      label: 'Bekleyen prova',
-      value: pendingProofs,
-      href: '/admin/commerce/proofs',
-      capability: 'orders.read',
-      urgent: (pendingProofs ?? 0) > 0,
-      icon: Sparkles,
-    },
-    {
-      label: 'Üretim kuyruğu',
-      value: productionDue,
-      href: '/admin/commerce/production',
-      capability: 'orders.read',
-      icon: Boxes,
-    },
-    {
-      label: 'Kargoya hazır',
-      value: shipmentsDue,
-      href: '/admin/commerce/shipments',
-      capability: 'orders.read',
-      icon: Truck,
-    },
-    {
-      label: 'Yeni lead',
-      value: newLeads,
-      href: '/admin/crm/leads',
-      capability: 'crm.read',
-      icon: Users,
-    },
-    {
-      label: 'Randevu',
-      value: appointments,
-      href: '/admin/services/consultations',
-      capability: 'services.read',
-      icon: CalendarClock,
-    },
-    {
-      label: 'Kalıcı bildirim hatası',
-      value: failedNotifications,
-      href: '/admin/marketing/notifications?status=permanently_failed',
-      capability: 'system.read',
-      urgent: (failedNotifications ?? 0) > 0,
-      icon: BellRing,
-    },
-  ] as Metric[]).filter((metric) => can(role, metric.capability));
+  const todayMetrics: Metric[] = (
+    [
+      {
+        label: 'Yeni sipariş',
+        value: newOrders,
+        href: '/admin/commerce/orders',
+        capability: 'orders.read',
+        icon: PackageCheck,
+      },
+      {
+        label: 'Ödemesi alınan',
+        value: paidOrders,
+        href: '/admin/commerce/orders?status=paid',
+        capability: 'orders.read',
+        icon: CircleDollarSign,
+      },
+      {
+        label: 'Başarısız ödeme',
+        value: failedPayments,
+        href: '/admin/commerce/payments?status=failed',
+        capability: 'finance.read',
+        urgent: (failedPayments ?? 0) > 0,
+        icon: AlertTriangle,
+      },
+      {
+        label: 'Bekleyen prova',
+        value: pendingProofs,
+        href: '/admin/commerce/proofs',
+        capability: 'orders.read',
+        urgent: (pendingProofs ?? 0) > 0,
+        icon: Sparkles,
+      },
+      {
+        label: 'Üretim kuyruğu',
+        value: productionDue,
+        href: '/admin/commerce/production',
+        capability: 'orders.read',
+        icon: Boxes,
+      },
+      {
+        label: 'Kargoya hazır',
+        value: shipmentsDue,
+        href: '/admin/commerce/shipments',
+        capability: 'orders.read',
+        icon: Truck,
+      },
+      {
+        label: 'Yeni lead',
+        value: newLeads,
+        href: '/admin/crm/leads',
+        capability: 'crm.read',
+        icon: Users,
+      },
+      {
+        label: 'Randevu',
+        value: appointments,
+        href: '/admin/services/consultations',
+        capability: 'services.read',
+        icon: CalendarClock,
+      },
+      {
+        label: 'Kalıcı bildirim hatası',
+        value: failedNotifications,
+        href: '/admin/marketing/notifications?status=permanently_failed',
+        capability: 'system.read',
+        urgent: (failedNotifications ?? 0) > 0,
+        icon: BellRing,
+      },
+    ] as Metric[]
+  ).filter((metric) => can(role, metric.capability));
 
   const signals = [
     {
@@ -301,6 +303,11 @@ export default async function DashboardPage({
 
   const showRevenue = can(role, 'finance.read');
   const showHealth = can(role, 'system.read');
+  const priorityMetric =
+    todayMetrics.find((metric) => metric.urgent && (metric.value ?? 0) > 0) ??
+    todayMetrics.find((metric) => (metric.value ?? 0) > 0) ??
+    todayMetrics[0];
+  const supportingMetrics = todayMetrics.filter((metric) => metric !== priorityMetric);
 
   const dbReady = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -331,12 +338,8 @@ export default async function DashboardPage({
       )}
       <header className="flex flex-col justify-between gap-5 border-b border-cherie-lace pb-7 lg:flex-row lg:items-end">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.2em] text-cherie-brass">
-            {dateLabel} · Operasyon Özeti
-          </p>
-          <h1 className="mt-2 font-display text-4xl leading-none md:text-5xl">
-            Bugün neye dikkat etmeliyiz?
-          </h1>
+          <p className="admin-eyebrow">{dateLabel} · Operasyon Özeti</p>
+          <h1 className="admin-page-title mt-3">Bugün neye dikkat etmeliyiz?</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-cherie-soft-ink">
             Sipariş, müşteri ve sistem sinyalleri doğrudan operasyon tablolarından okunur.
             Veri yoksa tahmin gösterilmez. Panel, rolünüze göre uyarlanır.
@@ -365,42 +368,97 @@ export default async function DashboardPage({
         <section aria-labelledby="today-heading">
           <div className="mb-4 flex items-end justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
-                A · Bugün
-              </p>
-              <h2 id="today-heading" className="font-display text-3xl">
-                Eylem radarı
+              <p className="admin-eyebrow">A · Bugün</p>
+              <h2 id="today-heading" className="admin-section-title mt-1">
+                Günün odağı
               </h2>
             </div>
             <span className="text-xs text-cherie-soft-ink">Canlı operasyon verisi</span>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {todayMetrics.map((metric) => (
-              <Link
-                key={metric.label}
-                href={metric.href}
-                className={`group min-h-32 rounded-card border bg-cherie-ivory p-4 transition-colors hover:bg-white ${
-                  metric.urgent
-                    ? 'border-cherie-cherry/60 shadow-[inset_3px_0_0_0_var(--cherie-cherry)]'
-                    : 'border-cherie-lace'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <metric.icon
-                    className={`size-5 ${metric.urgent ? 'text-cherie-cherry' : 'text-cherie-brass'}`}
-                  />
-                  <ArrowRight className="size-4 text-cherie-soft-ink opacity-0 transition-opacity group-hover:opacity-100" />
-                </div>
-                <p
-                  className={`mt-5 text-3xl font-semibold tabular-nums ${metric.urgent && (metric.value ?? 0) > 0 ? 'text-cherie-cherry' : ''}`}
+          <div className="admin-surface overflow-hidden">
+            <div className="grid xl:grid-cols-[1.618fr_1fr]">
+              {priorityMetric && (
+                <Link
+                  href={priorityMetric.href}
+                  className={`group flex min-h-64 flex-col justify-between p-6 sm:p-8 ${priorityMetric.urgent && (priorityMetric.value ?? 0) > 0 ? 'bg-cherie-velvet text-white' : 'bg-cherie-paper/65 text-cherie-ink'}`}
                 >
-                  {metric.value ?? '—'}
-                </p>
-                <p className="mt-1 text-xs text-cherie-soft-ink">
-                  {metric.value === null ? 'Veri okunamadı' : metric.label}
-                </p>
-              </Link>
-            ))}
+                  <div className="flex items-start justify-between">
+                    <span
+                      className={`grid size-12 place-items-center rounded-full ${priorityMetric.urgent && (priorityMetric.value ?? 0) > 0 ? 'bg-white/10 text-cherie-brass' : 'bg-white text-cherie-burgundy'}`}
+                    >
+                      <priorityMetric.icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <ArrowRight
+                      className="size-5 opacity-60 group-hover:translate-x-1 group-hover:opacity-100"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div className="mt-10">
+                    <p className="text-xs font-bold uppercase tracking-[.18em] opacity-70">
+                      {priorityMetric.urgent && (priorityMetric.value ?? 0) > 0
+                        ? 'Öncelikli müdahale'
+                        : 'İlk çalışma alanı'}
+                    </p>
+                    <div className="mt-2 flex items-end gap-4">
+                      <p className="text-6xl font-semibold tabular-nums leading-none sm:text-7xl">
+                        {priorityMetric.value ?? '—'}
+                      </p>
+                      <p className="pb-1 text-lg font-semibold">{priorityMetric.label}</p>
+                    </div>
+                    <p className="mt-4 max-w-xl text-sm leading-6 opacity-75">
+                      {priorityMetric.value === null
+                        ? 'Veri okunamadı. Hiçbir işlem yapılmadı; ayrıntıyı kontrol edin.'
+                        : priorityMetric.urgent && (priorityMetric.value ?? 0) > 0
+                          ? 'Operasyon akışını korumak için önce bu kayıtları inceleyin.'
+                          : 'Güne bu çalışma alanındaki kayıtları doğrulayarak başlayabilirsiniz.'}
+                    </p>
+                  </div>
+                </Link>
+              )}
+              <div className="border-t border-cherie-lace p-5 sm:p-6 xl:border-l xl:border-t-0">
+                <p className="admin-eyebrow">Sıradaki işler</p>
+                <div className="mt-4 divide-y divide-cherie-lace">
+                  {supportingMetrics.slice(0, 5).map((metric) => (
+                    <Link
+                      key={metric.label}
+                      href={metric.href}
+                      className="group flex min-h-14 items-center gap-3 py-3"
+                    >
+                      <metric.icon
+                        className={`size-4 shrink-0 ${metric.urgent && (metric.value ?? 0) > 0 ? 'text-cherie-error' : 'text-cherie-brass'}`}
+                        aria-hidden="true"
+                      />
+                      <span className="flex-1 text-sm font-medium text-cherie-ink">
+                        {metric.label}
+                      </span>
+                      <span className="text-lg font-semibold tabular-nums text-cherie-ink">
+                        {metric.value ?? '—'}
+                      </span>
+                      <ArrowRight
+                        className="size-4 text-cherie-soft-ink opacity-50 group-hover:translate-x-1 group-hover:opacity-100"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {supportingMetrics.length > 5 && (
+              <div className="grid border-t border-cherie-lace sm:grid-cols-3">
+                {supportingMetrics.slice(5).map((metric) => (
+                  <Link
+                    key={metric.label}
+                    href={metric.href}
+                    className="flex min-h-20 items-center justify-between gap-3 border-t border-cherie-lace px-5 py-4 first:border-t-0 sm:border-l sm:border-t-0 sm:first:border-l-0"
+                  >
+                    <span className="text-sm text-cherie-soft-ink">{metric.label}</span>
+                    <strong className="text-2xl tabular-nums text-cherie-ink">
+                      {metric.value ?? '—'}
+                    </strong>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -427,8 +485,8 @@ export default async function DashboardPage({
               </div>
               {partialRevenue && (
                 <p className="mt-5 rounded-control bg-cherie-warning/10 p-3 text-xs text-cherie-warning">
-                  Bu ay 1.000’den fazla ödeme var. Toplam, ilk 1.000 kayıtla sınırlı; kesin
-                  muhasebe raporu değildir.
+                  Bu ay 1.000’den fazla ödeme var. Toplam, ilk 1.000 kayıtla sınırlı;
+                  kesin muhasebe raporu değildir.
                 </p>
               )}
               <div className="mt-7 border-t border-cherie-lace pt-5">
@@ -501,7 +559,9 @@ export default async function DashboardPage({
               label="Bildirim gönderimi"
               ready={notificationReady}
               detail={
-                notificationReady ? 'Gönderim etkin' : 'Gönderim kapalı veya prova modunda'
+                notificationReady
+                  ? 'Gönderim etkin'
+                  : 'Gönderim kapalı veya prova modunda'
               }
             />
             <Health
@@ -509,7 +569,9 @@ export default async function DashboardPage({
               label="Ödeme sağlayıcısı"
               ready={paymentReady}
               detail={
-                paymentReady ? 'Sağlayıcı yapılandırılmış' : 'Canlı sağlayıcı kanıtlanmadı'
+                paymentReady
+                  ? 'Sağlayıcı yapılandırılmış'
+                  : 'Canlı sağlayıcı kanıtlanmadı'
               }
             />
             <Health
