@@ -39,6 +39,12 @@ export function validatePaytrEnvironment(
   if (env.APP_ENV === 'production' && env.PAYTR_SIMULATOR_SECRET) {
     failures.push('PAYTR_SIMULATOR_FORBIDDEN_IN_PRODUCTION');
   }
+  if (env.APP_ENV === 'production' && env.PAYTR_REFUND_SIMULATOR_ENABLED === 'true') {
+    failures.push('PAYTR_REFUND_SIMULATOR_FORBIDDEN_IN_PRODUCTION');
+  }
+  if (env.APP_ENV === 'production' && !env.PAYMENT_WORKER_SECRET) {
+    failures.push('PAYMENT_WORKER_SECRET_MISSING');
+  }
   if (env.APP_ENV === 'production' && env.NOTIFICATION_RECIPIENT_OVERRIDE) {
     failures.push('PAYMENT_RECIPIENT_OVERRIDE_FORBIDDEN');
   }

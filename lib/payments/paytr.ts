@@ -1,17 +1,18 @@
 import 'server-only';
 
-import { minorToTryDecimal, tryToMinor } from './money';
+import { minorToTryDecimal } from './money';
 import {
   createPaytrToken,
   encodePaytrBasket,
   verifyPaytrCallbackHash,
 } from './paytr-crypto';
 
-type PaytrItem = { name: string; price: number; quantity: number };
+type PaytrItem = { name: string; unitPriceMinor: number; quantity: number };
 
 export type PaytrInitializeInput = {
   orderNumber: string;
-  amount: number;
+  merchantOrderId: string;
+  amountMinor: number;
   email: string;
   fullName: string;
   phone: string;
@@ -41,8 +42,12 @@ export async function initializePaytr(
 ): Promise<PaytrInitializeResult> {
   const paytrCredentialsValue = paytrCredentials();
   const { merchantId } = paytrCredentialsValue;
-  const merchantOrderId = input.orderNumber.replace(/[^a-zA-Z0-9]/g, '');
-  const paymentAmountMinor = tryToMinor(input.amount);
+  const merchantOrderId = input.merchantOrderId;
+  if (!/^[a-zA-Z0-9]{1,64}$/.test(merchantOrderId)) {
+    throw new Error('PAYTR_MERCHANT_ORDER_ID_INVALID');
+  }
+  const paymentAmountMinor = input.amountMinor;
+  minorToTryDecimal(paymentAmountMinor);
   const paymentAmount = String(paymentAmountMinor);
   const currency = 'TL';
   const testMode = process.env.PAYTR_TEST_MODE === '0' ? '0' : '1';
@@ -51,7 +56,7 @@ export async function initializePaytr(
   const basket = encodePaytrBasket(
     input.items.map((item) => ({
       name: item.name,
-      unitPriceDecimal: minorToTryDecimal(tryToMinor(item.price)),
+      unitPriceDecimal: minorToTryDecimal(item.unitPriceMinor),
       quantity: item.quantity,
     })),
   );

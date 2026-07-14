@@ -1,5 +1,6 @@
 'use server';
 
+import { createHash } from 'node:crypto';
 import { headers } from 'next/headers';
 
 import { getCart, updateCartItem } from '@/lib/cart/server';
@@ -9,6 +10,7 @@ import { checkoutSchema, type CheckoutState } from '@/lib/validation/checkout';
 import { getPaymentProviderReadiness, isOnlineProvider } from '@/lib/payments';
 import { startPaymentAttempt } from '@/lib/payments/orchestrator';
 import { addMinor, minorToTryDecimal, tryToMinor } from '@/lib/payments/money';
+import { trustedClientIp } from '@/lib/security/client-ip';
 import type { Database } from '@/lib/supabase/database.types';
 
 type CheckoutSessionInsert = Database['public']['Tables']['checkout_sessions']['Insert'];
@@ -229,15 +231,30 @@ export async function prepareCheckoutAction(
         sessionId: String(result.data.id),
       };
     }
-    const forwardedFor = requestHeaders.get('x-forwarded-for')?.split(',')[0]?.trim();
-    const userIp = forwardedFor || requestHeaders.get('x-real-ip') || '127.0.0.1';
     try {
+      const identityHash = createHash('sha256')
+        .update(`checkout:${auth.user.id}`)
+        .digest('hex');
+      const { data: allowed } = await admin.rpc('check_payment_rate_limit', {
+        p_route_key: 'payment_initialization',
+        p_identity_hash: identityHash,
+        p_limit: 10,
+        p_window_seconds: 600,
+      });
+      if (allowed === false) {
+        return {
+          status: 'error',
+          message:
+            'Çok sayıda ödeme denemesi yapıldı. Lütfen on dakika sonra yeniden deneyin.',
+          sessionId: String(result.data.id),
+        };
+      }
       const payment = await startPaymentAttempt({
         checkoutSessionId: String(result.data.id),
         customerId: String(customer.id),
         provider: requestedProvider,
         email: auth.user.email,
-        userIp,
+        userIp: trustedClientIp(requestHeaders),
       });
       return {
         status: 'success',

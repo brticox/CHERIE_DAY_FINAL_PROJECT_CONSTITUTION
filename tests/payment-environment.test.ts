@@ -17,8 +17,9 @@ describe('payment environment readiness', () => {
   });
 
   it('rejects missing credentials', () => {
-    expect(validatePaytrEnvironment({ ...sandbox, PAYTR_MERCHANT_KEY: '' }).failures)
-      .toContain('PAYTR_CREDENTIALS_MISSING');
+    expect(
+      validatePaytrEnvironment({ ...sandbox, PAYTR_MERCHANT_KEY: '' }).failures,
+    ).toContain('PAYTR_CREDENTIALS_MISSING');
   });
 
   it('rejects live mode on localhost and outside production', () => {
@@ -35,10 +36,25 @@ describe('payment environment readiness', () => {
       PAYTR_SIMULATOR_SECRET: 'local-only',
       NOTIFICATION_RECIPIENT_OVERRIDE: 'capture@example.test',
     });
-    expect(report.failures).toEqual(expect.arrayContaining([
-      'PAYTR_TEST_CREDENTIALS_IN_PRODUCTION',
-      'PAYTR_SIMULATOR_FORBIDDEN_IN_PRODUCTION',
-      'PAYMENT_RECIPIENT_OVERRIDE_FORBIDDEN',
-    ]));
+    expect(report.failures).toEqual(
+      expect.arrayContaining([
+        'PAYTR_TEST_CREDENTIALS_IN_PRODUCTION',
+        'PAYTR_SIMULATOR_FORBIDDEN_IN_PRODUCTION',
+        'PAYMENT_RECIPIENT_OVERRIDE_FORBIDDEN',
+      ]),
+    );
+  });
+
+  it('requires a worker secret and disables refund simulation in production', () => {
+    const report = validatePaytrEnvironment({
+      ...sandbox,
+      APP_ENV: 'production',
+      PAYTR_TEST_MODE: '0',
+      NEXT_PUBLIC_SITE_URL: 'https://example.test',
+      PAYTR_REFUND_SIMULATOR_ENABLED: 'true',
+    });
+
+    expect(report.failures).toContain('PAYMENT_WORKER_SECRET_MISSING');
+    expect(report.failures).toContain('PAYTR_REFUND_SIMULATOR_FORBIDDEN_IN_PRODUCTION');
   });
 });

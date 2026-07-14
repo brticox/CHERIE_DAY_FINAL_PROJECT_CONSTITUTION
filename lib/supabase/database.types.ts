@@ -7387,6 +7387,102 @@ export type Database = {
           payment_id: string
         }[]
       }
+      create_payment_attempt_v2: {
+        Args: {
+          p_checkout_session_id: string
+          p_customer_id: string
+          p_provider: Database["public"]["Enums"]["payment_provider"]
+          p_request_key: string
+        }
+        Returns: {
+          amount: number
+          amount_minor: number
+          currency: string
+          merchant_order_id: string
+          order_id: string
+          order_number: string
+          payment_id: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          provider_redirect_url: string | null
+          reused: boolean
+        }[]
+      }
+      record_payment_initialization: {
+        Args: {
+          p_error_code?: string
+          p_payment_id: string
+          p_redirect_url?: string
+          p_succeeded: boolean
+        }
+        Returns: undefined
+      }
+      ingest_paytr_callback: {
+        Args: {
+          p_correlation_id: string
+          p_currency: string
+          p_merchant_order_id: string
+          p_payload: Json
+          p_payment_amount_minor: number
+          p_provider_event_id: string
+          p_status: string
+          p_total_amount_minor: number
+        }
+        Returns: Json
+      }
+      check_payment_rate_limit: {
+        Args: {
+          p_identity_hash: string
+          p_limit: number
+          p_route_key: string
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
+      detect_payment_discrepancies: {
+        Args: { p_batch_size?: number; p_pending_age_minutes?: number }
+        Returns: number
+      }
+      mark_refund_submitted: { Args: { p_refund_id: string }; Returns: undefined }
+      record_refund_submission: {
+        Args: {
+          p_error_code?: string
+          p_provider_reference: string
+          p_refund_id: string
+          p_retryable?: boolean
+          p_succeeded: boolean
+        }
+        Returns: undefined
+      }
+      request_finance_refund: {
+        Args: {
+          p_amount_minor: number
+          p_confirmation: string
+          p_idempotency_key: string
+          p_note?: string
+          p_payment_id: string
+          p_reason: Database["public"]["Enums"]["refund_reason"]
+        }
+        Returns: string
+      }
+      approve_finance_refund: {
+        Args: { p_confirmation: string; p_refund_id: string }
+        Returns: undefined
+      }
+      resolve_payment_discrepancy: {
+        Args: { p_discrepancy_id: string; p_notes: string; p_status: string }
+        Returns: undefined
+      }
+      get_customer_payment_summaries: {
+        Args: { p_order_number?: string }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          order_number: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          provider: Database["public"]["Enums"]["payment_provider"]
+        }[]
+      }
       current_customer_id: { Args: never; Returns: string }
       current_staff_id: { Args: never; Returns: string }
       current_staff_role: { Args: never; Returns: string }
