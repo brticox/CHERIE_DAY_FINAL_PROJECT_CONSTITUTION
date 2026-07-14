@@ -28,10 +28,11 @@
 
 .glow {
   position: absolute;
-  left: 49%;
-  top: 46%;
-  width: 66vw;
-  height: 46vw;
+  /* Touch-point light burst: horizontal centre, ~38% from top in HERO.png */
+  left: 50%;
+  top: 38%;
+  width: 70vw;
+  height: 50vw;
   transform: translate3d(
     calc(-50% + var(--hero-pointer-x, 0) * 34px),
     calc(-50% + var(--hero-pointer-y, 0) * 22px),
@@ -39,12 +40,12 @@
   );
   background: radial-gradient(
     closest-side,
-    rgba(216, 172, 110, 0.26) 0%,
-    rgba(190, 146, 92, 0.11) 42%,
-    rgba(120, 84, 48, 0) 72%
+    rgba(240, 196, 120, 0.30) 0%,
+    rgba(210, 158, 80, 0.12) 42%,
+    rgba(140, 96, 48, 0) 72%
   );
   mix-blend-mode: screen;
-  opacity: 0.85;
+  opacity: 0.88;
   will-change: transform;
 }
 
@@ -63,6 +64,73 @@
   );
   mix-blend-mode: screen;
   opacity: 0;
+  opacity: 0;
+}
+
+@keyframes rayPulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translate3d(
+      calc(-50% + var(--hero-pointer-x, 0) * -10px),
+      calc(-50% + var(--hero-pointer-y, 0) * -7px),
+      0
+    ) rotate(-15deg) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(
+      calc(-50% + var(--hero-pointer-x, 0) * -10px),
+      calc(-50% + var(--hero-pointer-y, 0) * -7px),
+      0
+    ) rotate(-15deg) scale(1.08);
+  }
+}
+
+/* ── precise, intense light ray (flare) at the touch point ──────────── */
+.ray {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 40vw;
+  height: 4px;
+  transform: translate3d(
+    calc(-50% + var(--hero-pointer-x, 0) * -10px),
+    calc(-50% + var(--hero-pointer-y, 0) * -7px),
+    0
+  ) rotate(-15deg);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 230, 180, 0.9) 0%,
+    rgba(255, 200, 120, 0.4) 30%,
+    rgba(255, 180, 80, 0) 70%
+  );
+  filter: blur(2px);
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+  animation: rayPulse 4s ease-in-out infinite;
+}
+
+.rayVertical {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 4px;
+  height: 30vw;
+  transform: translate3d(
+    calc(-50% + var(--hero-pointer-x, 0) * -10px),
+    calc(-50% + var(--hero-pointer-y, 0) * -7px),
+    0
+  ) rotate(-15deg);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 240, 200, 0.8) 0%,
+    rgba(255, 210, 140, 0.3) 30%,
+    rgba(255, 190, 90, 0) 70%
+  );
+  filter: blur(3px);
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+  animation: rayPulse 4s ease-in-out infinite 0.5s;
 }
 
 /* ── candles ────────────────────────────────────────────────────────── */
@@ -112,8 +180,9 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  -webkit-mask-image: radial-gradient(42% 78% at 10% 56%, #000 40%, transparent 75%);
-  mask-image: radial-gradient(42% 78% at 10% 56%, #000 40%, transparent 75%);
+  /* covers the flowing burgundy ribbon / veil at the upper-left of HERO.png */
+  -webkit-mask-image: radial-gradient(44% 60% at 20% 26%, #000 38%, transparent 72%);
+  mask-image: radial-gradient(44% 60% at 20% 26%, #000 38%, transparent 72%);
   mix-blend-mode: screen;
   transform: translate3d(
     calc(var(--hero-pointer-x, 0) * -13px),
@@ -460,4 +529,289 @@
   to {
     transform: translate3d(0, -50%, 0);
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MOBILE LIGHT FIELD  (<1024 px)
+   Positioned to MOBILE.png artwork. Each layer uses --hero-tilt-x/y
+   (written by useDeviceTilt from the gyroscope) at a different amplitude
+   to create genuine 2.5-D parallax depth on the device.
+
+   Depth stack (far → near, tilt amplitude increases):
+     mSkyGlow    : 50%/18%  — sky arch (far,  tilt ×4px)
+     mGlow       : 50%/42%  — promise glow  (mid,  tilt ×8px)
+     mBloom      : 50%/42%  — pulsing bloom  (mid,  tilt ×8px)
+     mCandle     : 12%/53%  — candle A warm  (near, tilt ×6px)
+     mCandleB    : 17%/57%  — candle B warm  (near, tilt ×6px)
+     mCore       : 50%/42%  — starburst core (nearest, tilt ×12px)
+     mTableGlow  : 50%/84%  — table golden   (near, tilt ×5px)
+     mRingGlint  : 52%/49%  — ring catch     (static)
+     mDust       : ambient dust field
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── zoom for mobile crop: tighten to the promise area ── */
+@media (max-width: 1023px) {
+  .cameraBreath {
+    transform: scale(1.06);
+    transform-origin: 50% 42%;
+  }
+}
+
+/* FAR — Sky / arch ambient glow (50% / 18%)
+   Wide warm wash from the luminous arch above the scene.
+   Tilt amplitude: ×4px (far plane, least movement) */
+.mSkyGlow {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  width: 100vw;
+  height: 80vw;
+  transform: translate3d(
+    calc(-50% + var(--hero-tilt-x, 0) * 4px),
+    calc(-50% + var(--hero-tilt-y, 0) * 3px),
+    0
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(236, 210, 152, 0.28) 0%,
+    rgba(210, 178, 108, 0.10) 50%,
+    rgba(180, 140, 72,  0)    80%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.80;
+  will-change: transform;
+}
+
+/* MID — Main promise glow at touch-point (50% / 42%)
+   The central golden radiance where the two hands nearly touch.
+   Tilt amplitude: ×8px */
+.mGlow {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  width: 75vw;
+  height: 75vw;
+  transform: translate3d(
+    calc(-50% + var(--hero-tilt-x, 0) * 8px),
+    calc(-50% + var(--hero-tilt-y, 0) * 6px),
+    0
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 210, 130, 0.55) 0%,
+    rgba(220, 170, 90,  0.25) 44%,
+    rgba(150, 100,  50,  0)    74%
+  );
+  mix-blend-mode: screen;
+  opacity: 1;
+  will-change: transform, opacity;
+}
+
+/* MID — Pulsing bloom (same anchor as glow — heartbeat of light) */
+.mBloom {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  width: 45vw;
+  height: 45vw;
+  transform: translate3d(
+    calc(-50% + var(--hero-tilt-x, 0) * 8px),
+    calc(-50% + var(--hero-tilt-y, 0) * 6px),
+    0
+  ) scale(0.82);
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 235, 180, 0.65) 0%,
+    rgba(230, 190, 120, 0.28) 46%,
+    rgba(230, 190, 120, 0)    72%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.65;
+  will-change: transform, opacity;
+}
+
+/* NEAR — Candle A: the taller candle at ~12%/53% of MOBILE.png
+   Warm amber radiance spilling from the left candelabra.
+   Tilt amplitude: ×6px */
+.mCandle {
+  position: absolute;
+  left: 12%;
+  top: 53%;
+  width: 85vw;
+  height: 85vw;
+  transform: translate3d(
+    calc(-38% + var(--hero-tilt-x, 0) * 6px),
+    calc(-50% + var(--hero-tilt-y, 0) * 5px),
+    0
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 190, 100, 0.45) 0%,
+    rgba(240, 160, 80,  0.18) 48%,
+    rgba(210, 130, 55,  0)    76%
+  );
+  mix-blend-mode: screen;
+  opacity: 1;
+  will-change: transform, opacity;
+}
+
+/* NEAR — Candle B: the shorter candle, slightly right and lower */
+.mCandleB {
+  position: absolute;
+  left: 17%;
+  top: 57%;
+  width: 55vw;
+  height: 55vw;
+  transform: translate3d(
+    calc(-38% + var(--hero-tilt-x, 0) * 6px),
+    calc(-50% + var(--hero-tilt-y, 0) * 5px),
+    0
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 200, 110, 0.40) 0%,
+    rgba(240, 160, 80,  0.15) 50%,
+    rgba(210, 130, 55,  0)    78%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.90;
+  will-change: transform, opacity;
+}
+
+/* NEAREST — Starburst core at the touch-point (50% / 42%)
+   The actual bright star where the fingertips nearly touch.
+   Tilt amplitude: ×12px (nearest plane — most parallax) */
+.mCore {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  width: 20vw;
+  height: 20vw;
+  transform: translate3d(
+    calc(-50% + var(--hero-tilt-x, 0) * 12px),
+    calc(-50% + var(--hero-tilt-y, 0) * 9px),
+    0
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 255, 235, 0.85) 0%,
+    rgba(255, 220, 160, 0.40) 40%,
+    rgba(250, 200, 120, 0)    72%
+  );
+  mix-blend-mode: screen;
+  opacity: 1;
+  will-change: transform, opacity;
+}
+
+/* NEAR — Table / bottom golden glow (50% / 84%)
+   The reflection of the golden tray and tea set below.
+   Tilt amplitude: ×5px */
+.mTableGlow {
+  position: absolute;
+  left: 50%;
+  top: 84%;
+  width: 80vw;
+  height: 50vw;
+  transform: translate3d(
+    calc(-50% + var(--hero-tilt-x, 0) * 5px),
+    calc(-50% + var(--hero-tilt-y, 0) * 4px),
+    0
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(218, 170, 88,  0.30) 0%,
+    rgba(190, 140, 64,  0.12) 46%,
+    rgba(150, 100, 40,  0)    74%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.70;
+  will-change: transform;
+}
+
+/* Ring glint between the hands (52% / 49%) — static, no tilt */
+.mRingGlint {
+  position: absolute;
+  left: 52%;
+  top: 49%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 248, 214, 0.85) 0%,
+    rgba(228, 188, 120, 0.34) 46%,
+    rgba(228, 188, 120, 0)    76%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.80;
+}
+
+/* Dust container: hovers around the promise area */
+.mDust {
+  position: absolute;
+  left: 20%;
+  top: 14%;
+  width: 64vw;
+  height: 64vw;
+  overflow: hidden;
+  mix-blend-mode: screen;
+  opacity: 0.62;
+}
+
+/* ── Mobile animations (prefers-reduced-motion gated) ── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .mSkyGlow {
+    animation: hlf-msky 10s ease-in-out infinite alternate;
+  }
+
+  .mGlow {
+    animation: hlf-mglow 6s ease-in-out infinite alternate;
+  }
+
+  .mBloom {
+    animation: hlf-mpulse 4.6s ease-in-out infinite;
+  }
+
+  .mCore {
+    animation: hlf-mcore 2.8s ease-in-out infinite;
+  }
+
+  .mCandle {
+    animation: hlf-flicker 6.0s linear infinite;
+  }
+
+  .mCandleB {
+    animation: hlf-flicker 7.4s linear -1.8s infinite;
+  }
+
+  .mTableGlow {
+    animation: hlf-msky 14s ease-in-out infinite alternate-reverse;
+  }
+
+  .mRingGlint {
+    animation: hlf-shimmer 3.4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes hlf-msky {
+  from { opacity: 0.60; }
+  to   { opacity: 0.92; }
+}
+
+@keyframes hlf-mglow {
+  from { opacity: 0.74; }
+  to   { opacity: 1.00; }
+}
+
+@keyframes hlf-mpulse {
+  0%   { opacity: 0.32; transform: translate3d(calc(-50% + var(--hero-tilt-x, 0) * 8px), calc(-50% + var(--hero-tilt-y, 0) * 6px), 0) scale(0.82); }
+  50%  { opacity: 0.82; transform: translate3d(calc(-50% + var(--hero-tilt-x, 0) * 8px), calc(-50% + var(--hero-tilt-y, 0) * 6px), 0) scale(1.12); }
+  100% { opacity: 0.32; transform: translate3d(calc(-50% + var(--hero-tilt-x, 0) * 8px), calc(-50% + var(--hero-tilt-y, 0) * 6px), 0) scale(0.82); }
+}
+
+@keyframes hlf-mcore {
+  0%   { opacity: 0.52; transform: translate3d(calc(-50% + var(--hero-tilt-x, 0) * 12px), calc(-50% + var(--hero-tilt-y, 0) * 9px), 0) scale(0.88); }
+  50%  { opacity: 0.95; transform: translate3d(calc(-50% + var(--hero-tilt-x, 0) * 12px), calc(-50% + var(--hero-tilt-y, 0) * 9px), 0) scale(1.18); }
+  100% { opacity: 0.52; transform: translate3d(calc(-50% + var(--hero-tilt-x, 0) * 12px), calc(-50% + var(--hero-tilt-y, 0) * 9px), 0) scale(0.88); }
 }
