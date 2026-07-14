@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { notificationReadiness } from '@/lib/notifications/config';
 import { saveSettings } from './actions';
 import { StateBadge } from '@/components/admin/resource-list';
+import { AdminNotice, AdminPageHeader } from '@/components/admin/admin-workspace';
 export const dynamic = 'force-dynamic';
 export default async function Page({
   searchParams,
@@ -41,12 +42,12 @@ export default async function Page({
     seo = obj(site?.default_seo);
   const readiness = notificationReadiness();
   const health = [
-    ['Database', !siteQ.error],
-    ['Migrations / system settings', !systemQ.error],
-    ['Notification worker', readiness.mode !== 'invalid'],
-    ['Legal readiness', (legalQ.data ?? []).every((x) => x.status === 'published')],
+    ['Veri bağlantısı', !siteQ.error],
+    ['Sistem ayarları', !systemQ.error],
+    ['Bildirim teslimatı', readiness.mode !== 'invalid'],
+    ['Yasal yayın hazırlığı', (legalQ.data ?? []).every((x) => x.status === 'published')],
     [
-      'Payment provider',
+      'Ödeme sağlayıcısı',
       Boolean(
         process.env.PAYTR_MERCHANT_ID &&
         process.env.PAYTR_MERCHANT_KEY &&
@@ -55,26 +56,30 @@ export default async function Page({
     ],
   ] as const;
   return (
-    <div className="space-y-6 p-4 md:p-8">
-      <header>
-        <p className="text-xs uppercase tracking-widest text-cherie-brass">
-          Sistem operasyonu
-        </p>
-        <h1 className="font-display text-4xl">Ayarlar ve sağlık</h1>
-        <p className="text-sm text-cherie-soft-ink">
-          Secret değerleri gösterilmez; yalnızca configured/not configured durumu görünür.
-        </p>
-      </header>
-      {state.error && <p role="alert">{state.error}</p>}
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="space-y-7 p-4 md:p-8">
+      <AdminPageHeader
+        eyebrow="Sistem operasyonu"
+        title="Ayarlar ve sistem sağlığı"
+        description="Gizli anahtarlar gösterilmeden, yapılandırma hazırlığını ve marka ayarlarını güvenli biçimde yönetin."
+      />
+      {state.error && (
+        <AdminNotice tone="danger" title="Ayarlar kaydedilemedi">
+          Önceki ayarlar korunuyor. Alanları kontrol edip güvenle yeniden
+          deneyebilirsiniz.
+        </AdminNotice>
+      )}
+      <section className="admin-surface grid overflow-hidden sm:grid-cols-2 lg:grid-cols-5">
         {health.map(([label, ok]) => (
-          <article key={label} className="rounded-card-lg border border-cherie-lace p-4">
+          <article
+            key={label}
+            className="border-t border-cherie-lace p-4 first:border-t-0 sm:border-l sm:first:border-l-0 lg:border-t-0"
+          >
             <p className="text-xs">{label}</p>
             <StateBadge value={ok ? 'ready' : 'attention'} />
           </article>
         ))}
       </section>
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-3" aria-label="Sistem sinyalleri">
         <Metric label="Başarısız bildirim" value={failedNotifications.count ?? 0} />
         <Metric label="Başarısız ödeme" value={failedPayments.count ?? 0} />
         <Metric label="Son sistem olayları" value={recentAudit.data?.length ?? 0} />
@@ -151,10 +156,11 @@ export default async function Page({
             label="Şehir/kargo notu"
             value={str(shipping.city_note)}
           />
-          <div className="rounded-control bg-cherie-paper p-3 text-xs">
-            Bildirim: {readiness.mode} · PAYTR:{' '}
-            {health[4][1] ? 'configured' : 'not configured'} · Service role:{' '}
-            {process.env.SUPABASE_SERVICE_ROLE_KEY ? 'configured' : 'not configured'}
+          <div className="rounded-control bg-cherie-paper p-3 text-xs leading-5">
+            Bildirim teslimatı:{' '}
+            {readiness.mode === 'invalid' ? 'Yapılandırma gerekli' : 'Hazır'} · PayTR:{' '}
+            {health[4][1] ? 'Hazır' : 'Yapılandırma gerekli'} · Güvenli sunucu erişimi:{' '}
+            {process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Hazır' : 'Yapılandırma gerekli'}
           </div>
         </Section>
         <button className="cherie-button-primary lg:col-span-2">Ayarları kaydet</button>
@@ -170,7 +176,7 @@ function obj(v: unknown): Record<string, unknown> {
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <article className="rounded-card-lg border border-cherie-lace p-4">
+    <article className="admin-surface p-4 shadow-none">
       <p className="text-xs">{label}</p>
       <strong className="font-display text-3xl">{value}</strong>
     </article>
@@ -178,7 +184,7 @@ function Metric({ label, value }: { label: string; value: number }) {
 }
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="space-y-3 rounded-card-lg border border-cherie-lace p-5">
+    <section className="admin-surface space-y-4 p-5 shadow-none">
       <h2 className="font-display text-2xl">{title}</h2>
       {children}
     </section>

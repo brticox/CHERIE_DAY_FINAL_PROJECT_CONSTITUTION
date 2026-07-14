@@ -4,6 +4,14 @@ import { requireStaff } from '@/lib/auth/guards';
 import { notificationReadiness } from '@/lib/notifications/config';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { retryNotification } from './actions';
+import {
+  AdminEmptyState,
+  AdminPageHeader,
+  AdminStatus,
+  AdminToolbar,
+} from '@/components/admin/admin-workspace';
+import { adminValueLabel } from '@/lib/admin/presentation';
+import { templateDefinitions } from '@/lib/notifications/templates';
 
 const allowedRoles = new Set([
   'superadmin',
@@ -47,25 +55,24 @@ export default async function Page({
   const counts = countStatuses(rows ?? []);
 
   return (
-    <div className="p-5 md:p-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="cherie-kicker">Operasyon</p>
-          <h1 className="text-h2 mt-2">Bildirim teslimatı</h1>
-          <p className="mt-2 text-sm text-cherie-soft-ink">
-            Son 100 işlem; alıcılar ve sağlayıcı hataları güvenli biçimde maskelenir.
-          </p>
-        </div>
-        <span className="rounded-full border border-cherie-lace bg-cherie-paper px-3 py-1.5 text-xs font-semibold">
-          Taşıma: {readiness.mode}
-        </span>
-      </div>
+    <div className="space-y-7 p-5 md:p-8">
+      <AdminPageHeader
+        eyebrow="İletişim operasyonu"
+        title="Bildirim teslimatı"
+        description="Son 100 teslimatın durumunu, yeniden deneme risklerini ve sağlayıcı izini güvenli biçimde yönetin."
+        action={
+          <AdminStatus
+            value={readiness.mode === 'invalid' ? 'failed' : 'ready'}
+            label={`Teslimat: ${readinessLabel(readiness.mode)}`}
+          />
+        }
+      />
 
-      <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="admin-surface grid overflow-hidden sm:grid-cols-2 xl:grid-cols-5">
         {Object.entries(counts).map(([label, value]) => (
           <div
             key={label}
-            className="rounded-card border border-cherie-lace bg-cherie-ivory p-4"
+            className="border-t border-cherie-lace p-4 first:border-t-0 sm:border-l sm:first:border-l-0 xl:border-t-0"
           >
             <p className="text-xs uppercase tracking-wide text-cherie-soft-ink">
               {label}
@@ -76,122 +83,159 @@ export default async function Page({
       </div>
       {filters.error && (
         <p role="alert" className="mt-4 rounded-control bg-cherie-error/10 p-3 text-sm">
-          {decodeURIComponent(filters.error)}
+          Bildirim işlemi tamamlanamadı. Hiçbir kayıt değiştirilmedi; yeniden
+          deneyebilirsiniz.
         </p>
       )}
-      <form className="mt-5 grid gap-3 rounded-card border border-cherie-lace p-4 md:grid-cols-5">
-        <input
-          aria-label="Bildirim ara"
-          name="q"
-          defaultValue={filters.q}
-          placeholder="Şablon veya aggregate"
-          className="cherie-field"
-        />
-        <select
-          aria-label="Bildirim durumu"
-          name="status"
-          defaultValue={filters.status ?? ''}
-          className="cherie-field"
-        >
-          <option value="">Tüm durumlar</option>
-          {[
-            'queued',
-            'processing',
-            'sent',
-            'retry_scheduled',
-            'permanently_failed',
-            'cancelled',
-          ].map((x) => (
-            <option key={x}>{x}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Bildirim kanalı"
-          name="channel"
-          defaultValue={filters.channel ?? ''}
-          className="cherie-field"
-        >
-          <option value="">Tüm kanallar</option>
-          <option value="email">E-posta</option>
-          <option value="sms">SMS</option>
-          <option value="whatsapp">WhatsApp</option>
-        </select>
-        <input
-          aria-label="Bildirim sağlayıcısı"
-          name="provider"
-          defaultValue={filters.provider}
-          placeholder="Sağlayıcı"
-          className="cherie-field"
-        />
-        <button className="cherie-button-primary">Filtrele</button>
-      </form>
-
-      <div className="mt-7 overflow-x-auto rounded-card border border-cherie-lace bg-cherie-ivory">
-        <table className="w-full min-w-[980px] text-left text-sm">
-          <thead className="bg-cherie-paper text-xs uppercase tracking-wide text-cherie-soft-ink">
-            <tr>
-              <th className="p-3">Durum</th>
-              <th className="p-3">Şablon</th>
-              <th className="p-3">Kanal / alıcı</th>
-              <th className="p-3">Bağlam</th>
-              <th className="p-3">Deneme</th>
-              <th className="p-3">Sağlayıcı</th>
-              <th className="p-3">Zaman / hata</th>
-              <th className="p-3">İşlem</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-cherie-lace">
-            {(rows ?? []).map((row) => (
-              <tr key={row.id}>
-                <td className="p-3 font-semibold">{statusLabel(row.status)}</td>
-                <td className="p-3">{row.template_key}</td>
-                <td className="p-3">
-                  {row.channel} ·{' '}
-                  {row.recipient_kind === 'staff'
-                    ? 'ekip'
-                    : redactEmail(row.recipient_email)}
-                </td>
-                <td className="p-3">
-                  {row.aggregate_type} · {shortId(row.aggregate_id)}
-                </td>
-                <td className="p-3">
-                  {row.attempts}/{row.max_attempts}
-                </td>
-                <td className="p-3">
-                  {row.provider_message_id ? shortId(row.provider_message_id) : '—'}
-                </td>
-                <td className="max-w-xs p-3 text-xs text-cherie-soft-ink">
-                  {formatDate(row.sent_at ?? row.next_attempt_at ?? row.created_at)}
-                  {row.last_error && (
-                    <span className="mt-1 block text-cherie-burgundy">
-                      {row.last_error_code}: {row.last_error}
-                    </span>
-                  )}
-                </td>
-                <td className="p-3">
-                  {['retry_scheduled', 'permanently_failed'].includes(row.status) && (
-                    <form action={retryNotification}>
-                      <input type="hidden" name="id" value={row.id} />
-                      <button
-                        name="confirm"
-                        value="retry"
-                        className="cherie-button-secondary"
-                      >
-                        Güvenli tekrar
-                      </button>
-                    </form>
-                  )}
-                </td>
-              </tr>
+      <AdminToolbar label="Bildirim filtreleri">
+        <form className="grid gap-3 md:grid-cols-5">
+          <input
+            aria-label="Bildirim ara"
+            name="q"
+            defaultValue={filters.q}
+            placeholder="Şablon veya kayıt numarası"
+            className="cherie-field"
+          />
+          <select
+            aria-label="Bildirim durumu"
+            name="status"
+            defaultValue={filters.status ?? ''}
+            className="cherie-field"
+          >
+            <option value="">Tüm durumlar</option>
+            {[
+              'queued',
+              'processing',
+              'sent',
+              'retry_scheduled',
+              'permanently_failed',
+              'cancelled',
+            ].map((x) => (
+              <option key={x} value={x}>
+                {statusLabel(x)}
+              </option>
             ))}
-          </tbody>
-        </table>
-        {!rows?.length && (
-          <p className="p-8 text-center text-sm text-cherie-soft-ink">
-            Henüz bildirim kaydı yok.
-          </p>
-        )}
-      </div>
+          </select>
+          <select
+            aria-label="Bildirim kanalı"
+            name="channel"
+            defaultValue={filters.channel ?? ''}
+            className="cherie-field"
+          >
+            <option value="">Tüm kanallar</option>
+            <option value="email">E-posta</option>
+            <option value="sms">SMS</option>
+            <option value="whatsapp">WhatsApp</option>
+          </select>
+          <input
+            aria-label="Bildirim sağlayıcısı"
+            name="provider"
+            defaultValue={filters.provider}
+            placeholder="Sağlayıcı"
+            className="cherie-field"
+          />
+          <button className="cherie-button-primary">Filtrele</button>
+        </form>
+      </AdminToolbar>
+
+      {(rows ?? []).length === 0 ? (
+        <AdminEmptyState
+          title="Henüz bildirim kaydı yok"
+          description="Müşteri veya ekip bildirimi sıraya alındığında teslimat sonucu ve güvenli yeniden deneme bilgisi burada görünecek."
+          primary={{ label: 'Siparişleri incele', href: '/admin/commerce/orders' }}
+        />
+      ) : (
+        <div className="admin-surface overflow-hidden">
+          <div className="divide-y divide-cherie-lace p-5 md:hidden">
+            {(rows ?? []).map((row) => (
+              <article key={row.id} className="admin-mobile-entity">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <strong>{templateLabel(row.template_key)}</strong>
+                    <p className="mt-1 text-xs text-cherie-soft-ink">
+                      {adminValueLabel(row.channel)} ·{' '}
+                      {row.recipient_kind === 'staff'
+                        ? 'Ekip'
+                        : redactEmail(row.recipient_email)}
+                    </p>
+                  </div>
+                  <AdminStatus value={row.status} label={statusLabel(row.status)} />
+                </div>
+                <div className="mt-4 flex items-end justify-between gap-3 text-xs text-cherie-soft-ink">
+                  <span>
+                    {row.attempts}/{row.max_attempts} deneme
+                  </span>
+                  <time>
+                    {formatDate(row.sent_at ?? row.next_attempt_at ?? row.created_at)}
+                  </time>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full min-w-[980px] text-left text-sm">
+              <thead className="bg-cherie-paper text-xs uppercase tracking-wide text-cherie-soft-ink">
+                <tr>
+                  <th className="p-3">Durum</th>
+                  <th className="p-3">Şablon</th>
+                  <th className="p-3">Kanal / alıcı</th>
+                  <th className="p-3">Bağlam</th>
+                  <th className="p-3">Deneme</th>
+                  <th className="p-3">Sağlayıcı</th>
+                  <th className="p-3">Zaman / hata</th>
+                  <th className="p-3">İşlem</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-cherie-lace">
+                {(rows ?? []).map((row) => (
+                  <tr key={row.id}>
+                    <td className="p-3">
+                      <AdminStatus value={row.status} label={statusLabel(row.status)} />
+                    </td>
+                    <td className="p-3 font-medium">{templateLabel(row.template_key)}</td>
+                    <td className="p-3">
+                      {adminValueLabel(row.channel)} ·{' '}
+                      {row.recipient_kind === 'staff'
+                        ? 'ekip'
+                        : redactEmail(row.recipient_email)}
+                    </td>
+                    <td className="p-3">Operasyon kaydı · {shortId(row.aggregate_id)}</td>
+                    <td className="p-3">
+                      {row.attempts}/{row.max_attempts}
+                    </td>
+                    <td className="p-3">
+                      {row.provider_message_id ? shortId(row.provider_message_id) : '—'}
+                    </td>
+                    <td className="max-w-xs p-3 text-xs text-cherie-soft-ink">
+                      {formatDate(row.sent_at ?? row.next_attempt_at ?? row.created_at)}
+                      {row.last_error && (
+                        <span className="mt-1 block text-cherie-burgundy">
+                          Teslimat hatası kaydedildi. Güvenli yeniden deneme seçeneğini
+                          kullanabilirsiniz.
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3">
+                      {['retry_scheduled', 'permanently_failed'].includes(row.status) && (
+                        <form action={retryNotification}>
+                          <input type="hidden" name="id" value={row.id} />
+                          <button
+                            name="confirm"
+                            value="retry"
+                            className="cherie-button-secondary"
+                          >
+                            Güvenli tekrar
+                          </button>
+                        </form>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -242,4 +286,18 @@ function formatDate(value: string) {
     timeStyle: 'short',
     timeZone: 'Europe/Istanbul',
   }).format(new Date(value));
+}
+
+function templateLabel(value: string) {
+  return templateDefinitions[value]?.title ?? 'Operasyon bildirimi';
+}
+
+function readinessLabel(value: string) {
+  return value === 'invalid'
+    ? 'Yapılandırma gerekli'
+    : value === 'disabled'
+      ? 'Kapalı'
+      : value === 'preview'
+        ? 'Ön izleme'
+        : 'Hazır';
 }
