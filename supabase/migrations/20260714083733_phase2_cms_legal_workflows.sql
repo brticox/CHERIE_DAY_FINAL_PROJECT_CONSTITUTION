@@ -1,6 +1,6 @@
 -- Structured CMS revisioning and immutable legal history.
 create or replace function public.admin_save_page(p_page_id uuid,p_title text,p_slug text,p_body jsonb)
-returns public.pages language plpgsql security invoker set search_path=public as $$
+returns public.pages language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_page public.pages;v_staff uuid;v_version int;
 begin
   if not (select public.has_staff_role(array['content_editor','content_publisher','admin'])) then raise exception 'permission denied' using errcode='42501';end if;
@@ -14,7 +14,7 @@ begin
 end$$;
 
 create or replace function public.admin_publish_page(p_page_id uuid)
-returns void language plpgsql security invoker set search_path=public as $$
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_staff uuid;v_page public.pages;v_version int;
 begin
   if not (select public.has_staff_role(array['content_publisher','admin'])) then raise exception 'permission denied' using errcode='42501';end if;
@@ -27,7 +27,7 @@ begin
 end$$;
 
 create or replace function public.admin_rollback_page(p_page_id uuid,p_revision_id uuid)
-returns void language plpgsql security invoker set search_path=public as $$
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_staff uuid;v_snapshot jsonb;v_version int;
 begin
   if not (select public.has_staff_role(array['content_editor','content_publisher','admin'])) then raise exception 'permission denied' using errcode='42501';end if;
@@ -47,5 +47,5 @@ end$$;
 drop trigger if exists protect_legal_history_trigger on public.legal_document_versions;
 create trigger protect_legal_history_trigger before update or delete on public.legal_document_versions for each row execute function public.protect_legal_history();
 
-revoke all on function public.admin_save_page(uuid,text,text,jsonb),public.admin_publish_page(uuid),public.admin_rollback_page(uuid,uuid) from public;
+revoke all on function public.admin_save_page(uuid,text,text,jsonb),public.admin_publish_page(uuid),public.admin_rollback_page(uuid,uuid) from public, anon, authenticated;
 grant execute on function public.admin_save_page(uuid,text,text,jsonb),public.admin_publish_page(uuid),public.admin_rollback_page(uuid,uuid) to authenticated;

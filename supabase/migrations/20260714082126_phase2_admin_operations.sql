@@ -122,8 +122,8 @@ create index if not exists audit_log_entity_idx on public.audit_log(entity_type,
 create or replace function public.admin_publish_product(p_product_id uuid)
 returns public.products
 language plpgsql
-security invoker
-set search_path = public
+security definer
+set search_path = public, pg_temp
 as $$
 declare v_product public.products; v_staff uuid; v_media_count int; v_readiness jsonb;
 begin
@@ -141,7 +141,7 @@ begin
 end $$;
 
 create or replace function public.admin_archive_product(p_product_id uuid)
-returns void language plpgsql security invoker set search_path=public as $$
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_staff uuid;
 begin
   if not (select public.has_staff_role(array['commerce_manager','admin'])) then raise exception 'permission denied' using errcode='42501'; end if;
@@ -153,7 +153,7 @@ begin
 end $$;
 
 create or replace function public.admin_restore_product(p_product_id uuid)
-returns void language plpgsql security invoker set search_path=public as $$
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_staff uuid;
 begin
   if not (select public.has_staff_role(array['commerce_manager','admin'])) then raise exception 'permission denied' using errcode='42501'; end if;
@@ -165,7 +165,7 @@ begin
 end $$;
 
 create or replace function public.admin_publish_legal_version(p_version_id uuid, p_approval_metadata jsonb default '{}'::jsonb)
-returns void language plpgsql security invoker set search_path=public as $$
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_version public.legal_document_versions; v_staff uuid;
 begin
   if not (select public.has_staff_role(array['admin'])) then raise exception 'permission denied' using errcode='42501'; end if;
@@ -180,7 +180,7 @@ begin
 end $$;
 
 create or replace function public.admin_archive_media(p_media_id uuid)
-returns void language plpgsql security invoker set search_path=public as $$
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_staff uuid; v_usage int;
 begin
   if not (select public.has_staff_role(array['product_editor','commerce_manager','content_editor','content_publisher','admin'])) then raise exception 'permission denied' using errcode='42501'; end if;
@@ -192,7 +192,7 @@ begin
 end $$;
 
 create or replace function public.admin_set_product_media(p_product_id uuid, p_media_ids uuid[])
-returns void language plpgsql security invoker set search_path=public as $$
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
 declare v_staff uuid; v_invalid int;
 begin
   if not (select public.has_staff_role(array['product_editor','commerce_manager','admin'])) then raise exception 'permission denied' using errcode='42501'; end if;
@@ -211,12 +211,12 @@ begin
   insert into public.audit_log(staff_user_id,action,entity_type,entity_id,diff) values(v_staff,'product.media.updated','product',p_product_id,jsonb_build_object('media_ids',p_media_ids,'cover_id',p_media_ids[1]));
 end $$;
 
-revoke all on function public.admin_publish_product(uuid) from public;
-revoke all on function public.admin_archive_product(uuid) from public;
-revoke all on function public.admin_restore_product(uuid) from public;
-revoke all on function public.admin_publish_legal_version(uuid,jsonb) from public;
-revoke all on function public.admin_archive_media(uuid) from public;
-revoke all on function public.admin_set_product_media(uuid,uuid[]) from public;
+revoke all on function public.admin_publish_product(uuid) from public, anon, authenticated;
+revoke all on function public.admin_archive_product(uuid) from public, anon, authenticated;
+revoke all on function public.admin_restore_product(uuid) from public, anon, authenticated;
+revoke all on function public.admin_publish_legal_version(uuid,jsonb) from public, anon, authenticated;
+revoke all on function public.admin_archive_media(uuid) from public, anon, authenticated;
+revoke all on function public.admin_set_product_media(uuid,uuid[]) from public, anon, authenticated;
 grant execute on function public.admin_publish_product(uuid), public.admin_archive_product(uuid), public.admin_restore_product(uuid), public.admin_publish_legal_version(uuid,jsonb), public.admin_archive_media(uuid), public.admin_set_product_media(uuid,uuid[]) to authenticated;
 
 -- Storage stays staff-scoped. No upsert: immutable object paths prevent cache races.

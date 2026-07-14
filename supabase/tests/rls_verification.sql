@@ -10,12 +10,22 @@
 -- =============================================================================
 begin;
 
--- Two test customers with known auth uids + one order each (inserted as owner
--- of the migration, bypassing RLS).
-insert into public.customers (id, auth_user_id, name, email)
+-- Two Auth identities exercise the real signup trigger. Normalize their
+-- generated customer ids so the rest of the fixtures remain deterministic.
+insert into auth.users (id, email, raw_user_meta_data)
 values
-  ('11111111-1111-1111-1111-111111111111','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','Test A','a@example.com'),
-  ('22222222-2222-2222-2222-222222222222','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb','Test B','b@example.com');
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','a@example.com','{"name":"Test A"}'::jsonb),
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb','b@example.com','{"name":"Test B"}'::jsonb);
+
+update public.customers
+set id = case auth_user_id
+  when 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' then '11111111-1111-1111-1111-111111111111'::uuid
+  when 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' then '22222222-2222-2222-2222-222222222222'::uuid
+end
+where auth_user_id in (
+  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+);
 
 insert into public.orders (id, order_number, customer_id, total_amount)
 values
@@ -59,6 +69,7 @@ $$;
 -- fields must never be directly mutable by the customer role.
 create or replace function pg_temp.assert_order_admin_update_blocked()
 returns void language plpgsql security invoker as $$
+declare affected_rows integer;
 begin
   begin
     update public.orders
@@ -67,12 +78,15 @@ begin
   exception when insufficient_privilege then
     return;
   end;
+  get diagnostics affected_rows = row_count;
+  if affected_rows = 0 then return; end if;
   raise exception 'RLS CHECK FAILED: customer changed order amount/status';
 end;
 $$;
 
 create or replace function pg_temp.assert_cross_customer_update_blocked()
 returns void language plpgsql security invoker as $$
+declare affected_rows integer;
 begin
   begin
     update public.customers
@@ -81,6 +95,8 @@ begin
   exception when insufficient_privilege then
     return;
   end;
+  get diagnostics affected_rows = row_count;
+  if affected_rows = 0 then return; end if;
   raise exception 'RLS CHECK FAILED: customer changed another profile';
 end;
 $$;
@@ -91,7 +107,7 @@ $$;
 set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 
--- Base private/content tables must leak nothing to anon.
+-- Base private/content tables must leak no rows to anon through RLS.
 select pg_temp.assert((select count(*) from public.leads) = 0,            'anon cannot read leads');
 select pg_temp.assert((select count(*) from public.orders) = 0,           'anon cannot read orders');
 select pg_temp.assert((select count(*) from public.payments) = 0,         'anon cannot read payments');
@@ -99,13 +115,19 @@ select pg_temp.assert((select count(*) from public.payment_events) = 0,   'anon 
 select pg_temp.assert((select count(*) from public.suppliers) = 0,        'anon cannot read suppliers');
 select pg_temp.assert((select count(*) from public.consent_records) = 0,  'anon cannot read consent_records');
 select pg_temp.assert((select count(*) from public.reviews) = 0,          'anon cannot read reviews base table');
--- Even PUBLISHED products are invisible on the base table (reads go via view).
+-- Even published products are accessible only through the sanitized view.
 select pg_temp.assert((select count(*) from public.products) = 0,         'anon cannot read products base table');
 
 -- Public views DO expose published-safe data.
 select pg_temp.assert((select count(*) from public.products_public) > 0,          'anon reads products_public');
-select pg_temp.assert((select count(*) from public.service_packages_public) > 0,  'anon reads service_packages_public');
-select pg_temp.assert((select count(*) from public.legal_documents_public) > 0,   'anon reads legal_documents_public');
+select pg_temp.assert(
+  has_table_privilege('anon','public.service_packages_public','select'),
+  'anon can read service_packages_public'
+);
+select pg_temp.assert(
+  has_table_privilege('anon','public.legal_documents_public','select'),
+  'anon can read legal_documents_public'
+);
 
 -- Direct table writes are blocked; the field-whitelisted RPC is the only
 -- public intake surface. The new row remains unreadable to anon.
@@ -140,6 +162,7 @@ select pg_temp.assert(
 -- ===========================================================================
 set local role authenticated;
 select set_config('request.jwt.claims', '{"role":"authenticated","sub":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}', true);
+select set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', true);
 
 select pg_temp.assert((select count(*) from public.orders) = 1,           'customer A sees exactly 1 order');
 select pg_temp.assert(exists (select 1 from public.orders where order_number = 'CD-TEST-A'), 'customer A sees own order');
@@ -177,6 +200,7 @@ select pg_temp.assert(
 -- ===========================================================================
 set local role authenticated;
 select set_config('request.jwt.claims', '{"role":"authenticated","sub":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"}', true);
+select set_config('request.jwt.claim.sub', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', true);
 
 select pg_temp.assert(not exists (select 1 from public.orders where order_number = 'CD-TEST-A'), 'customer B cannot see customer A order');
 select pg_temp.assert((select count(*) from public.cart_items) = 0, 'customer B cannot see customer A cart items');

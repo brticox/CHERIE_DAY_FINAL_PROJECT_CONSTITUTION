@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:phase1:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/phase1_legal_notifications.sql",
+    "test:phase2:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/phase1_legal_notifications.sql -f supabase/tests/rls_verification.sql -f supabase/tests/phase2_admin_permissions.sql",
     "email:preview": "vite-node scripts/generate-email-previews.ts",
     "db:types:local": "supabase gen types --local --schema public > lib/supabase/database.types.ts",
     "db:types:linked": "supabase gen types --linked --schema public > lib/supabase/database.types.ts",

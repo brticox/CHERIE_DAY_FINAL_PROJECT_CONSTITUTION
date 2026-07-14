@@ -80,7 +80,11 @@ create trigger trg_guard_legal_version_history
 before update on public.legal_document_versions
 for each row execute function public.guard_legal_version_history();
 
-create or replace view public.legal_documents_public
+-- The hardened contract inserts locale and publication metadata between
+-- existing columns. PostgreSQL cannot express that safely with CREATE OR
+-- REPLACE VIEW, so rebuild this public read model explicitly.
+drop view if exists public.legal_documents_public;
+create view public.legal_documents_public
 with (security_invoker = true) as
   select d.id as document_id, d.doc_key, d.title_tr, d.slug,
          v.id as version_id, v.version, v.locale, v.body, v.summary,
