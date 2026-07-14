@@ -161,14 +161,5 @@ function display(value: unknown) {
   if (typeof value === 'boolean') return value ? 'Evet' : 'Hayır';
   if (typeof value === 'string' || typeof value === 'number') return String(value);
   if (Array.isArray(value)) return value.length ? `${value.length} öğe` : '—';
-  return (
-    <details>
-      <summary className="cursor-pointer text-cherie-burgundy">
-        Teknik ayrıntıyı göster
-      </summary>
-      <pre className="mt-2 max-w-md overflow-auto rounded-control bg-cherie-paper p-3 text-xs">
-        {JSON.stringify(value, null, 2)}
-      </pre>
-    </details>
-  );
+  return `${Object.keys(value as Record<string, unknown>).length} yapılandırılmış alan`;
 }

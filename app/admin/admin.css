@@ -58,6 +58,16 @@
 .admin-main > * {
   animation: admin-enter var(--admin-motion-base) var(--admin-ease) both;
 }
+.admin-drawer-backdrop,
+.admin-dialog-backdrop {
+  animation: admin-fade var(--admin-motion-base) var(--admin-ease) both;
+}
+.admin-drawer-panel {
+  animation: admin-drawer-enter var(--admin-motion-base) var(--admin-ease) both;
+}
+.admin-command-dialog {
+  animation: admin-dialog-enter var(--admin-motion-base) var(--admin-ease) both;
+}
 .admin-number,
 .admin-root :is(table, time, [data-admin-number]) {
   font-variant-numeric: tabular-nums lining-nums;
@@ -153,6 +163,34 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+@keyframes admin-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes admin-drawer-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes admin-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 @media (max-width: 767px) {

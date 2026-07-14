@@ -45,7 +45,9 @@ export default async function Page() {
     ...(blocks.data ?? []).map((x) => ({
       id: x.id,
       date: x.date,
-      label: x.is_blackout ? `Blackout · ${x.note ?? ''}` : `Kapasite · ${x.note ?? ''}`,
+      label: x.is_blackout
+        ? `Rezervasyona kapalı · ${x.note ?? ''}`
+        : `Kapasite · ${x.note ?? ''}`,
       status: x.is_blackout ? 'blackout' : 'available',
       href: '/admin/services/availability',
     })),

@@ -14,7 +14,7 @@ const configs = {
     table: 'collection_sets',
     fields: [
       { key: 'name', label: 'Ad' },
-      { key: 'slug', label: 'Slug' },
+      { key: 'slug', label: 'Adres kısa adı' },
     ],
     statusKey: 'status',
     dateKey: 'updated_at',
@@ -24,7 +24,7 @@ const configs = {
     table: 'event_types',
     fields: [
       { key: 'name_tr', label: 'Ad' },
-      { key: 'slug', label: 'Slug' },
+      { key: 'slug', label: 'Adres kısa adı' },
     ],
     statusKey: 'status',
   },
@@ -33,7 +33,7 @@ const configs = {
     table: 'materials',
     fields: [
       { key: 'name_tr', label: 'Malzeme' },
-      { key: 'slug', label: 'Slug' },
+      { key: 'slug', label: 'Adres kısa adı' },
       { key: 'sort_order', label: 'Sıra' },
     ],
   },

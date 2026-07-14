@@ -67,7 +67,7 @@ export default async function ProductsPage({
           <input
             name="q"
             defaultValue={params.q}
-            placeholder="Ürün adı veya slug"
+            placeholder="Ürün adı veya adres kısa adı"
             className="min-w-0 flex-1 bg-transparent text-sm outline-none"
           />
         </label>

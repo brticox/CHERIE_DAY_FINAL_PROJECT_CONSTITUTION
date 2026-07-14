@@ -21,7 +21,7 @@ const configs = {
     table: 'articles',
     fields: [
       { key: 'title', label: 'Başlık' },
-      { key: 'slug', label: 'Slug' },
+      { key: 'slug', label: 'Adres kısa adı' },
       { key: 'category', label: 'Kategori' },
     ],
     statusKey: 'status',
@@ -43,7 +43,7 @@ const configs = {
     table: 'experiences',
     fields: [
       { key: 'name', label: 'Ad' },
-      { key: 'slug', label: 'Slug' },
+      { key: 'slug', label: 'Adres kısa adı' },
       { key: 'summary', label: 'Özet' },
     ],
     statusKey: 'status',
@@ -85,14 +85,14 @@ const configs = {
     table: 'portfolio_projects',
     fields: [
       { key: 'title', label: 'Başlık' },
-      { key: 'slug', label: 'Slug' },
+      { key: 'slug', label: 'Adres kısa adı' },
       { key: 'city', label: 'Şehir' },
     ],
     statusKey: 'status',
     dateKey: 'created_at',
   },
   seo: {
-    title: 'SEO kayıtları',
+    title: 'Arama görünümü kayıtları',
     table: 'seo_metadata',
     fields: [
       { key: 'title', label: 'Başlık' },

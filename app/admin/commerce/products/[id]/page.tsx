@@ -83,7 +83,7 @@ export default async function EditProductPage({
     : null;
   const readiness = [
     ['Ad', product.name.trim().length >= 3],
-    ['Slug', /^[a-z0-9]+(-[a-z0-9]+)*$/.test(product.slug)],
+    ['Adres kısa adı', /^[a-z0-9]+(-[a-z0-9]+)*$/.test(product.slug)],
     ['Açıklama', (product.description?.trim().length ?? 0) >= 20],
     [
       'Fiyat',

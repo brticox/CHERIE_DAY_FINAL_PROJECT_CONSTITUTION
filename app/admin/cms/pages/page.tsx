@@ -40,7 +40,7 @@ export default async function Page({
             </Link>
           ),
         },
-        { label: 'Slug', value: (r) => r.slug },
+        { label: 'Adres kısa adı', value: (r) => r.slug },
         { label: 'Durum', value: (r) => <StateBadge value={r.status} /> },
         { label: 'Güncelleme', value: (r) => <AdminDate value={r.updated_at} /> },
       ]}

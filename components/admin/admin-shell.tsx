@@ -67,9 +67,9 @@ const GROUP_ICONS: Record<string, IconType> = {
   Siparişler: ShoppingBag,
   Katalog: Boxes,
   Hizmetler: CalendarHeart,
-  'Müşteriler & CRM': Users,
+  'Müşteriler ve İlişkiler': Users,
   İçerik: FileText,
-  'Ödemeler & Finans': Banknote,
+  'Ödemeler ve Finans': Banknote,
   Hukuk: Scale,
   Pazarlama: Megaphone,
   Sistem: Settings,
@@ -96,6 +96,8 @@ export function AdminShell({ children, staff }: Props) {
   const drawerTrigger = useRef<HTMLButtonElement>(null);
   const drawerPanel = useRef<HTMLElement>(null);
   const paletteTrigger = useRef<HTMLElement | null>(null);
+  const paletteDesktopTrigger = useRef<HTMLButtonElement>(null);
+  const paletteMobileTrigger = useRef<HTMLButtonElement>(null);
   const groups = useMemo(
     () => ADMIN_NAVIGATION.filter((group) => can(staff.role, group.capability)),
     [staff.role],
@@ -107,7 +109,15 @@ export function AdminShell({ children, staff }: Props) {
   };
   const closePalette = () => {
     setPalette(false);
-    paletteTrigger.current?.focus?.();
+    const previousTrigger = paletteTrigger.current;
+    if (previousTrigger?.isConnected) {
+      previousTrigger.focus();
+      return;
+    }
+    const fallback = window.matchMedia('(min-width: 1024px)').matches
+      ? paletteDesktopTrigger.current
+      : paletteMobileTrigger.current;
+    fallback?.focus();
   };
 
   useEffect(() => {
@@ -123,7 +133,6 @@ export function AdminShell({ children, staff }: Props) {
         event.preventDefault();
         openPalette();
       }
-      if (event.key === 'Escape') setDrawer(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -133,6 +142,31 @@ export function AdminShell({ children, staff }: Props) {
     if (!drawer) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const focusableSelector =
+      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const onDrawerKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setDrawer(false);
+        requestAnimationFrame(() => drawerTrigger.current?.focus());
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = Array.from(
+        drawerPanel.current?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener('keydown', onDrawerKeyDown);
     requestAnimationFrame(() => {
       drawerPanel.current
         ?.querySelector<HTMLElement>(
@@ -142,6 +176,7 @@ export function AdminShell({ children, staff }: Props) {
     });
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onDrawerKeyDown);
     };
   }, [drawer]);
 
@@ -291,34 +326,37 @@ export function AdminShell({ children, staff }: Props) {
         Ana içeriğe geç
       </a>
       <aside
-        className={`fixed inset-y-0 left-0 z-40 hidden bg-cherie-velvet shadow-lift md:block ${collapsed ? 'w-20' : 'w-72'}`}
+        className={`fixed inset-y-0 left-0 z-40 hidden bg-cherie-velvet shadow-lift xl:block ${collapsed ? 'w-20' : 'w-72'}`}
       >
         {sidebar(false)}
       </aside>
       {drawer && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 xl:hidden">
           <button
             aria-label="Menü dışını kapat"
-            className="absolute inset-0 bg-cherie-ink/55"
-            onClick={() => setDrawer(false)}
+            className="admin-drawer-backdrop absolute inset-0 bg-cherie-ink/55"
+            onClick={() => {
+              setDrawer(false);
+              requestAnimationFrame(() => drawerTrigger.current?.focus());
+            }}
           />
           <aside
             ref={drawerPanel}
             role="dialog"
             aria-modal="true"
             aria-label="Yönetim menüsü"
-            className="relative h-full w-[min(88vw,320px)] bg-cherie-velvet shadow-lift"
+            className="admin-drawer-panel relative h-full w-[min(88vw,320px)] bg-cherie-velvet shadow-lift"
           >
             {sidebar(true)}
           </aside>
         </div>
       )}
-      <div className={collapsed ? 'md:pl-20' : 'md:pl-72'}>
+      <div className={collapsed ? 'xl:pl-20' : 'xl:pl-72'}>
         <header className="sticky top-0 z-30 flex min-h-20 items-center gap-3 border-b border-cherie-lace/80 bg-cherie-ivory/95 px-4 backdrop-blur md:px-7">
           <button
             ref={drawerTrigger}
             onClick={() => setDrawer(true)}
-            className="grid size-11 place-items-center rounded-control border border-cherie-lace md:hidden"
+            className="grid size-11 place-items-center rounded-control border border-cherie-lace xl:hidden"
             aria-label="Yönetim menüsünü aç"
           >
             <Menu className="size-5" />
@@ -332,6 +370,7 @@ export function AdminShell({ children, staff }: Props) {
             </p>
           </div>
           <button
+            ref={paletteDesktopTrigger}
             onClick={openPalette}
             className="hidden h-11 min-w-64 items-center gap-3 rounded-control border border-cherie-lace bg-white/60 px-3 text-sm text-cherie-soft-ink shadow-sm transition-colors hover:border-cherie-brass lg:flex"
           >
@@ -342,6 +381,7 @@ export function AdminShell({ children, staff }: Props) {
             </kbd>
           </button>
           <button
+            ref={paletteMobileTrigger}
             onClick={openPalette}
             className="grid size-11 place-items-center rounded-control border border-cherie-lace lg:hidden"
             aria-label="Komut paletini aç"
@@ -476,6 +516,7 @@ function CommandPalette({
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
   const [entities, setEntities] = useState<PaletteItem[]>([]);
   const [active, setActive] = useState(0);
@@ -510,6 +551,40 @@ function CommandPalette({
       inputRef.current?.focus();
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onDialogKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener('keydown', onDialogKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onDialogKeyDown);
+    };
+  }, [onClose, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -580,7 +655,7 @@ function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-start justify-center bg-cherie-ink/55 px-4 pt-[10vh]"
+      className="admin-dialog-backdrop fixed inset-0 z-[80] flex items-start justify-center bg-cherie-ink/55 px-4 pt-[10vh]"
       role="dialog"
       aria-modal="true"
       aria-label="Komut paleti"
@@ -590,7 +665,10 @@ function CommandPalette({
         className="absolute inset-0"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-card-lg border border-cherie-lace bg-cherie-ivory shadow-lift">
+      <div
+        ref={dialogRef}
+        className="admin-command-dialog relative w-full max-w-2xl overflow-hidden rounded-card-lg border border-cherie-lace bg-cherie-ivory shadow-lift"
+      >
         <div className="flex items-center gap-3 border-b border-cherie-lace px-4">
           <Command className="size-5 text-cherie-brass" />
           <input

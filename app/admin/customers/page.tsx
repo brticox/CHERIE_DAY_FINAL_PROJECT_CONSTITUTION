@@ -26,7 +26,7 @@ export default async function Page({
     <div className="space-y-6 p-4 md:p-8">
       <header>
         <p className="text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">
-          CRM
+          Müşteri ilişkileri
         </p>
         <h1 className="font-display text-4xl">Müşteriler</h1>
         <p className="mt-2 text-sm text-cherie-soft-ink">
@@ -41,7 +41,12 @@ export default async function Page({
           placeholder="Ad, e-posta veya telefon"
           className="cherie-field"
         />
-        <select aria-label="Müşteri durumu" name="status" defaultValue={status ?? ''} className="cherie-field">
+        <select
+          aria-label="Müşteri durumu"
+          name="status"
+          defaultValue={status ?? ''}
+          className="cherie-field"
+        >
           <option value="">Tüm durumlar</option>
           <option value="active">Aktif</option>
           <option value="inactive">Pasif</option>

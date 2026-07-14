@@ -8,6 +8,7 @@ import {
   toggleReservationTask,
   updateReservation,
 } from '../../actions';
+import { adminValueLabel } from '@/lib/admin/presentation';
 export const dynamic = 'force-dynamic';
 export default async function Page({
   params,
@@ -66,14 +67,27 @@ export default async function Page({
           <StateBadge value={r.status} />
         </div>
       </header>
-      {state.error && <p role="alert">{state.error}</p>}
+      {state.error && (
+        <p
+          role="alert"
+          className="rounded-control bg-cherie-error/10 p-4 text-sm text-cherie-error"
+        >
+          Rezervasyon işlemi tamamlanamadı. Önceki kayıt korundu; alanları kontrol edip
+          yeniden deneyebilirsiniz.
+        </p>
+      )}
       <section className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         <form
           action={updateReservation}
           className="grid gap-3 rounded-card-lg border border-cherie-lace p-5 sm:grid-cols-2"
         >
           <input type="hidden" name="id" value={id} />
-          <select aria-label="Rezervasyon durumu" name="status" defaultValue={r.status} className="cherie-field">
+          <select
+            aria-label="Rezervasyon durumu"
+            name="status"
+            defaultValue={r.status}
+            className="cherie-field"
+          >
             {[
               'requested',
               'quote_pending',
@@ -87,7 +101,9 @@ export default async function Page({
               'rescheduled',
               'no_show',
             ].map((x) => (
-              <option key={x}>{x}</option>
+              <option key={x} value={x}>
+                {adminValueLabel(x)}
+              </option>
             ))}
           </select>
           <select
@@ -162,18 +178,16 @@ export default async function Page({
           </button>
         </form>
         <div className="rounded-card-lg border border-cherie-lace p-5">
-          <h2 className="font-display text-2xl">Müşteri ve brief</h2>
+          <h2 className="font-display text-2xl">Müşteri ve etkinlik özeti</h2>
           <p className="mt-2 text-sm">
             {r.customers?.email || r.customers?.phone || 'İletişim yok'}
           </p>
-          <pre className="mt-4 max-h-72 overflow-auto whitespace-pre-wrap rounded-control bg-cherie-paper p-3 text-xs">
-            {JSON.stringify(briefQ.data?.brief_json ?? r.event_location, null, 2)}
-          </pre>
+          <BriefSummary value={briefQ.data?.brief_json ?? r.event_location} />
         </div>
       </section>
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-card-lg border border-cherie-lace p-5">
-          <h2 className="font-display text-2xl">Milestones ve ödemeler</h2>
+          <h2 className="font-display text-2xl">Aşamalar ve ödemeler</h2>
           {(milestonesQ.data ?? []).map((x) => (
             <div
               key={x.id}
@@ -181,10 +195,10 @@ export default async function Page({
             >
               <span>
                 <strong>{x.title_tr}</strong>
-                <small className="block">{x.type}</small>
+                <small className="block">{adminValueLabel(x.type)}</small>
               </span>
               <span>
-                {x.amount ?? '—'} TRY · {x.status}
+                {x.amount ?? '—'} TL · {adminValueLabel(x.status)}
                 <br />
                 <AdminDate value={x.due_date} />
               </span>
@@ -192,12 +206,27 @@ export default async function Page({
           ))}
         </div>
         <div className="rounded-card-lg border border-cherie-lace p-5">
-          <h2 className="font-display text-2xl">Checklist ve ekip</h2>
+          <h2 className="font-display text-2xl">Görev listesi ve ekip</h2>
           <form action={addReservationTask} className="mt-3 grid gap-2 sm:grid-cols-2">
             <input type="hidden" name="reservation_id" value={id} />
-            <input aria-label="Checklist görevi" name="item_tr" required placeholder="Görev" className="cherie-field" />
-            <input aria-label="Görev son tarihi" type="date" name="due_date" className="cherie-field" />
-            <select aria-label="Görev sorumlusu" name="owner_staff_id" className="cherie-field">
+            <input
+              aria-label="Görev"
+              name="item_tr"
+              required
+              placeholder="Görev"
+              className="cherie-field"
+            />
+            <input
+              aria-label="Görev son tarihi"
+              type="date"
+              name="due_date"
+              className="cherie-field"
+            />
+            <select
+              aria-label="Görev sorumlusu"
+              name="owner_staff_id"
+              className="cherie-field"
+            >
               <option value="">Sorumlu yok</option>
               {(staffQ.data ?? []).map((x) => (
                 <option key={x.id} value={x.id}>
@@ -235,5 +264,54 @@ export default async function Page({
         </div>
       </section>
     </div>
+  );
+}
+
+const BRIEF_LABELS: Record<string, string> = {
+  palette: 'Renk paleti',
+  style: 'Stil',
+  mustHave: 'Vazgeçilmezler',
+  venue: 'Mekân',
+  district: 'İlçe',
+};
+
+const BRIEF_VALUES: Record<string, string> = {
+  ivory: 'Fildişi',
+  cherry: 'Vişne',
+  'romantic editorial': 'Romantik editoryal',
+  'welcome sign': 'Karşılama panosu',
+  'photo corner': 'Fotoğraf köşesi',
+};
+
+function BriefSummary({ value }: { value: unknown }) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return (
+      <p className="mt-4 rounded-control bg-cherie-paper p-4 text-sm text-cherie-soft-ink">
+        {typeof value === 'string' && value ? value : 'Etkinlik ayrıntısı paylaşılmadı.'}
+      </p>
+    );
+  }
+  const entries = Object.entries(value as Record<string, unknown>);
+  if (!entries.length)
+    return (
+      <p className="mt-4 text-sm text-cherie-soft-ink">
+        Etkinlik ayrıntısı paylaşılmadı.
+      </p>
+    );
+  return (
+    <dl className="mt-4 divide-y divide-cherie-lace rounded-control bg-cherie-paper px-4">
+      {entries.map(([key, entry]) => (
+        <div key={key} className="grid gap-1 py-3 text-sm sm:grid-cols-[9rem_1fr]">
+          <dt className="font-semibold text-cherie-soft-ink">
+            {BRIEF_LABELS[key] ?? 'Etkinlik ayrıntısı'}
+          </dt>
+          <dd>
+            {(Array.isArray(entry) ? entry : [entry])
+              .map((item) => BRIEF_VALUES[String(item)] ?? String(item))
+              .join(', ')}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }

@@ -38,7 +38,7 @@ const CAPABILITY_MODULE_TR: Partial<Record<AdminCapability, string>> = {
   'catalog.write': 'Katalog düzenleme',
   'orders.read': 'Siparişler',
   'finance.read': 'Ödemeler ve Finans',
-  'crm.read': 'Müşteriler ve CRM',
+  'crm.read': 'Müşteriler ve İlişkiler',
   'services.read': 'Hizmetler',
   'content.read': 'İçerik',
   'legal.read': 'Hukuk',
@@ -229,7 +229,7 @@ export default async function DashboardPage({
         icon: Truck,
       },
       {
-        label: 'Yeni lead',
+        label: 'Yeni talep',
         value: newLeads,
         href: '/admin/crm/leads',
         capability: 'crm.read',
@@ -261,7 +261,7 @@ export default async function DashboardPage({
       capability: 'orders.read' as AdminCapability,
     },
     {
-      label: 'Atanmamış lead',
+      label: 'Atanmamış talep',
       value: unassignedLeads,
       href: '/admin/crm/leads?assignment=unassigned',
       capability: 'crm.read' as AdminCapability,
@@ -288,7 +288,7 @@ export default async function DashboardPage({
       primary: true,
     },
     {
-      label: 'Lead kutusunu aç',
+      label: 'Talep kutusunu aç',
       href: '/admin/crm/leads',
       capability: 'crm.read' as AdminCapability,
       primary: false,
@@ -576,9 +576,9 @@ export default async function DashboardPage({
             />
             <Health
               icon={AlertTriangle}
-              label="Migration kanıtı"
+              label="Veritabanı sürüm kanıtı"
               ready={false}
-              detail="Staging üzerinde henüz doğrulanmadı"
+              detail="Ön izleme ortamında henüz doğrulanmadı"
             />
           </div>
         </section>

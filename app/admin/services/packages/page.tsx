@@ -114,16 +114,16 @@ function PackageForm({
         className="cherie-field"
       />
       <input
-        aria-label="SEO başlığı"
+        aria-label="Arama görünümü başlığı"
         name="seo_title"
         defaultValue=""
-        placeholder="SEO başlığı"
+        placeholder="Arama görünümü başlığı"
         className="cherie-field"
       />
       <textarea
-        aria-label="SEO açıklaması"
+        aria-label="Arama görünümü açıklaması"
         name="seo_description"
-        placeholder="SEO açıklaması"
+        placeholder="Arama görünümü açıklaması"
         className="cherie-field sm:col-span-2"
       />
       <label className="flex min-h-11 items-center gap-2 text-sm">

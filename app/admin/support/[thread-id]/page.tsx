@@ -4,6 +4,7 @@ import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
 import { replySupport, updateSupport } from '../actions';
+import { adminValueLabel } from '@/lib/admin/presentation';
 export const dynamic = 'force-dynamic';
 export default async function Page({
   params,
@@ -48,7 +49,15 @@ export default async function Page({
           <StateBadge value={thread.status} />
         </div>
       </header>
-      {state.error && <p role="alert">{state.error}</p>}
+      {state.error && (
+        <p
+          role="alert"
+          className="rounded-control bg-cherie-error/10 p-4 text-sm text-cherie-error"
+        >
+          Destek işlemi tamamlanamadı. Önceki kayıt korundu; alanları kontrol edip yeniden
+          deneyebilirsiniz.
+        </p>
+      )}
       <form
         action={updateSupport}
         className="flex flex-wrap gap-3 rounded-card-lg border border-cherie-lace p-4"
@@ -60,7 +69,9 @@ export default async function Page({
           className="cherie-field max-w-xs"
         >
           {['open', 'waiting_customer', 'waiting_team', 'closed'].map((x) => (
-            <option key={x}>{x}</option>
+            <option key={x} value={x}>
+              {adminValueLabel(x)}
+            </option>
           ))}
         </select>
         <select

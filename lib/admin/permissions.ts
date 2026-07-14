@@ -153,7 +153,7 @@ export const ROLE_LABELS: Record<AdminRole, string> = {
   finance_viewer: 'Finans',
   content_editor: 'İçerik Editörü',
   content_publisher: 'İçerik Yayıncısı',
-  sales_crm: 'Satış ve CRM',
+  sales_crm: 'Satış ve Müşteri İlişkileri',
   operations: 'Operasyon',
 };
 

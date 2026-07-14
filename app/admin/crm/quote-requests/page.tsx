@@ -27,7 +27,7 @@ export default async function Page({
   const { data, count, error } = await query;
   return (
     <ResourceList
-      eyebrow="CRM"
+      eyebrow="Müşteri ilişkileri"
       title="Teklif Talepleri"
       description="Teklif alımından gelen kayıtları müşteri, etkinlik, bütçe ve durum bağlamıyla değerlendirin."
       rows={data ?? []}

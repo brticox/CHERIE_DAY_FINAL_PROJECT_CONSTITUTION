@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
+import { adminValueLabel } from '@/lib/admin/presentation';
 export const dynamic = 'force-dynamic';
 export default async function Page({
   searchParams,
@@ -57,7 +58,9 @@ export default async function Page({
             'rescheduled',
             'no_show',
           ].map((x) => (
-            <option key={x}>{x}</option>
+            <option key={x} value={x}>
+              {adminValueLabel(x)}
+            </option>
           ))}
         </select>
         <button className="cherie-button-primary">Filtrele</button>

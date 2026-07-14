@@ -117,14 +117,18 @@ export default async function Page({
             value={str(sender.name)}
           />
         </Section>
-        <Section title="Sosyal ve SEO">
+        <Section title="Sosyal ve arama görünümü">
           <Field name="instagram" label="Instagram" value={str(social.instagram)} />
           <Field name="pinterest" label="Pinterest" value={str(social.pinterest)} />
           <Field name="youtube" label="YouTube" value={str(social.youtube)} />
-          <Field name="seo_title" label="Varsayılan SEO başlığı" value={str(seo.title)} />
+          <Field
+            name="seo_title"
+            label="Varsayılan arama başlığı"
+            value={str(seo.title)}
+          />
           <Area
             name="seo_description"
-            label="Varsayılan SEO açıklaması"
+            label="Varsayılan arama açıklaması"
             value={str(seo.description)}
           />
         </Section>

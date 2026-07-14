@@ -24,7 +24,12 @@ export default async function Page({
         title="Personel kullanıcıları"
         description="Kimlik ve gizli bilgiler gösterilmez; her rol ve etkinlik değişikliği denetim günlüğüne kaydedilir."
       />
-      {state.error && <p role="alert">{decodeURIComponent(state.error)}</p>}
+      {state.error && (
+        <AdminNotice tone="danger" title="Personel işlemi tamamlanamadı">
+          Hiçbir yetki değiştirilmedi. Alanları kontrol edip güvenle yeniden
+          deneyebilirsiniz.
+        </AdminNotice>
+      )}
       {error ? (
         <AdminNotice tone="danger" title="Personel kayıtları okunamıyor">
           Hiçbir yetki değiştirilmedi. Bağlantıyı doğruladıktan sonra sayfayı güvenle

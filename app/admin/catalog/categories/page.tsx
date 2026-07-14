@@ -29,7 +29,7 @@ export default async function Page({
       columns={[
         { label: 'Kategori', value: (r) => <strong>{r.name}</strong> },
         { label: 'Departman', value: (r) => r.departments?.name_tr ?? 'Atanmamış' },
-        { label: 'Slug', value: (r) => r.slug },
+        { label: 'Adres kısa adı', value: (r) => r.slug },
         { label: 'Sıra', value: (r) => r.sort_order },
         { label: 'Durum', value: (r) => <StateBadge value={r.status} /> },
       ]}

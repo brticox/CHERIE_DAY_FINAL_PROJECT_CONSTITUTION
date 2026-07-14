@@ -78,7 +78,8 @@ export default async function Page({
           role="alert"
           className="rounded-control bg-cherie-error/10 p-4 text-sm text-cherie-error"
         >
-          {decodeURIComponent(state.error)}
+          Yasal sürüm işlemi tamamlanamadı. Yayındaki içerik değişmedi; alanları kontrol
+          edip yeniden deneyebilirsiniz.
         </p>
       )}
       {can(staff.role, 'legal.publish') && (
@@ -103,7 +104,7 @@ export default async function Page({
               <input name="summary" required maxLength={500} className="cherie-field" />
             </label>
             <label className="grid gap-2 text-sm font-bold">
-              Onaylı içerik veya JSON
+              Onaylı içerik veya yapılandırılmış metin
               <textarea
                 name="content"
                 required
@@ -111,8 +112,8 @@ export default async function Page({
                 className="cherie-field font-mono text-xs"
               />
               <span className="text-xs font-normal text-cherie-soft-ink">
-                İçe aktarma JSON sözdizimini doğrular ve SHA-256 içerik özeti kaydeder.
-                Yeni taslak varsayılan olarak hukuk incelemesi bekler.
+                İçe aktarma yapılandırılmış metni doğrular ve değişmez içerik özeti
+                kaydeder. Yeni taslak varsayılan olarak hukuk incelemesi bekler.
               </span>
             </label>
             <button className="cherie-button-primary">
@@ -130,9 +131,7 @@ export default async function Page({
             {comparable.map((v) => (
               <div key={v.id}>
                 <h3 className="font-bold">Sürüm {v.version}</h3>
-                <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-control bg-cherie-paper p-4 text-xs">
-                  {JSON.stringify(v.body, null, 2)}
-                </pre>
+                <LegalBody value={v.body} />
               </div>
             ))}
           </div>
@@ -221,5 +220,41 @@ export default async function Page({
       </div>
       {error && <p role="alert">Sürüm geçmişi okunamadı.</p>}
     </div>
+  );
+}
+
+const LEGAL_FIELD_LABELS: Record<string, string> = {
+  title: 'Başlık',
+  summary: 'Özet',
+  content: 'İçerik',
+  sections: 'Bölümler',
+  effective_date: 'Yürürlük tarihi',
+};
+
+function LegalBody({ value }: { value: unknown }) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return (
+      <p className="mt-2 rounded-control bg-cherie-paper p-4 text-sm text-cherie-soft-ink">
+        Yapılandırılmış içerik bulunmuyor.
+      </p>
+    );
+  }
+  return (
+    <dl className="mt-2 max-h-96 space-y-3 overflow-auto rounded-control bg-cherie-paper p-4 text-sm">
+      {Object.entries(value as Record<string, unknown>).map(([key, item]) => (
+        <div key={key}>
+          <dt className="text-xs font-bold uppercase tracking-wider text-cherie-soft-ink">
+            {LEGAL_FIELD_LABELS[key] ?? 'İçerik alanı'}
+          </dt>
+          <dd className="mt-1 whitespace-pre-wrap leading-6">
+            {typeof item === 'string'
+              ? item
+              : Array.isArray(item)
+                ? `${item.length} bölüm`
+                : 'Yapılandırılmış içerik'}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }

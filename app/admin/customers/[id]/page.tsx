@@ -116,7 +116,8 @@ export default async function Page({
       </header>
       {state.error && (
         <p role="alert" className="rounded-control bg-cherie-error/10 p-3 text-sm">
-          {state.error}
+          Müşteri işlemi tamamlanamadı. Önceki bilgiler korundu; alanları kontrol edip
+          yeniden deneyebilirsiniz.
         </p>
       )}
       <section className="grid gap-4 md:grid-cols-3">
@@ -143,7 +144,7 @@ export default async function Page({
           {(addressesQ.data ?? []).map((x) => (
             <p key={x.id} className="mb-2">
               <strong>
-                {x.type}
+                {adminValueLabel(x.type)}
                 {x.is_default ? ' · Varsayılan' : ''}
               </strong>
               <br />

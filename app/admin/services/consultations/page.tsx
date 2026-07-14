@@ -57,7 +57,7 @@ export default async function Page() {
                 ))}
               </select>
               <select name="channel" defaultValue={x.channel} className="cherie-field">
-                <option value="online">Online</option>
+                <option value="online">Çevrim içi</option>
                 <option value="phone">Telefon</option>
                 <option value="whatsapp">WhatsApp</option>
                 <option value="in_person">Yüz yüze</option>
@@ -85,7 +85,7 @@ export default async function Page() {
               <textarea
                 name="note"
                 defaultValue={x.note ?? ''}
-                placeholder="Görüşme notu / intake gereksinimleri"
+                placeholder="Görüşme notu ve ön bilgi gereksinimleri"
                 className="cherie-field sm:col-span-2"
               />
               <button className="cherie-button-primary sm:col-span-2">

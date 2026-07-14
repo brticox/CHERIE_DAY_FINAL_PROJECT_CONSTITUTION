@@ -89,7 +89,8 @@ export default async function Page({
       />
       {filters.error && (
         <p role="alert" className="rounded-control bg-cherie-error/10 p-3 text-sm">
-          {decodeURIComponent(filters.error)}
+          Talep işlemi tamamlanamadı. Önceki kayıt korundu; alanları kontrol edip yeniden
+          deneyebilirsiniz.
         </p>
       )}
       <AdminToolbar label="Talep filtreleri">

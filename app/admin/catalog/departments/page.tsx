@@ -28,7 +28,7 @@ export default async function Page({
       error={error ? 'Departmanlar okunamadı.' : undefined}
       columns={[
         { label: 'Ad', value: (r) => <strong>{r.name_tr}</strong> },
-        { label: 'Slug', value: (r) => r.slug },
+        { label: 'Adres kısa adı', value: (r) => r.slug },
         { label: 'Sıra', value: (r) => r.sort_order },
         { label: 'Durum', value: (r) => <StateBadge value={r.status} /> },
       ]}

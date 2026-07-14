@@ -86,7 +86,8 @@ export default async function Page({
           role="alert"
           className="rounded-control bg-cherie-error/10 p-4 text-sm text-cherie-error"
         >
-          {decodeURIComponent(state.error)}
+          Sayfa kaydedilemedi. Önceki içerik korunuyor; alanları kontrol edip yeniden
+          deneyebilirsiniz.
         </p>
       )}
       <form action={savePage} className="space-y-6">
@@ -94,10 +95,14 @@ export default async function Page({
         <Section title="Sayfa kimliği">
           <div className="grid gap-4 md:grid-cols-2">
             <Field name="title" label="Başlık" value={data.title} maxLength={160} />
-            <Field name="slug" label="Slug" value={data.slug} maxLength={160} />
+            <Field name="slug" label="Adres kısa adı" value={data.slug} maxLength={160} />
           </div>
         </Section>
-        <Section title="Hero" toggle="hero_visible" checked={bool(hero.visible)}>
+        <Section
+          title="Karşılama alanı"
+          toggle="hero_visible"
+          checked={bool(hero.visible)}
+        >
           <Field
             name="hero_eyebrow"
             label="Üst başlık (≤100)"
@@ -133,7 +138,7 @@ export default async function Page({
           </div>
           <Picker
             name="hero_media_id"
-            label="Hero medyası"
+            label="Karşılama medyası"
             value={str(hero.mediaId)}
             rows={(mediaQ.data ?? []).map((x) => ({
               id: x.id,
@@ -217,12 +222,12 @@ export default async function Page({
           </Section>
         </div>
         <details className="rounded-card-lg border border-cherie-lace p-5">
-          <summary className="cursor-pointer font-bold">Gelişmiş JSON fallback</summary>
+          <summary className="cursor-pointer font-bold">Gelişmiş yapılandırma</summary>
           <p className="my-2 text-xs text-cherie-soft-ink">
             Yalnızca yapılandırılmış alanların kapsamadığı ek anahtarlar için.
           </p>
           <textarea
-            aria-label="Gelişmiş JSON içeriği"
+            aria-label="Gelişmiş yapılandırma içeriği"
             name="advanced_json"
             rows={10}
             defaultValue={JSON.stringify(body, null, 2)}

@@ -53,7 +53,7 @@ function CityForm({
         name="city_slug"
         required
         defaultValue={row?.city_slug}
-        placeholder="slug"
+        placeholder="Adres kısa adı"
         className="cherie-field"
       />
       <select

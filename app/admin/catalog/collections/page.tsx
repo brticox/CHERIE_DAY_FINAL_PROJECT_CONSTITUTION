@@ -28,7 +28,7 @@ export default async function Page({
       error={error ? 'Koleksiyonlar okunamadı.' : undefined}
       columns={[
         { label: 'Koleksiyon', value: (r) => <strong>{r.name}</strong> },
-        { label: 'Slug', value: (r) => r.slug },
+        { label: 'Adres kısa adı', value: (r) => r.slug },
         { label: 'Öne çıkan', value: (r) => (r.is_featured ? 'Evet' : 'Hayır') },
         { label: 'Sıra', value: (r) => r.sort_order },
         { label: 'Durum', value: (r) => <StateBadge value={r.status} /> },
