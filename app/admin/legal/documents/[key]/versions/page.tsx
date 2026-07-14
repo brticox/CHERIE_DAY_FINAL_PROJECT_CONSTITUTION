@@ -1,17 +1,2 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
-
-export default async function Page({
-  params,
-}: {
-  params: Promise<Record<string, string>>;
-}) {
-  const resolved = await params;
-  return (
-    <PagePlaceholder
-      title="Yasal Belge Versiyonları"
-      eyebrow="Yönetim"
-      description={`ID: ${resolved['key']}`}
-      note="Yönetim modülü — iş mantığı sonraki fazda eklenecek."
-    />
-  );
-}
+import Link from 'next/link';import{notFound}from'next/navigation';import{AdminDate,StateBadge}from '@/components/admin/resource-list';import{requireStaff}from '@/lib/auth/guards';import{createAdminClient}from '@/lib/supabase/admin';
+export const dynamic='force-dynamic';export default async function Page({params}:{params:Promise<{key:string}>}){const{key}=await params;await requireStaff(`/admin/legal/documents/${key}/versions`);const db=createAdminClient();const{data:document}=await db.from('legal_documents').select('*').eq('doc_key',key as never).single();if(!document)notFound();const{data:versions,error}=await db.from('legal_document_versions').select('*').eq('legal_document_id',document.id).order('created_at',{ascending:false});return <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8"><header><Link href="/admin/legal/documents" className="text-sm text-cherie-burgundy">← Yasal belgelere dön</Link><p className="mt-5 text-xs font-bold uppercase tracking-[.18em] text-cherie-brass">Değiştirilemez yayın geçmişi</p><h1 className="font-display text-4xl">{document.title_tr}</h1><p className="mt-2 text-sm text-cherie-soft-ink">Yayınlanmış, üstüne yazılmış veya kabul edilmiş sürümler bu arayüzden değiştirilemez.</p></header>{error&&<p role="alert" className="rounded-control bg-cherie-error/10 p-4 text-sm text-cherie-error">Sürüm geçmişi okunamadı.</p>}<div className="space-y-3">{versions?.map(v=><article key={v.id} className="grid gap-4 rounded-card-lg border border-cherie-lace bg-white/60 p-5 md:grid-cols-[1fr_auto]"><div><div className="flex flex-wrap items-center gap-2"><h2 className="font-display text-2xl">Sürüm {v.version}</h2><StateBadge value={v.lifecycle_state}/>{v.is_current&&<StateBadge value="current"/>}</div><p className="mt-2 text-sm text-cherie-soft-ink">{v.summary||'Sürüm özeti girilmemiş.'}</p><div className="mt-4 flex flex-wrap gap-4 text-xs text-cherie-soft-ink"><span>Oluşturma: <AdminDate value={v.created_at}/></span><span>Yayın: <AdminDate value={v.published_at}/></span><span>Onay: {v.approval_status}</span></div></div><div className={`rounded-control p-3 text-xs ${v.needs_lawyer_review?'bg-cherie-warning/10 text-cherie-warning':'bg-cherie-success/10 text-cherie-success'}`}>{v.needs_lawyer_review?'Hukuk onayı bekliyor':'Hukuk kontrolü tamamlandı'}</div></article>)}{!versions?.length&&<div className="rounded-card-lg border border-dashed border-cherie-lace p-10 text-center">Henüz sürüm yok. Onaylı içerik teslimi bekleniyor.</div>}</div></div>}
