@@ -2027,6 +2027,90 @@ export type Database = {
           },
         ]
       }
+      financial_audit_log: {
+        Row: {
+          action: string
+          actor_staff_id: string | null
+          actor_type: string
+          correlation_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          order_id: string | null
+          payment_event_id: string | null
+          payment_id: string | null
+          provider_event_id: string | null
+          refund_id: string | null
+          severity: string
+        }
+        Insert: {
+          action: string
+          actor_staff_id?: string | null
+          actor_type: string
+          correlation_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          payment_event_id?: string | null
+          payment_id?: string | null
+          provider_event_id?: string | null
+          refund_id?: string | null
+          severity?: string
+        }
+        Update: {
+          action?: string
+          actor_staff_id?: string | null
+          actor_type?: string
+          correlation_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          payment_event_id?: string | null
+          payment_id?: string | null
+          provider_event_id?: string | null
+          refund_id?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_audit_log_actor_staff_id_fkey"
+            columns: ["actor_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_audit_log_payment_event_id_fkey"
+            columns: ["payment_event_id"]
+            isOneToOne: false
+            referencedRelation: "payment_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_audit_log_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_audit_log_refund_id_fkey"
+            columns: ["refund_id"]
+            isOneToOne: false
+            referencedRelation: "refunds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       galleries: {
         Row: {
           created_at: string
@@ -3124,10 +3208,13 @@ export type Database = {
       }
       payment_events: {
         Row: {
+          correlation_id: string | null
           error_code: string | null
           event_type: string | null
           id: string
+          outcome: string
           payload: Json | null
+          payload_digest: string | null
           payment_id: string | null
           processing_status: string
           provider: Database["public"]["Enums"]["payment_provider"]
@@ -3136,10 +3223,13 @@ export type Database = {
           signature_valid: boolean
         }
         Insert: {
+          correlation_id?: string | null
           error_code?: string | null
           event_type?: string | null
           id?: string
+          outcome?: string
           payload?: Json | null
+          payload_digest?: string | null
           payment_id?: string | null
           processing_status?: string
           provider: Database["public"]["Enums"]["payment_provider"]
@@ -3148,10 +3238,13 @@ export type Database = {
           signature_valid?: boolean
         }
         Update: {
+          correlation_id?: string | null
           error_code?: string | null
           event_type?: string | null
           id?: string
+          outcome?: string
           payload?: Json | null
+          payload_digest?: string | null
           payment_id?: string | null
           processing_status?: string
           provider?: Database["public"]["Enums"]["payment_provider"]
@@ -3169,64 +3262,211 @@ export type Database = {
           },
         ]
       }
+      payment_rate_limits: {
+        Row: {
+          identity_hash: string
+          request_count: number
+          route_key: string
+          window_started_at: string
+        }
+        Insert: {
+          identity_hash: string
+          request_count: number
+          route_key: string
+          window_started_at: string
+        }
+        Update: {
+          identity_hash?: string
+          request_count?: number
+          route_key?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
+      payment_reconciliation_discrepancies: {
+        Row: {
+          assigned_reviewer: string | null
+          created_at: string
+          discrepancy_type: string
+          evidence: Json
+          expected_amount_minor: number | null
+          fingerprint: string
+          id: string
+          last_checked_at: string
+          order_id: string | null
+          payment_event_id: string | null
+          payment_id: string | null
+          provider_amount_minor: number | null
+          provider_reference: string | null
+          recommended_action: string
+          refund_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_reviewer?: string | null
+          created_at?: string
+          discrepancy_type: string
+          evidence?: Json
+          expected_amount_minor?: number | null
+          fingerprint: string
+          id?: string
+          last_checked_at?: string
+          order_id?: string | null
+          payment_event_id?: string | null
+          payment_id?: string | null
+          provider_amount_minor?: number | null
+          provider_reference?: string | null
+          recommended_action: string
+          refund_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          severity: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_reviewer?: string | null
+          created_at?: string
+          discrepancy_type?: string
+          evidence?: Json
+          expected_amount_minor?: number | null
+          fingerprint?: string
+          id?: string
+          last_checked_at?: string
+          order_id?: string | null
+          payment_event_id?: string | null
+          payment_id?: string | null
+          provider_amount_minor?: number | null
+          provider_reference?: string | null
+          recommended_action?: string
+          refund_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_reconciliation_discrepancies_assigned_reviewer_fkey"
+            columns: ["assigned_reviewer"]
+            isOneToOne: false
+            referencedRelation: "staff_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reconciliation_discrepancies_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reconciliation_discrepancies_payment_event_id_fkey"
+            columns: ["payment_event_id"]
+            isOneToOne: false
+            referencedRelation: "payment_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reconciliation_discrepancies_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reconciliation_discrepancies_refund_id_fkey"
+            columns: ["refund_id"]
+            isOneToOne: false
+            referencedRelation: "refunds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
+          amount_minor: number
+          attempt_number: number
+          captured_total_minor: number | null
           card_family: string | null
           checkout_session_id: string | null
+          correlation_id: string | null
           created_at: string
           currency: string
           id: string
           idempotency_key: string | null
+          initialized_at: string | null
           installment_count: number
           last_error_code: string | null
           last_error_message: string | null
           masked_card: string | null
           order_id: string | null
           paid_at: string | null
+          pending_expires_at: string | null
           provider: Database["public"]["Enums"]["payment_provider"]
           provider_conversation_id: string | null
           provider_payment_id: string | null
+          provider_redirect_url: string
           status: Database["public"]["Enums"]["payment_status"]
           updated_at: string
         }
         Insert: {
           amount?: number
+          amount_minor: number
+          attempt_number?: number
+          captured_total_minor?: number | null
           card_family?: string | null
           checkout_session_id?: string | null
+          correlation_id?: string | null
           created_at?: string
           currency?: string
           id?: string
           idempotency_key?: string | null
+          initialized_at?: string | null
           installment_count?: number
           last_error_code?: string | null
           last_error_message?: string | null
           masked_card?: string | null
           order_id?: string | null
           paid_at?: string | null
+          pending_expires_at?: string | null
           provider: Database["public"]["Enums"]["payment_provider"]
           provider_conversation_id?: string | null
           provider_payment_id?: string | null
+          provider_redirect_url?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
         }
         Update: {
           amount?: number
+          amount_minor?: number
+          attempt_number?: number
+          captured_total_minor?: number | null
           card_family?: string | null
           checkout_session_id?: string | null
+          correlation_id?: string | null
           created_at?: string
           currency?: string
           id?: string
           idempotency_key?: string | null
+          initialized_at?: string | null
           installment_count?: number
           last_error_code?: string | null
           last_error_message?: string | null
           masked_card?: string | null
           order_id?: string | null
           paid_at?: string | null
+          pending_expires_at?: string | null
           provider?: Database["public"]["Enums"]["payment_provider"]
           provider_conversation_id?: string | null
           provider_payment_id?: string | null
+          provider_redirect_url?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
         }
@@ -4575,47 +4815,90 @@ export type Database = {
       refunds: {
         Row: {
           amount: number
+          amount_minor: number
+          approved_at: string | null
+          approved_by: string | null
           completed_at: string | null
+          correlation_id: string | null
           created_at: string
           created_by: string | null
           id: string
+          idempotency_key: string | null
           notes_internal: string | null
           order_id: string | null
           payment_id: string | null
+          provider_error_code: string | null
+          provider_error_message: string | null
+          provider_reference: string | null
+          provider_status: string
           reason: Database["public"]["Enums"]["refund_reason"]
+          requested_by: string | null
           reservation_id: string | null
+          retryable: boolean
           status: Database["public"]["Enums"]["refund_status"]
+          submitted_at: string | null
           type: Database["public"]["Enums"]["refund_type"]
         }
         Insert: {
           amount: number
+          amount_minor: number
+          approved_at?: string | null
+          approved_by?: string | null
           completed_at?: string | null
+          correlation_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          idempotency_key?: string | null
           notes_internal?: string | null
           order_id?: string | null
           payment_id?: string | null
+          provider_error_code?: string | null
+          provider_error_message?: string | null
+          provider_reference?: string | null
+          provider_status?: string
           reason?: Database["public"]["Enums"]["refund_reason"]
+          requested_by?: string | null
           reservation_id?: string | null
+          retryable?: boolean
           status?: Database["public"]["Enums"]["refund_status"]
+          submitted_at?: string | null
           type?: Database["public"]["Enums"]["refund_type"]
         }
         Update: {
           amount?: number
+          amount_minor?: number
+          approved_at?: string | null
+          approved_by?: string | null
           completed_at?: string | null
+          correlation_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          idempotency_key?: string | null
           notes_internal?: string | null
           order_id?: string | null
           payment_id?: string | null
+          provider_error_code?: string | null
+          provider_error_message?: string | null
+          provider_reference?: string | null
+          provider_status?: string
           reason?: Database["public"]["Enums"]["refund_reason"]
+          requested_by?: string | null
           reservation_id?: string | null
+          retryable?: boolean
           status?: Database["public"]["Enums"]["refund_status"]
+          submitted_at?: string | null
           type?: Database["public"]["Enums"]["refund_type"]
         }
         Relationships: [
+          {
+            foreignKeyName: "refunds_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "staff_users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "refunds_created_by_fkey"
             columns: ["created_by"]
@@ -4635,6 +4918,13 @@ export type Database = {
             columns: ["payment_id"]
             isOneToOne: false
             referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "staff_users"
             referencedColumns: ["id"]
           },
           {
@@ -7536,6 +7826,14 @@ export type Database = {
         Returns: string
       }
       transition_order_status: {
+        Args: {
+          p_detail?: string
+          p_order_id: string
+          p_to_status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: Database["public"]["Enums"]["order_status"]
+      }
+      transition_order_status_operational: {
         Args: {
           p_detail?: string
           p_order_id: string
