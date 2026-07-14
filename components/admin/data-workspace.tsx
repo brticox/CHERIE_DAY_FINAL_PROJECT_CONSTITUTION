@@ -2,6 +2,7 @@ import type { AdminCapability } from '@/lib/admin/permissions';
 import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from './resource-list';
+import { AdminPageHeader, AdminToolbar } from './admin-workspace';
 type Config = {
   path: string;
   title: string;
@@ -33,71 +34,124 @@ export async function DataWorkspace({
   const { data, count, error } = await request;
   const rows = (data ?? []) as unknown as Record<string, unknown>[];
   return (
-    <div className="space-y-6 p-4 md:p-8">
-      <header>
-        <p className="text-xs uppercase tracking-widest text-cherie-brass">
-          Operasyon workspace
-        </p>
-        <h1 className="font-display text-4xl">{config.title}</h1>
-        <p className="text-sm text-cherie-soft-ink">
-          {config.description} · {count ?? 0} kayıt
-        </p>
-      </header>
-      <form>
-        <input
-          name="q"
-          defaultValue={query}
-          placeholder="Ara"
-          className="cherie-field max-w-lg"
-        />
-      </form>
+    <div className="mx-auto max-w-[1680px] space-y-7 p-4 md:p-7 xl:p-9">
+      <AdminPageHeader
+        eyebrow="Operasyon alanı"
+        title={config.title}
+        description={`${config.description} Toplam ${count ?? 0} kayıt bulunuyor.`}
+      />
+      <AdminToolbar label={`${config.title} arama araçları`}>
+        <form className="flex flex-col gap-3 sm:flex-row">
+          <input
+            name="q"
+            defaultValue={query}
+            placeholder={`${config.title} içinde ara`}
+            aria-label={`${config.title} içinde ara`}
+            className="cherie-field flex-1"
+          />
+          <button className="cherie-button-secondary min-h-12">Aramayı uygula</button>
+        </form>
+      </AdminToolbar>
       {error ? (
-        <p role="alert" className="rounded-control bg-cherie-error/10 p-3">
-          Veri okunamadı: tablo/migration hazır olmalı.
+        <p
+          role="alert"
+          className="rounded-card border border-cherie-error/30 bg-cherie-error/10 p-4 text-sm leading-6 text-cherie-error"
+        >
+          Kayıtlar okunamadı. Hiçbir değişiklik yapılmadı; bağlantıyı kontrol edip
+          görünümü yeniden deneyin.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-card-lg border border-cherie-lace">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-cherie-paper">
-              <tr>
-                {config.fields.map((x) => (
-                  <th key={x.key} className="p-3">
-                    {x.label}
-                  </th>
-                ))}
-                {config.statusKey && <th>Durum</th>}
-                {config.dateKey && <th>Zaman</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, index) => (
-                <tr key={String(row.id ?? index)} className="border-t border-cherie-lace">
-                  {config.fields.map((field) => (
-                    <td key={field.key} className="max-w-sm p-3">
+        <>
+          <section
+            aria-label={`${config.title} kayıtları`}
+            className="admin-surface p-4 md:hidden"
+          >
+            {rows.map((row, index) => (
+              <article key={String(row.id ?? index)} className="admin-mobile-entity">
+                {config.fields.map((field, fieldIndex) => (
+                  <div
+                    key={field.key}
+                    className={
+                      fieldIndex === 0
+                        ? 'mb-3 font-semibold'
+                        : 'mt-2 flex justify-between gap-4'
+                    }
+                  >
+                    {fieldIndex > 0 && (
+                      <span className="text-xs font-bold uppercase tracking-wider text-cherie-soft-ink">
+                        {field.label}
+                      </span>
+                    )}
+                    <div className={fieldIndex === 0 ? '' : 'text-right text-sm'}>
                       {display(row[field.key])}
-                    </td>
+                    </div>
+                  </div>
+                ))}
+                {config.statusKey && (
+                  <div className="mt-3">
+                    <StateBadge value={String(row[config.statusKey] ?? '')} />
+                  </div>
+                )}
+                {config.dateKey && (
+                  <p className="mt-3 text-xs text-cherie-soft-ink">
+                    <AdminDate
+                      value={
+                        typeof row[config.dateKey] === 'string'
+                          ? (row[config.dateKey] as string)
+                          : null
+                      }
+                    />
+                  </p>
+                )}
+              </article>
+            ))}
+          </section>
+          <div className="admin-surface hidden overflow-x-auto md:block">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-cherie-paper">
+                <tr>
+                  {config.fields.map((x) => (
+                    <th key={x.key} className="p-3">
+                      {x.label}
+                    </th>
                   ))}
-                  {config.statusKey && (
-                    <td>
-                      <StateBadge value={String(row[config.statusKey] ?? '—')} />
-                    </td>
-                  )}
-                  {config.dateKey && (
-                    <td>
-                      <AdminDate
-                        value={
-                          typeof row[config.dateKey] === 'string'
-                            ? (row[config.dateKey] as string)
-                            : null
-                        }
-                      />
-                    </td>
-                  )}
+                  {config.statusKey && <th>Durum</th>}
+                  {config.dateKey && <th>Zaman</th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {rows.map((row, index) => (
+                  <tr
+                    key={String(row.id ?? index)}
+                    className="border-t border-cherie-lace"
+                  >
+                    {config.fields.map((field) => (
+                      <td key={field.key} className="max-w-sm p-3">
+                        {display(row[field.key])}
+                      </td>
+                    ))}
+                    {config.statusKey && (
+                      <td>
+                        <StateBadge value={String(row[config.statusKey] ?? '—')} />
+                      </td>
+                    )}
+                    {config.dateKey && (
+                      <td>
+                        <AdminDate
+                          value={
+                            typeof row[config.dateKey] === 'string'
+                              ? (row[config.dateKey] as string)
+                              : null
+                          }
+                        />
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
@@ -109,8 +163,10 @@ function display(value: unknown) {
   if (Array.isArray(value)) return value.length ? `${value.length} öğe` : '—';
   return (
     <details>
-      <summary className="cursor-pointer text-cherie-burgundy">Detay</summary>
-      <pre className="max-w-md overflow-auto text-xs">
+      <summary className="cursor-pointer text-cherie-burgundy">
+        Teknik ayrıntıyı göster
+      </summary>
+      <pre className="mt-2 max-w-md overflow-auto rounded-control bg-cherie-paper p-3 text-xs">
         {JSON.stringify(value, null, 2)}
       </pre>
     </details>
