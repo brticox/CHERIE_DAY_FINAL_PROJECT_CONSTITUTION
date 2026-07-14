@@ -2351,45 +2351,72 @@ export type Database = {
       media_assets: {
         Row: {
           alt_text: string | null
+          archived_at: string | null
           bucket: string
+          content_hash: string | null
           created_at: string
+          focal_x: number
+          focal_y: number
+          height: number | null
           id: string
           is_public: boolean
           linked_entity_id: string | null
           linked_entity_type: string | null
+          mime_type: string | null
+          size_bytes: number | null
           storage_path: string | null
           tags: string[]
+          title: string | null
           type: Database["public"]["Enums"]["media_type"]
           uploaded_by: string | null
           url: string | null
+          width: number | null
         }
         Insert: {
           alt_text?: string | null
+          archived_at?: string | null
           bucket?: string
+          content_hash?: string | null
           created_at?: string
+          focal_x?: number
+          focal_y?: number
+          height?: number | null
           id?: string
           is_public?: boolean
           linked_entity_id?: string | null
           linked_entity_type?: string | null
+          mime_type?: string | null
+          size_bytes?: number | null
           storage_path?: string | null
           tags?: string[]
+          title?: string | null
           type?: Database["public"]["Enums"]["media_type"]
           uploaded_by?: string | null
           url?: string | null
+          width?: number | null
         }
         Update: {
           alt_text?: string | null
+          archived_at?: string | null
           bucket?: string
+          content_hash?: string | null
           created_at?: string
+          focal_x?: number
+          focal_y?: number
+          height?: number | null
           id?: string
           is_public?: boolean
           linked_entity_id?: string | null
           linked_entity_type?: string | null
+          mime_type?: string | null
+          size_bytes?: number | null
           storage_path?: string | null
           tags?: string[]
+          title?: string | null
           type?: Database["public"]["Enums"]["media_type"]
           uploaded_by?: string | null
           url?: string | null
+          width?: number | null
         }
         Relationships: [
           {
@@ -3980,6 +4007,8 @@ export type Database = {
       }
       products: {
         Row: {
+          archived_at: string | null
+          archived_by: string | null
           base_price: number | null
           behavior_type: Database["public"]["Enums"]["product_behavior"]
           brand_motif_tags: string[]
@@ -4006,6 +4035,8 @@ export type Database = {
           price_band: Database["public"]["Enums"]["price_band"] | null
           production_time_days: number | null
           proof_required: boolean
+          published_at: string | null
+          published_by: string | null
           return_note: string | null
           seo_metadata_id: string | null
           sku: string | null
@@ -4016,6 +4047,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
           base_price?: number | null
           behavior_type?: Database["public"]["Enums"]["product_behavior"]
           brand_motif_tags?: string[]
@@ -4042,6 +4075,8 @@ export type Database = {
           price_band?: Database["public"]["Enums"]["price_band"] | null
           production_time_days?: number | null
           proof_required?: boolean
+          published_at?: string | null
+          published_by?: string | null
           return_note?: string | null
           seo_metadata_id?: string | null
           sku?: string | null
@@ -4052,6 +4087,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
+          archived_by?: string | null
           base_price?: number | null
           behavior_type?: Database["public"]["Enums"]["product_behavior"]
           brand_motif_tags?: string[]
@@ -4078,6 +4115,8 @@ export type Database = {
           price_band?: Database["public"]["Enums"]["price_band"] | null
           production_time_days?: number | null
           proof_required?: boolean
+          published_at?: string | null
+          published_by?: string | null
           return_note?: string | null
           seo_metadata_id?: string | null
           sku?: string | null
@@ -7214,6 +7253,12 @@ export type Database = {
       }
     }
     Functions: {
+      admin_archive_media: { Args: { p_media_id: string }; Returns: undefined }
+      admin_archive_product: { Args: { p_product_id: string }; Returns: undefined }
+      admin_publish_legal_version: { Args: { p_approval_metadata?: Json; p_version_id: string }; Returns: undefined }
+      admin_publish_product: { Args: { p_product_id: string }; Returns: Database["public"]["Tables"]["products"]["Row"] }
+      admin_restore_product: { Args: { p_product_id: string }; Returns: undefined }
+      admin_set_product_media: { Args: { p_media_ids: string[]; p_product_id: string }; Returns: undefined }
       claim_notification_outbox: {
         Args: { p_batch_size?: number; p_stale_after_seconds?: number; p_worker_id: string }
         Returns: Database["public"]["Tables"]["notification_outbox"]["Row"][]

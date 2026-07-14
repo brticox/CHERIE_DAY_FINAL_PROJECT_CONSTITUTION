@@ -200,6 +200,26 @@
     outline: none;
   }
 
+  .cherie-button-primary,
+  .cherie-button-secondary {
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: background-color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+  }
+
+  .cherie-button-primary { background: var(--cherie-burgundy); color: white; }
+  .cherie-button-primary:hover { background: var(--cherie-cherry); }
+  .cherie-button-secondary { border: 1px solid var(--cherie-lace); background: rgb(var(--cherie-ivory-rgb) / 0.8); color: var(--cherie-burgundy); }
+  .cherie-button-secondary:hover { border-color: var(--cherie-brass); }
+  .cherie-button-primary:disabled,
+  .cherie-button-secondary:disabled { cursor: not-allowed; opacity: 0.45; }
+
   .cherie-kicker {
     display: inline-flex;
     align-items: center;
