@@ -1,4 +1,4 @@
-name: Payment Integrity
+name: Cross-phase Integration Integrity
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  payment-integrity:
+  integration-integrity:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:
@@ -35,12 +35,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Payment unit and security tests
+      - name: Unit, presentation, and security tests
         run: npm test
       - name: Replay every migration
         run: npm run test:phase3:replay
-      - name: Payment SQL and RLS suite
-        run: npm run test:phase3:db
+      - name: Phase 1, Phase 2, RLS, and Phase 3 SQL suites
+        run: npm run test:integration:db
       - name: Concurrent callback replay suite
         run: npm run test:phase3:burst
       - name: Production dependency audit
