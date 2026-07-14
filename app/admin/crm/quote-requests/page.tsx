@@ -1,6 +1,7 @@
 import { ResourceList, AdminDate, StateBadge } from '@/components/admin/resource-list';
 import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { adminValueLabel } from '@/lib/admin/presentation';
 export const dynamic = 'force-dynamic';
 export default async function Page({
   searchParams,
@@ -28,7 +29,7 @@ export default async function Page({
     <ResourceList
       eyebrow="CRM"
       title="Teklif Talepleri"
-      description="Phase 1 teklif alımından gelen kayıtlar; müşteri, etkinlik, bütçe ve durum bağlamıyla."
+      description="Teklif alımından gelen kayıtları müşteri, etkinlik, bütçe ve durum bağlamıyla değerlendirin."
       rows={data ?? []}
       total={count ?? 0}
       query={q}
@@ -49,7 +50,7 @@ export default async function Page({
           label: 'Etkinlik',
           value: (r) => (
             <>
-              {r.event_type || '—'}
+              {r.event_type ? adminValueLabel(r.event_type) : 'Etkinlik belirtilmedi'}
               <p className="text-xs">
                 {r.event_date_or_season || 'Tarih yok'} · {r.city || 'Şehir yok'}
               </p>

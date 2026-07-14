@@ -1,6 +1,12 @@
 import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { StateBadge } from '@/components/admin/resource-list';
+import {
+  AdminEmptyState,
+  AdminNotice,
+  AdminPageHeader,
+} from '@/components/admin/admin-workspace';
+import { adminValueLabel } from '@/lib/admin/presentation';
 import { saveServicePackage } from '../actions';
 import type { Database } from '@/lib/supabase/database.types';
 const categories: Database['public']['Enums']['service_category'][] = [
@@ -23,17 +29,23 @@ export default async function Page() {
     .select('*')
     .order('name');
   return (
-    <div className="space-y-6 p-4 md:p-8">
-      <header>
-        <p className="text-xs uppercase tracking-widest text-cherie-brass">
-          Hizmet kataloğu
-        </p>
-        <h1 className="font-display text-4xl">Hizmet paketleri</h1>
-      </header>
+    <div className="space-y-7 p-4 md:p-8">
+      <AdminPageHeader
+        eyebrow="Hizmet kataloğu"
+        title="Hizmet paketleri"
+        description="Teklif, rezervasyon ve şehir bazlı hizmetlerin kapsamını ve satışa hazırlığını yönetin."
+      />
       <PackageForm />
+      {!error && (data ?? []).length === 0 && (
+        <AdminEmptyState
+          title="Henüz hizmet paketi yok"
+          description="İlk paketi yukarıdaki alanlardan oluşturduğunuzda teklif ve rezervasyon akışlarında kullanılabilir."
+          primary={{ label: 'Paket alanlarına dön', href: '#yeni-paket' }}
+        />
+      )}
       <div className="grid gap-4 lg:grid-cols-2">
         {(data ?? []).map((x) => (
-          <details key={x.id} className="rounded-card-lg border border-cherie-lace p-5">
+          <details key={x.id} className="admin-surface p-5 shadow-none">
             <summary className="flex cursor-pointer items-center justify-between">
               <strong>{x.name}</strong>
               <StateBadge value={x.status} />
@@ -42,7 +54,12 @@ export default async function Page() {
           </details>
         ))}
       </div>
-      {error && <p>Hizmet paketleri okunamadı.</p>}
+      {error && (
+        <AdminNotice tone="danger" title="Hizmet paketleri okunamıyor">
+          Hiçbir paket değiştirilmedi. Bağlantıyı kontrol edip sayfayı güvenle
+          yenileyebilirsiniz.
+        </AdminNotice>
+      )}
     </div>
   );
 }
@@ -53,6 +70,7 @@ function PackageForm({
 }) {
   return (
     <form
+      id={row ? undefined : 'yeni-paket'}
       action={saveServicePackage}
       className="mt-4 grid gap-3 rounded-card-lg border border-cherie-lace/70 bg-white/50 p-4 sm:grid-cols-2"
     >
@@ -108,15 +126,15 @@ function PackageForm({
         placeholder="SEO açıklaması"
         className="cherie-field sm:col-span-2"
       />
-      <label className="text-sm">
-        <input type="checkbox" name="seo_noindex" /> Noindex
+      <label className="flex min-h-11 items-center gap-2 text-sm">
+        <input type="checkbox" name="seo_noindex" /> Arama motorlarından gizle
       </label>
       <input
-        aria-label="Paket slug"
+        aria-label="Paket adres kısa adı"
         name="slug"
         required
         defaultValue={row?.slug}
-        placeholder="slug"
+        placeholder="Adres kısa adı"
         className="cherie-field"
       />
       <select
@@ -126,7 +144,9 @@ function PackageForm({
         className="cherie-field"
       >
         {categories.map((x) => (
-          <option key={x}>{x}</option>
+          <option key={x} value={x}>
+            {adminValueLabel(x)}
+          </option>
         ))}
       </select>
       <select
@@ -170,7 +190,7 @@ function PackageForm({
         aria-label="Paket açıklaması"
         name="description"
         defaultValue={row?.description ?? ''}
-        placeholder="Açıklama / kapsam / booking kuralları"
+        placeholder="Açıklama, kapsam ve rezervasyon kuralları"
         className="cherie-field sm:col-span-2"
       />
       <div className="flex flex-wrap gap-3 text-xs sm:col-span-2">

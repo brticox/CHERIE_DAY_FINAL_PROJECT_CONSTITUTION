@@ -4,6 +4,7 @@ import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
 import { addCustomerNote, updateCustomerStatus } from '../actions';
+import { adminEventLabel, adminValueLabel } from '@/lib/admin/presentation';
 export const dynamic = 'force-dynamic';
 export default async function Page({
   params,
@@ -102,10 +103,8 @@ export default async function Page({
         </Link>
         <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-widest text-cherie-brass">
-              Müşteri 360°
-            </p>
-            <h1 className="font-display text-4xl">
+            <p className="admin-eyebrow">Müşteri 360°</p>
+            <h1 className="admin-page-title mt-2">
               {customer.name || 'İsimsiz müşteri'}
             </h1>
             <p className="mt-2 text-sm text-cherie-soft-ink">
@@ -122,12 +121,17 @@ export default async function Page({
       )}
       <section className="grid gap-4 md:grid-cols-3">
         <Card title="Hesap">
-          <p>Durum: {customer.status}</p>
+          <p>Durum: {adminValueLabel(customer.status)}</p>
           <p>KVKK: {customer.kvkk_consent_at ? 'Kayıtlı' : 'Yok'}</p>
           <p>Pazarlama: {customer.marketing_consent_at ? 'Açık' : 'Kapalı'}</p>
           <form action={updateCustomerStatus} className="mt-3 flex gap-2">
             <input type="hidden" name="id" value={id} />
-            <select aria-label="Müşteri durumu" name="status" defaultValue={customer.status} className="cherie-field">
+            <select
+              aria-label="Müşteri durumu"
+              name="status"
+              defaultValue={customer.status}
+              className="cherie-field"
+            >
               <option value="active">Aktif</option>
               <option value="inactive">Pasif</option>
               <option value="blocked">Engelli</option>
@@ -152,7 +156,8 @@ export default async function Page({
         <Card title="Bildirim tercihleri">
           {(prefsQ.data ?? []).map((x) => (
             <p key={x.id}>
-              {x.category} · {x.channel}: {x.opted_in ? 'Açık' : 'Kapalı'}
+              {adminValueLabel(x.category)} · {adminValueLabel(x.channel)}:{' '}
+              {x.opted_in ? 'Açık' : 'Kapalı'}
             </p>
           ))}
         </Card>
@@ -163,17 +168,17 @@ export default async function Page({
           rows={(ordersQ.data ?? []).map((x) => ({
             id: x.id,
             label: x.order_number,
-            detail: `${x.status} · ${x.payment_status} · ${x.total_amount} TRY`,
+            detail: `${adminValueLabel(x.status)} · ${adminValueLabel(x.payment_status)} · ${x.total_amount} TL`,
             date: x.created_at,
             href: `/admin/commerce/orders/${x.id}`,
           }))}
         />
         <List
-          title="Leads"
+          title="Talepler"
           rows={(leadsQ.data ?? []).map((x) => ({
             id: x.id,
-            label: `${x.source_type} · ${x.priority}`,
-            detail: x.status,
+            label: `${adminValueLabel(x.source_type)} · ${adminValueLabel(x.priority)}`,
+            detail: adminValueLabel(x.status),
             date: x.created_at,
           }))}
         />
@@ -182,7 +187,7 @@ export default async function Page({
           rows={(consultationsQ.data ?? []).map((x) => ({
             id: x.id,
             label: x.consultation_number,
-            detail: x.status,
+            detail: adminValueLabel(x.status),
             date: x.created_at,
           }))}
         />
@@ -190,8 +195,8 @@ export default async function Page({
           title="Teklifler"
           rows={(quotesQ.data ?? []).map((x) => ({
             id: x.id,
-            label: x.event_type || 'Teklif talebi',
-            detail: x.status,
+            label: x.event_type ? adminValueLabel(x.event_type) : 'Teklif talebi',
+            detail: adminValueLabel(x.status),
             date: x.created_at,
           }))}
         />
@@ -200,7 +205,7 @@ export default async function Page({
           rows={proofs.map((x) => ({
             id: x.id,
             label: `v${x.version}`,
-            detail: x.status,
+            detail: adminValueLabel(x.status),
             date: x.created_at,
           }))}
         />
@@ -209,7 +214,7 @@ export default async function Page({
           rows={(supportQ.data ?? []).map((x) => ({
             id: x.id,
             label: x.subject || 'Destek talebi',
-            detail: x.status,
+            detail: adminValueLabel(x.status),
             date: x.updated_at,
             href: `/admin/support/${x.id}`,
           }))}
@@ -218,7 +223,7 @@ export default async function Page({
           title="Onay kayıtları"
           rows={(consentsQ.data ?? []).map((x) => ({
             id: x.id,
-            label: x.consent_type,
+            label: adminValueLabel(x.consent_type),
             detail: x.source_route || 'Kaynak yok',
             date: x.created_at,
           }))}
@@ -227,13 +232,13 @@ export default async function Page({
           title="Denetim"
           rows={(auditQ.data ?? []).map((x) => ({
             id: x.id,
-            label: x.action,
+            label: adminEventLabel(x.action),
             detail: '',
             date: x.created_at,
           }))}
         />
       </section>
-      <section className="rounded-card-lg border border-cherie-lace p-5">
+      <section className="admin-surface p-5 shadow-none">
         <h2 className="font-display text-2xl">İç notlar</h2>
         <form action={addCustomerNote} className="mt-4 flex flex-col gap-3 sm:flex-row">
           <input type="hidden" name="id" value={id} />
@@ -263,7 +268,7 @@ export default async function Page({
 }
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <article className="rounded-card-lg border border-cherie-lace p-5 text-sm">
+    <article className="admin-surface p-5 text-sm shadow-none">
       <h2 className="mb-3 font-display text-2xl">{title}</h2>
       {children}
     </article>
@@ -272,7 +277,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 type Item = { id: string; label: string; detail: string; date: string; href?: string };
 function List({ title, rows }: { title: string; rows: Item[] }) {
   return (
-    <section className="rounded-card-lg border border-cherie-lace p-5">
+    <section className="admin-surface p-5 shadow-none">
       <h2 className="font-display text-2xl">{title}</h2>
       <div className="mt-3 divide-y divide-cherie-lace">
         {rows.map((x) => (
@@ -290,7 +295,11 @@ function List({ title, rows }: { title: string; rows: Item[] }) {
             <AdminDate value={x.date} />
           </div>
         ))}
-        {!rows.length && <p className="py-3 text-sm text-cherie-soft-ink">Kayıt yok.</p>}
+        {!rows.length && (
+          <p className="py-4 text-sm text-cherie-soft-ink">
+            Bu müşteriye bağlı henüz bir {title.toLocaleLowerCase('tr-TR')} kaydı yok.
+          </p>
+        )}
       </div>
     </section>
   );

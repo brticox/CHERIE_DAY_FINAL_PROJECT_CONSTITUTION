@@ -96,7 +96,7 @@ const configs = {
     table: 'seo_metadata',
     fields: [
       { key: 'title', label: 'Başlık' },
-      { key: 'entity_type', label: 'Entity' },
+      { key: 'entity_type', label: 'İçerik türü' },
       { key: 'canonical_url', label: 'Canonical' },
     ],
     dateKey: 'updated_at',

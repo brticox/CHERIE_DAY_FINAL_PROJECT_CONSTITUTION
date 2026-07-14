@@ -20,7 +20,10 @@ export default async function Page({
 }) {
   const { key } = await params;
   const state = await searchParams;
-  const { staff } = await requireCapability('legal.read', `/admin/legal/documents/${key}/versions`);
+  const { staff } = await requireCapability(
+    'legal.read',
+    `/admin/legal/documents/${key}/versions`,
+  );
   const db = createAdminClient();
   const { data: document } = await db
     .from('legal_documents')
@@ -159,7 +162,7 @@ export default async function Page({
                 </span>
                 <span>Onay: {v.approval_status}</span>
                 <span>Kullanım: {usage.get(v.id) ?? 0}</span>
-                <span>Hash: {v.content_hash?.slice(0, 12) ?? '—'}</span>
+                <span>İçerik özeti: {v.content_hash?.slice(0, 12) ?? '—'}</span>
               </div>
             </div>
             <div className="space-y-3">
