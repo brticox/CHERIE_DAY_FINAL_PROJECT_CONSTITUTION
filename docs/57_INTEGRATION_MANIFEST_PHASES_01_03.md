@@ -1,117 +1,138 @@
 # CHERIE DAY — Phases 01–03 Integration Manifest
 
-Status: pre-integration draft
+Status: **locally verified; ready for merge review, not authorized for merge or deployment**
 
 Integration branch: `integration/phases-01-03-20260714`
 
-Canonical base: `4704c5952d361c256ccd4d64e7dc782f7bd61e58`
+Canonical presentation base: `4704c5952d361c256ccd4d64e7dc782f7bd61e58`
+
+Verified implementation head before evidence documentation: `427747c`
 
 Prepared: 2026-07-14 (Europe/Istanbul)
 
-This manifest is the zero-loss ledger for the Phase 1, Phase 2, Admin Excellence,
-Admin Visual Revolution, and Phase 3 integration gate. It must be finalized only
-after the migration reset, complete test suite, authenticated browser matrix, and
-zero-loss audit have passed.
+## Executive verdict
+
+Phase 1, Phase 2 Control Center, Admin Excellence, Admin Visual Revolution, and
+Phase 3 Payment Security are present in one auditable history. The Visual
+Revolution remains the presentation system, Phase 3 remains the financial source
+of truth, and the strictest server capability and RLS rules govern access. No
+source branch was rewritten, pushed, merged into `main`, or deployed.
 
 ## Verified source references
 
-| Source | Verified HEAD | Relationship to canonical base |
+| Source | Verified HEAD | Relationship |
 |---|---|---|
-| `origin/main` | `ab33c3ccc5912b5d191339b8828c0cdd7f059065` | Root baseline |
+| `origin/main` | `ab33c3ccc5912b5d191339b8828c0cdd7f059065` | Repository baseline |
 | `phase/01-launch-blockers-20260714` | `fdab8d6166b9b54dac142ff6cebe63206b661a72` | Exact ancestor |
 | `phase/02-admin-control-center-20260714` | `aef87d3108bb910da839e1a4b8aa355056a9d205` | Exact ancestor and Phase 3 fork point |
 | `phase/02-admin-excellence-20260714` | `91fbd7593a10a03d57bb37a00895977882c5cfeb` | Exact ancestor |
 | `phase/02-admin-visual-revolution-20260714` | `4704c5952d361c256ccd4d64e7dc782f7bd61e58` | Canonical base |
-| `phase/03-payment-security-20260714` | `0d0fcf9d1bbb243fcded6d795125d429c5eced3b` | Six commits forked from `aef87d3` |
+| `phase/03-payment-security-20260714` | `0d0fcf9d1bbb243fcded6d795125d429c5eced3b` | Six commits from `aef87d3` |
 
-## Canonical strategy
+The five source worktrees were inspected before integration. Excellence contained
+only three unrelated untracked local artifacts; Visual Revolution and Phase 3
+were clean. The source branches were not modified.
 
-1. Retain the Visual Revolution HEAD as the presentation and authorization base.
-2. Do not replay Phase 1, Control Center, or Admin Excellence: their commits are
-   already present with identical hashes in the canonical base.
-3. Merge Phase 3 with `--no-ff` so all six financial commits and their boundaries
-   remain auditable.
-4. Resolve semantic—not merely textual—overlap in a separate integration commit:
-   financial/domain behavior comes from Phase 3; admin presentation comes from
-   Visual Revolution; authorization uses the strictest server and RLS checks.
-5. Preserve every historical migration. Add corrective forward migrations only if
-   an empty local database reset proves one is required.
+## Ancestry and integration strategy
 
-## Unique commits to integrate
+```text
+origin/main ab33c3c
+  └─ Phase 1 fdab8d6
+      └─ Phase 2 Control Center aef87d3
+          ├─ Admin Excellence 91fbd75
+          │   └─ Visual Revolution 4704c59 (canonical presentation base)
+          └─ Phase 3 bdb6c9c..0d0fcf9 (financial branch)
 
-| Commit | Subject | Required preservation |
-|---|---|---|
-| `bdb6c9c` | PayTR cryptographic vectors and money invariants | Exact integer-money and crypto behavior |
-| `ec17795` | Atomic financial state and hardened callbacks | Callback validation, replay convergence, audit trail |
-| `88288c7` | Reconciliation and refund operations | Permissioned refunds, simulator, reconciliation, notifications |
-| `b851e10` | SQL/RLS and concurrent replay verification | CI and local SQL/burst tests |
-| `c77e248` | Financial operations and incident runbooks | Phase 3 documents 51–56 |
-| `0d0fcf9` | Payment-event history performance index | Migration index retained |
+4704c59
+  └─ 21af45a integration baseline
+      └─ d2c63c5 no-ff Phase 3 merge
+          ├─ c9b5edd database/runtime alignment
+          ├─ edc3cdd authorization/presentation/routing integration
+          ├─ 0c22839 cross-phase verification
+          └─ 427747c consolidated CI integrity gate
+```
 
-## Intentionally skipped replays
+The no-fast-forward merge retains all six Phase 3 commits and their authorship.
+Phase 1, Control Center, Excellence, and Visual Revolution were not replayed
+because their exact commits are already ancestors of the canonical base. Patch-ID
+comparison found no duplicate-equivalent Phase 3 commits and no commits were
+reordered.
 
-| Source range | Reason |
+## Unique Phase 3 commits preserved
+
+| Commit | Preserved guarantee |
 |---|---|
-| Phase 1: `6fb5cdc..fdab8d6` | Already an exact ancestor of the canonical base |
-| Phase 2 Control Center: `060c9b1..aef87d3` | Already an exact ancestor of the canonical base |
-| Admin Excellence: `7fda349..91fbd75` | Already an exact ancestor of the canonical base |
-| Visual Revolution: `d4ed575..4704c59` | Forms the canonical base; not replayed |
+| `bdb6c9c` | PayTR cryptographic vectors and integer-money invariants |
+| `ec17795` | Atomic callback state, replay convergence, audit trail |
+| `88288c7` | Reconciliation, refund operations, notifications, simulator |
+| `b851e10` | SQL/RLS and concurrent replay verification |
+| `c77e248` | Financial operations and incident runbooks |
+| `0d0fcf9` | Payment-event history performance index |
 
-No duplicate-equivalent patch IDs were found between the 19 post-`aef87d3`
-Visual/Excellence commits and the six Phase 3 commits. No commits were reordered.
+## Conflict register and exact resolutions
 
-## Overlap and conflict risk register
+There were no textual merge conflicts. The following semantic conflicts were
+resolved deliberately:
 
-| Zone | Classification | Protected precedence | Expected integration work |
-|---|---|---|---|
-| Git file overlap | Automatic safe | Preserve both histories | No common changed paths after `aef87d3` |
-| `/admin/finance/**` vs `/admin/commerce/payments|refunds` | Manual semantic merge | Phase 3 behavior; Visual presentation | Select canonical routes, preserve redirects, remove no behavior |
-| Finance read/mutation guards | Manual semantic merge | Strictest capability/RLS behavior | Reuse central capability gate; retain Phase 3 mutation restrictions |
-| Payment/callback/refund domain | Phase 3 precedence | Financial truth | Do not rewrite domain logic during UI adaptation |
-| Admin shell/navigation/primitives | Visual precedence | Maison Control and Turkish UI | Add canonical finance destinations without regressing hierarchy |
-| Notification outbox | Integration adapter | Phase 1 durability + Phase 3 events | Prove exactly-once enqueue across callback/refund paths |
-| Order payment/refund presentation | Integration adapter | Phase 3 state + Turkish mappings | Add missing status mappings; preserve next-action semantics |
-| Database migrations | Automatic chronological append, then audit | All valid migrations | Retain shared chain and append `20260714120317` |
-| Generated database types | Manual verification | Final reset schema | Regenerate locally and review RPC Args/Returns |
-| Tests and CI | Additive | Preserve every assertion | Consolidate inventories; add only missing cross-phase boundaries |
-| Public homepage/hero/services | No-touch regression zone | Phase 1 presentation | Hash and browser comparison only |
-| Evidence and docs | Additive | Preserve every phase | New integration evidence directory; no overwrite |
+| Risk | Resolution | Proof |
+|---|---|---|
+| Two finance route families | `/admin/finance/**` is canonical; legacy commerce payment/refund entry points redirect | Route contract tests and browser navigation |
+| Phase 3 raw operational UI vs Visual Revolution | Kept Phase 3 data/actions; rebuilt presentation with Maison Control primitives and Turkish labels | Desktop/mobile screenshot matrix |
+| Read and mutation roles were conflated | `finance.read` controls views; `audit.read` separately protects audit; only `admin`/`superadmin` may mutate | Unit contracts and authenticated role matrix |
+| Service-role reads could bypass page authorization | Every finance page executes the central capability gate before privileged reads | Source contract test and denied-route QA |
+| Audit navigation was visible to roles without audit access | Added item-level navigation capabilities and retained direct-route server enforcement | Commerce-manager QA |
+| Generated types lacked Phase 3 schema | Reviewed local generation and added Phase 3 tables, columns, relationships, and RPC signatures | Typecheck after clean reset |
+| Supabase `pgcrypto` lives in `extensions` | Added forward migration `20260714201000` with `public, extensions, pg_temp` search paths; grants unchanged | Supabase reset and PostgreSQL 17 replay |
+| Phase 2 browser seed used pre-Phase 3 payment shape | Adapted it to integer minor units, correlation/outcome fields, reconciliation and audit fixtures | Authenticated browser matrix |
+| Order-item queries sorted by nonexistent `created_at` | Admin and customer queries now sort by stable `id` | Regression tests and rendered order evidence |
+| Finance amounts risked float presentation | All finance views use the integer-kuruş formatter | Money unit contracts and screenshots |
+| Raw provider/status labels leaked into visible UI | Added complete Turkish finance/event mappings and customer proof labels | Presentation tests and browser text audit |
+| Dark-on-dark finance headings | Corrected semantic color classes without changing domain behavior | Visual inspection at required viewports |
+| Notification behavior could silently duplicate | Added exact-count assertions for paid/refund customer and staff events | Phase 3 SQL suite and callback burst |
 
-## Protected behavior ledger
+## Zero-loss proof
 
-- Phase 1 legal publication lifecycle, consent snapshots, durable outbox,
-  retry/idempotency, Turkish templates, and notification operations.
-- Phase 2 admin routes, operations workflows, service-role boundary checks,
-  capability gating, and SQL/RLS verification.
-- Admin Excellence role-adaptive navigation/dashboard, uploader behavior, command
-  palette, order cockpit, and evidence.
-- Visual Revolution Maison Control system, Turkish visible admin copy, responsive
-  records/forms, accessibility, and all existing screenshots.
-- Phase 3 PayTR verification, integer kuruş model, callbacks, rate limiting,
-  reconciliation, refund invariants, audit records, RLS, simulator, SQL tests,
-  CI workflow, runbooks, and performance index.
+- All ancestor commits remain reachable and all six unique Phase 3 commits are
+  parents of the integration history.
+- All 38 migrations remain present; none was deleted, renamed, or squashed.
+- Phase 1 legal/notification tests, Phase 2 permission/RLS tests, Phase 3
+  financial tests, concurrency scripts, runbooks, and CI gates remain present.
+- Phase 1 public home/hero files were outside the integration edit set and were
+  rechecked in a clean browser session.
+- Admin Visual Revolution components and evidence remain intact; finance is an
+  additive visual integration.
+- The exact source-to-integration path inventory is reproducible with
+  `git diff --name-status 4704c595..HEAD`; evidence is indexed in the adjacent
+  evidence README.
 
-## Validation plan
+## Integration commits created
 
-1. Review merge tree and every Phase 3 file after the history merge.
-2. Audit route, capability, RLS, migration, notification, legal, and order-state
-   integration boundaries.
-3. Regenerate database types only after an empty local reset succeeds.
-4. Run typecheck, zero-warning lint, full Vitest, dependency audit, production
-   build, migration reset, all Phase 1/2/3 SQL suites, callback burst, simulator,
-   and cross-phase tests.
-5. Run authenticated role/route/viewport browser QA and compare public/admin
-   baselines before publishing integrated screenshots.
-6. Re-run ancestry, migration, test, route, evidence, and source-worktree audits;
-   then replace this draft status with final verified results.
+| Commit | Purpose |
+|---|---|
+| `21af45a` | Establish integration baseline and manifest |
+| `d2c63c5` | Merge all Phase 3 financial history with `--no-ff` |
+| `c9b5edd` | Align runtime schema, crypto search path, and generated types |
+| `edc3cdd` | Reconcile finance authorization, presentation, routes, and order reads |
+| `0c22839` | Add cross-phase financial, notification, and order guarantees |
+| `427747c` | Consolidate CI into a cross-phase integrity gate |
 
-## Finalization ledger
+The documentation/evidence commit containing this manifest follows these verified
+implementation commits, so its own full hash is recorded by `git rev-parse HEAD`
+in the final handoff rather than self-referentially embedded here.
 
-The following fields remain deliberately pending until verification is complete:
+## Backups and rollback anchors
 
-- Integrated HEAD and created commits: pending
-- Merge/conflict resolutions: pending
-- Migration reset and generated types: pending
-- Unit/SQL/RLS/concurrency/simulator totals: pending
-- Authenticated browser and visual regression evidence: pending
-- Zero-loss proof and external blockers: pending
+- Bundle:
+  `/Users/albarayousef/Desktop/CHERIE_DAY_FINAL_PROJECT_CONSTITUTION_BACKUPS/integration-phases-01-03-20260714-192438.bundle`
+- Canonical Visual archive:
+  `/Users/albarayousef/Desktop/CHERIE_DAY_FINAL_PROJECT_CONSTITUTION_BACKUPS/integration-canonical-visual-20260714-192438.tar.gz`
+- Pre-reset local database data and schema dumps are stored in the same backup
+  directory with timestamp `20260714-194021`.
+- Backup refs exist for each Phase 1, Phase 2, Excellence, Visual Revolution, and
+  Phase 3 source head.
+
+## Decision boundary
+
+This branch is ready for human merge review. It is not authorized to merge,
+push, deploy, begin Phase 4, or carry real money. External readiness conditions
+are enumerated in `docs/59_PRE_PHASE_FOUR_READINESS.md`.
