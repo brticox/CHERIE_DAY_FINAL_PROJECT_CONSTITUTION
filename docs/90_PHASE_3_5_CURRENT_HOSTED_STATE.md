@@ -31,3 +31,7 @@ All prior migrations were applied in order and the hosted-only hardening migrati
 ## Production isolation
 
 The Vercel project has no Production environment values. The active Staging deployment target is Preview (`target: null`) and is created from Git, not promoted. `APP_ENV=staging`, PayTR test mode is enabled, refunds and notification delivery are fail-closed, Google and Apple are false, and every internal endpoint validates a server-only bearer secret. Public access redirects to Vercel SSO.
+
+## Final hosted proof
+
+Code SHA `60dab54824795e72912ff26ba5e4682ac625a0d1` was deployed as Preview `dpl_8omE1MmxBBKcDH3zK39pW94szya2`. The strict browser matrix passed 56/56 route/viewport checks with 56/56 `noindex`, 56/56 overflow-safe, 56/56 console-clean, and zero undersized interactive targets. Notification and payment workers returned 401 without credentials and repeatable 200 empty-batch results with their branch-scoped credentials. Sentry server event `f8965dcd68294a88ad83412c4850e186` flushed successfully. GitHub Quality Gate `29403273910` and Cross-phase Integration Integrity `29403273867` both passed this code SHA.

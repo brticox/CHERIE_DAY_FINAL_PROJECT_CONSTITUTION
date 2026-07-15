@@ -1,0 +1,30 @@
+{
+  "deploymentId": "dpl_8omE1MmxBBKcDH3zK39pW94szya2",
+  "deploymentSha": "60dab54824795e72912ff26ba5e4682ac625a0d1",
+  "checks": 56,
+  "failures": 0,
+  "widths": [
+    1440,
+    1280,
+    1024,
+    768,
+    430,
+    390,
+    375,
+    320
+  ],
+  "routes": [
+    "/",
+    "/magaza",
+    "/magaza/davetiye/muhurlu-bahce-davetiyesi",
+    "/hizmetler",
+    "/kurumsal/gizlilik",
+    "/yardim",
+    "/hesap/giris"
+  ],
+  "maxUndersized": 0,
+  "checksWithZeroUndersized": 56,
+  "noindexChecks": 56,
+  "overflowChecksPassed": 56,
+  "consoleCleanChecks": 56
+}
