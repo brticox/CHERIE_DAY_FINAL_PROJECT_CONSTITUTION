@@ -65,10 +65,11 @@ export function HeroPoster() {
           CHERIE DAY · Maison
         </p>
         <h1 className="mt-6 max-w-4xl text-display-xl text-cherie-ink">
-          Her şey bir dokunuşla başlar.
+          Bir dokunuşunuz yeter; gerisi bize emanet.
         </h1>
         <p className="mt-6 max-w-xl text-base leading-7 text-cherie-soft-ink md:text-lg md:leading-8">
-          Sözünüzün ilk anından son hatırasına — bütün bir gün, tek bir imzayla.
+          İlk ‘evet’in heyecanı, son dansın ışığı sizin; davetiyeden albüme, her
+          ince detay bizim.
         </p>
       </div>
     </div>

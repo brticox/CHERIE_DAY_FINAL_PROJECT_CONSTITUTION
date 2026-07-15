@@ -1,11 +1,38 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
-
-export default function Page() {
+import { ResourceList, StateBadge } from '@/components/admin/resource-list';
+import { requireCapability } from '@/lib/auth/guards';
+import { createAdminClient } from '@/lib/supabase/admin';
+export const dynamic = 'force-dynamic';
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  await requireCapability('catalog.read', '/admin/catalog/categories');
+  const db = createAdminClient();
+  let request = db
+    .from('categories')
+    .select('id,name,slug,status,sort_order,departments(name_tr)', { count: 'exact' })
+    .order('sort_order')
+    .limit(100);
+  if (q) request = request.ilike('name', `%${q.replace(/[,%]/g, '')}%`);
+  const { data, count, error } = await request;
   return (
-    <PagePlaceholder
-      title="Katalog · categories"
-      eyebrow="Yönetim"
-      note="Yönetim modülü — iş mantığı sonraki fazda eklenecek."
+    <ResourceList
+      eyebrow="Katalog"
+      title="Kategoriler"
+      description="Ürünleri departmanlar içinde anlaşılır ve yayınlanabilir gruplara ayırın."
+      rows={data ?? []}
+      total={count ?? 0}
+      query={q}
+      error={error ? 'Kategoriler okunamadı.' : undefined}
+      columns={[
+        { label: 'Kategori', value: (r) => <strong>{r.name}</strong> },
+        { label: 'Departman', value: (r) => r.departments?.name_tr ?? 'Atanmamış' },
+        { label: 'Adres kısa adı', value: (r) => r.slug },
+        { label: 'Sıra', value: (r) => r.sort_order },
+        { label: 'Durum', value: (r) => <StateBadge value={r.status} /> },
+      ]}
     />
   );
 }

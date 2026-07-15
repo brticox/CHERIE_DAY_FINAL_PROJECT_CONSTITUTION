@@ -22,6 +22,7 @@ function doc(
     body_tr: `${intro}\n\n${PLACEHOLDER}`,
     needs_lawyer_review: true,
     effective_from: null,
+    publication_state: 'placeholder',
   };
 }
 

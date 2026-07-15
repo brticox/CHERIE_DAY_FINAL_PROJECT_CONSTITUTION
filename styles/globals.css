@@ -200,6 +200,26 @@
     outline: none;
   }
 
+  .cherie-button-primary,
+  .cherie-button-secondary {
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: background-color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+  }
+
+  .cherie-button-primary { background: var(--cherie-burgundy); color: white; }
+  .cherie-button-primary:hover { background: var(--cherie-cherry); }
+  .cherie-button-secondary { border: 1px solid var(--cherie-lace); background: rgb(var(--cherie-ivory-rgb) / 0.8); color: var(--cherie-burgundy); }
+  .cherie-button-secondary:hover { border-color: var(--cherie-brass); }
+  .cherie-button-primary:disabled,
+  .cherie-button-secondary:disabled { cursor: not-allowed; opacity: 0.45; }
+
   .cherie-kicker {
     display: inline-flex;
     align-items: center;
@@ -957,4 +977,246 @@
   .m-cloud {
     animation: none;
   }
+}
+
+/* ==========================================================================
+ * Below-hero homepage redesign (2026-07-13) — «Bir CHERIE Günü» editorial
+ * commerce system. Self-contained utilities; deleting this block degrades the
+ * sections to clean static HTML (no broken layout). Tokens only — no new hex.
+ * ========================================================================== */
+@layer components {
+  /* Editorial oversized index numeral behind headings */
+  .cd-ghost-index {
+    font-family: var(--font-display);
+    line-height: 0.72;
+    color: rgb(var(--cherie-brass-rgb) / 0.16);
+    -webkit-text-stroke: 1px rgb(var(--cherie-brass-rgb) / 0.28);
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Brass hairline that draws in on reveal (framer controls opacity/scale) */
+  .cd-rule {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      var(--cherie-brass) 0%,
+      rgb(var(--cherie-brass-rgb) / 0.15) 100%
+    );
+  }
+
+  /* Continuous department marquee (store) — pauses on hover/focus-within */
+  .cd-marquee {
+    display: flex;
+    width: max-content;
+    animation: cd-marquee 46s linear infinite;
+  }
+  .cd-marquee-track:hover .cd-marquee,
+  .cd-marquee-track:focus-within .cd-marquee {
+    animation-play-state: paused;
+  }
+
+  /* Slow light sweep across dark vitrine surfaces */
+  .cd-sheen {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgb(var(--cherie-ivory-rgb) / 0.14) 46%,
+      transparent 62%
+    );
+    background-size: 250% 100%;
+    animation: cd-sheen 6.5s ease-in-out infinite;
+  }
+
+  /* Türkiye map node halo */
+  .cd-node-halo {
+    animation: cd-node-pulse 3.2s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* Warm paper vitrine surface reused by floating commerce panels */
+  .cd-paper {
+    background:
+      radial-gradient(120% 140% at 20% 0%, rgb(var(--cherie-ivory-rgb) / 0.9), rgb(var(--cherie-paper-rgb) / 0.86));
+    border: 1px solid rgb(var(--cherie-lace-rgb) / 0.9);
+  }
+  .cd-velvet {
+    background:
+      radial-gradient(120% 140% at 20% 0%, rgb(var(--cherie-velvet-rgb) / 0.72), rgb(43 17 24 / 0.9));
+    border: 1px solid rgb(var(--cherie-brass-rgb) / 0.25);
+  }
+
+  /* Grain wash for tactile depth on flat token gradients */
+  .cd-grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 120px 120px;
+  }
+}
+
+@keyframes cd-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes cd-sheen {
+  0%, 100% { background-position: 130% 0; }
+  50% { background-position: -30% 0; }
+}
+@keyframes cd-node-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.6); }
+}
+
+/* Floating love-hearts drifting up across the map (decorative) */
+.cd-heart {
+  position: absolute;
+  bottom: -8%;
+  opacity: 0;
+  animation: cd-heart-rise var(--dur, 9s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity;
+}
+@keyframes cd-heart-rise {
+  0% { transform: translateY(0) scale(0.6) rotate(-6deg); opacity: 0; }
+  12% { opacity: var(--peak, 0.55); }
+  50% { transform: translateY(-52%) translateX(6px) scale(1) rotate(4deg); }
+  80% { opacity: calc(var(--peak, 0.55) * 0.6); }
+  100% { transform: translateY(-108%) translateX(-4px) scale(0.85) rotate(-3deg); opacity: 0; }
+}
+
+/* Emphasis pulse on the auto-cycling active node's outer glow */
+@keyframes cd-node-cycle {
+  0% { transform: scale(0.4); opacity: 0.7; }
+  70% { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+.cd-node-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cd-node-cycle 1.8s ease-out infinite;
+}
+
+/* Gloss sweep — one elegant pass every 5s (rectangular photos + masked card) */
+.cd-shine::after,
+.cd-cardshine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    120deg,
+    transparent 42%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 58%
+  );
+  background-size: 250% 100%;
+  mix-blend-mode: screen;
+  animation: cd-shine-sweep 5s ease-in-out infinite;
+}
+/* the card is a transparent cutout — clip its gloss to the artwork's shape */
+.cd-cardshine::after {
+  -webkit-mask-image: url('/home/hero/cutouts/CARD.png');
+  mask-image: url('/home/hero/cutouts/CARD.png');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+@keyframes cd-shine-sweep {
+  0% { background-position: 185% 0; }
+  22%, 100% { background-position: -85% 0; }
+}
+
+/* Gentle in-place float for the corner card (subtle, "static-ish") */
+.cd-float {
+  animation: cd-float 6.5s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes cd-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+/* Ornamental hearts + roses drifting in the flagship's red field */
+.cd-ornament {
+  position: absolute;
+  animation: cd-ornament var(--dur, 9s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity;
+}
+@keyframes cd-ornament {
+  0%, 100% {
+    transform: translate(0, 0) rotate(var(--rot, 0deg));
+    opacity: var(--lo, 0.16);
+  }
+  50% {
+    transform: translate(var(--tx, 6px), var(--ty, -12px)) rotate(calc(var(--rot, 0deg) + 14deg));
+    opacity: var(--hi, 0.42);
+  }
+}
+/* A few roses that "fly" upward across the field */
+.cd-rose {
+  position: absolute;
+  opacity: 0;
+  animation: cd-rose-fly var(--dur, 15s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity;
+}
+@keyframes cd-rose-fly {
+  0% { transform: translate(0, 20%) rotate(0deg) scale(0.7); opacity: 0; }
+  15% { opacity: var(--peak, 0.4); }
+  50% { transform: translate(-18px, -48%) rotate(150deg) scale(1); }
+  85% { opacity: calc(var(--peak, 0.4) * 0.5); }
+  100% { transform: translate(16px, -108%) rotate(290deg) scale(0.82); opacity: 0; }
+}
+
+/* Delivery banner: bobbing truck + a "road" that scrolls beneath it */
+.cd-truck { animation: cd-truck-bob 1.8s ease-in-out infinite; }
+@keyframes cd-truck-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-2px) rotate(-1.5deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-1px) rotate(1deg); }
+}
+.cd-road {
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0 12px,
+    transparent 12px 26px
+  );
+  animation: cd-road 0.6s linear infinite;
+}
+@keyframes cd-road {
+  to { background-position: -26px 0; }
+}
+.cd-pin-pop { animation: cd-pin-pop 3.5s ease-in-out infinite; }
+@keyframes cd-pin-pop {
+  0%, 70%, 100% { transform: translateY(0) scale(1); opacity: 0.9; }
+  82% { transform: translateY(-3px) scale(1.12); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-marquee { animation: none; }
+  .cd-sheen { animation: none; opacity: 0.5; }
+  .cd-node-halo { animation: none; }
+  .cd-heart { display: none; }
+  .cd-node-ping { animation: none; opacity: 0; }
+  .cd-shine::after,
+  .cd-cardshine::after { animation: none; opacity: 0.2; }
+  .cd-float { animation: none; }
+  .cd-ornament { animation: none; opacity: 0.28; }
+  .cd-rose { animation: none; display: none; }
+  .cd-truck,
+  .cd-road,
+  .cd-pin-pop { animation: none; }
 }

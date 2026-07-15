@@ -37,11 +37,17 @@ export default async function HatiraPage() {
 
       <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {HATIRA_TYPES.map((t) => (
-          <div key={t.slug} className="rounded-card border border-cherie-lace bg-cherie-ivory p-4">
+          <Link
+            key={t.slug}
+            href={`${ROUTES.hatira}/${t.slug}`}
+            className="group rounded-card border border-cherie-lace bg-cherie-ivory p-4 transition-colors duration-card ease-cherie hover:border-cherie-burgundy"
+          >
             <MediaFrame label={t.title} ratio="aspect-[16/10]" />
-            <h3 className="mt-4 text-h3 text-cherie-ink">{t.title}</h3>
+            <h3 className="mt-4 text-h3 text-cherie-ink group-hover:text-cherie-burgundy">
+              {t.title}
+            </h3>
             <p className="mt-1 text-sm text-cherie-soft-ink">{t.desc}</p>
-          </div>
+          </Link>
         ))}
       </div>
 

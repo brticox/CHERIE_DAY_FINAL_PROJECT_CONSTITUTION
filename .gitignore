@@ -5,6 +5,7 @@ dist/
 build/
 .vercel/
 coverage/
+artifacts/email-previews/
 .eslintcache
 *.tsbuildinfo
 
@@ -24,3 +25,4 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+.vercel

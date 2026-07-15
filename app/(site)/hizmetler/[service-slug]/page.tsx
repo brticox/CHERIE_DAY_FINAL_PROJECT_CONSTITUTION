@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { getServicePackages, getServicePackageBySlug, getServiceCities } from '@/lib/data/services';
+import { getServicePackages, getServicePackageBySlug } from '@/lib/data/services';
 import { buildMetadata } from '@/lib/data/seo';
 import { ROUTES } from '@/lib/data/routes';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
@@ -34,10 +34,7 @@ export default async function ServicePage({
   params: Promise<{ 'service-slug': string }>;
 }) {
   const { 'service-slug': slug } = await params;
-  const [service, cities] = await Promise.all([
-    getServicePackageBySlug(slug),
-    getServiceCities(),
-  ]);
+  const service = await getServicePackageBySlug(slug);
   if (!service) notFound();
 
   return (
@@ -49,7 +46,7 @@ export default async function ServicePage({
           { name: service.name, path: `${ROUTES.hizmetler}/${slug}` },
         ]}
       />
-      <ServiceDetail service={service} cities={cities} />
+      <ServiceDetail service={service} />
     </div>
   );
 }

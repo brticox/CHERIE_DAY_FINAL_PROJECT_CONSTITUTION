@@ -63,7 +63,7 @@ export function SiteHeader() {
                   <Link
                     href={item.href}
                     className={cn(
-                      'relative flex h-[4.5rem] items-center text-[13px] font-medium tracking-[0.02em] transition-colors duration-control ease-cherie after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform hover:after:scale-x-100',
+                      'relative flex h-[4.5rem] min-w-11 items-center justify-center text-[13px] font-medium tracking-[0.02em] transition-colors duration-control ease-cherie after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform hover:after:scale-x-100',
                       pathname === item.href && 'after:scale-x-100',
                       overSky
                         ? 'text-cherie-ivory/85 hover:text-cherie-ivory'
@@ -148,7 +148,7 @@ export function SiteHeader() {
               asChild
               size="sm"
               className={cn(
-                'ml-2 hidden sm:inline-flex',
+                'ml-2 hidden min-h-11 sm:inline-flex',
                 overSky &&
                   'bg-cherie-ivory/15 text-cherie-ivory backdrop-blur-[4px] hover:bg-cherie-ivory/25',
               )}

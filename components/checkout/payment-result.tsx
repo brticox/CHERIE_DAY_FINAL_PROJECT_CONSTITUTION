@@ -39,7 +39,7 @@ export function PaymentResult({
               expected === 'success'
                 ? 'Yönlendirme tamamlandı; bildirim bekleniyor'
                 : 'Ödeme sonucu kontrol ediliyor',
-            lead: 'Tarayıcı yönlendirmesi tek başına ödeme kanıtı değildir. Sağlayıcının güvenli bildirimi gelince durum otomatik güncellenir.',
+            lead: 'Kartınızdan tahsilat yapılmış veya işlem henüz bankada bekliyor olabilir. Lütfen doğrulama tamamlanmadan yeniden ödeme yapmayın; sistem sonucu güvenle kontrol ediyor.',
             tone: 'text-cherie-warning bg-cherie-warning/10',
           };
   const { Icon } = content;
