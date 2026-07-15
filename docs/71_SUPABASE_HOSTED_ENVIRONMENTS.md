@@ -8,6 +8,8 @@ No separate Staging project or Supabase branch exists. Do not reuse this project
 
 Owner action required: upgrade the organization or migrate EDA to another recoverable project before pausing it. Deletion remains prohibited. A Supabase development branch is not an acceptable substitute for the required isolated Staging project in this mission.
 
+Capacity semantics were re-proven on 2026-07-15 from Supabase's current billing and project-pausing documentation: the Free plan permits two active projects, and paused projects do not count. Pausing EDA and creating Staging would consume both active slots with `CHERIE DAY` and `CHERIE DAY Staging`; resuming EDA would require an impermissible third active slot. The controlled maintenance sequence is therefore unsafe and was not started.
+
 After creation, apply the reviewed migration chain through normal migration history, use `https://staging.cherieday.eu` as Site URL, and allow exactly:
 
 - `https://staging.cherieday.eu/auth/callback`
