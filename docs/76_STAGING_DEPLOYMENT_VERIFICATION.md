@@ -1,6 +1,6 @@
 # CHERIE DAY — Staging Deployment Verification
 
-Status: blocked; no Vercel project, DNS target, or separate Supabase project exists.
+Status: blocked; no CHERIE DAY Vercel project, DNS target, or separate Supabase project exists. Cloudflare is authoritative, but `staging.cherieday.eu` intentionally has no record until Vercel supplies an exact target.
 
 Required proof before deployment: protected `https://staging.cherieday.eu`, noindex behavior, separate Supabase public/service keys, test-only payments, a single approved email recipient, OAuth disabled unless explicitly configured, Sentry environment `staging`, exact callbacks/webhooks, and no production data.
 

@@ -4,9 +4,11 @@ Production candidate: `CHERIE DAY`, ref `rkvubnuwfuocoevayhcd`, region `eu-centr
 
 It contains seed catalog data and no customer/staff rows were observed. It is not yet a verified production target: its hosted migrations stop before the reviewed Phase 2, Phase 3, and identity/email migrations in this branch. Security advisor findings also require review before deployment.
 
-No separate Staging project or Supabase branch exists. Do not reuse this project for Staging. On 2026-07-14 the connector reported a $0 monthly project cost and accepted its cost confirmation, but creation of `CHERIE DAY Staging` in `eu-central-1` was rejected because owner `brticox` has reached the two-active-free-project limit. Active projects are `EDA` and `CHERIE DAY`; an inactive unrelated project also exists. No existing project was paused, deleted, or repurposed.
+No separate Staging project or Supabase branch exists. Do not reuse this project for Staging. On 2026-07-15 the organization is still on the Free plan and the active projects remain `EDA` and `CHERIE DAY`; an unrelated third project is already inactive. EDA cannot safely be paused: it backs the live `eda-anaokulu-website` Vercel production project and stores six parent/child application records, the latest dated 2026-06-22. It was backed up and left `ACTIVE_HEALTHY`.
 
-Owner decision required: upgrade the organization, or explicitly identify an unrelated project that may be paused/deleted. A Supabase development branch is not an acceptable substitute for the required isolated Staging project in this mission.
+Owner action required: upgrade the organization or migrate EDA to another recoverable project before pausing it. Deletion remains prohibited. A Supabase development branch is not an acceptable substitute for the required isolated Staging project in this mission.
+
+Capacity semantics were re-proven on 2026-07-15 from Supabase's current billing and project-pausing documentation: the Free plan permits two active projects, and paused projects do not count. Pausing EDA and creating Staging would consume both active slots with `CHERIE DAY` and `CHERIE DAY Staging`; resuming EDA would require an impermissible third active slot. The controlled maintenance sequence is therefore unsafe and was not started.
 
 After creation, apply the reviewed migration chain through normal migration history, use `https://staging.cherieday.eu` as Site URL, and allow exactly:
 

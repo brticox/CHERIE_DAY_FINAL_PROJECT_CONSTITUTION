@@ -23,6 +23,7 @@ end $$;
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"role":"authenticated","sub":"eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"}', true);
+select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', true);
 
 do $$
 declare v_customer public.customers;
