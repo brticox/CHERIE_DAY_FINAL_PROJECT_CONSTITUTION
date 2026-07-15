@@ -1,18 +1,18 @@
 # CHERIE DAY — Connected Services Environment Matrix
 
-Authoritative domain: **UNVERIFIED / launch blocker**. Supabase project `CHERIE DAY` (`rkvubnuwfuocoevayhcd`) is connected and healthy. No CHERIE DAY Vercel project, Cloudflare zone, Resend domain or Sentry project was visible.
+Authoritative domain: **verified on Cloudflare**. Zone `cherieday.eu` (`74e8535e39b23167e5efef60e4c3797a`) is active and delegated to Cloudflare. Supabase project `CHERIE DAY` (`rkvubnuwfuocoevayhcd`) is connected and healthy. Resend domain `9ee62771-b1fc-48c4-b1b8-b128074fa460` is verified and send-enabled. No CHERIE DAY Vercel project, Supabase Staging project, Resend webhook, or Sentry project is currently available.
 
 | Field | Local | Preview | Staging | Production |
 |---|---|---|---|---|
-| App URL | `http://localhost:3000` | Unassigned | Unassigned | Blocked by domain |
+| App URL | `http://localhost:3000` | Unassigned | `staging.cherieday.eu` reserved but unresolved | Existing Squarespace site preserved |
 | Supabase | local project | Unassigned | Unassigned | connected project, deployment unverified |
 | Public key | present locally | unverified | unverified | unverified |
 | Service role | present locally, server only | unverified | unverified | unverified |
 | App callback | local exact path | exact URL required | exact URL required | domain blocked |
 | Google/Apple provider callback | Supabase local/provider test | project-specific | project-specific | `https://rkvubnuwfuocoevayhcd.supabase.co/auth/v1/callback` |
-| Vercel project | not linked | absent | absent | absent |
-| Cloudflare zone | none | none | none | none |
-| Resend sender | capture | capture only | test/capture | no domain |
+| Vercel project | not linked | absent | absent | absent; Production not promoted |
+| Cloudflare zone | authoritative | authoritative | authoritative; no `staging` record yet | authoritative; apex/`www` preserved |
+| Resend sender | capture | capture only | blocked until protected Staging exists | domain verified; Production sending disabled by policy |
 | Sentry env/release | not configured | not configured | not configured | not configured |
 | Payment callback origin | localhost simulator only | live forbidden | test-only required | domain blocked |
 | Cookie behavior | host-only; HTTP local | secure required | secure required | secure + host-only preferred |
