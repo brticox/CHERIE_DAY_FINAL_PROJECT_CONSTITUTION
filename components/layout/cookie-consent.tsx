@@ -49,20 +49,25 @@ export function CookieConsent() {
           Deneyiminizi iyileştirmek için çerezler kullanıyoruz. Ayrıntılar için{' '}
           <Link
             href={`${ROUTES.kurumsal}/cerez-politikasi`}
-            className="underline hover:text-cherie-burgundy"
+            className="inline-flex min-h-11 items-center underline hover:text-cherie-burgundy"
           >
             Çerez Politikası
           </Link>
           .
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" onClick={() => choose('accept_all')}>
+          <Button className="min-h-11" size="sm" onClick={() => choose('accept_all')}>
             Tümünü Kabul Et
           </Button>
-          <Button size="sm" variant="secondary" onClick={() => choose('reject_optional')}>
+          <Button
+            className="min-h-11"
+            size="sm"
+            variant="secondary"
+            onClick={() => choose('reject_optional')}
+          >
             Yalnızca Gerekli
           </Button>
-          <Button size="sm" variant="ghost" asChild>
+          <Button className="min-h-11" size="sm" variant="ghost" asChild>
             <Link
               href={`${ROUTES.kurumsal}/cerez-tercihleri`}
               onClick={() => choose('configure')}
