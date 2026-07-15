@@ -23,3 +23,7 @@ Both hosted workflows cover lint, TypeScript, 130 unit tests, build, migration r
 5. Disable the Sentry project/DSN; archive/delete only with explicit owner approval.
 6. Pause or delete Supabase Staging `hdafztkhkyhqziqayerz` only with explicit owner approval.
 7. Never modify, resume, delete, or repurpose EDA, and never roll Staging changes into `rkvubnuwfuocoevayhcd`.
+
+## Deployment incident and recovery record
+
+During the initial CLI bootstrap, three direct deployments were incorrectly classified by Vercel as Production: `dpl_2khoJzrdwhkFa5d93XWn7sod7MGL`, `dpl_2Gy83thtfrwPgwbSSDSagapNfJyj`, and `dpl_HGSsvJVWm1ysCD7KSMUSxGoPzCWx`. They were deleted immediately. Failed Git deployment `dpl_BqvvbwWPGmCAQX6HkfQAjFpfDyLn` was also removed. None received Production environment values, Production Supabase data, live PayTR credentials, or a Production promotion. All subsequent deployments are Git-created Preview deployments on the isolated branch, and the branch-bound Staging alias resolves only to the latest protected Preview.
