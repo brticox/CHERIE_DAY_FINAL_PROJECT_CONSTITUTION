@@ -43,18 +43,56 @@ const nextConfig = {
     ];
   },
   async headers() {
-    const stagingHeaders =
-      process.env.APP_ENV === 'production'
-        ? []
-        : [
-            {
-              source: '/:path*',
-              headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }],
-            },
-          ];
+    const isProduction = process.env.APP_ENV === 'production';
+
+    // Staging/preview stay unindexed; Production drops the noindex tag.
+    const stagingHeaders = isProduction
+      ? []
+      : [
+          {
+            source: '/:path*',
+            headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }],
+          },
+        ];
+
+    // Baseline security headers for every response. The CSP intentionally scopes
+    // only `frame-ancestors` (clickjacking protection) so it cannot break
+    // Supabase / Google OAuth / Sentry / Resend / PayTR / Vercel resource loads.
+    const securityHeaders = [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
+          },
+        ],
+      },
+    ];
+
+    // HSTS only in Production (avoids pinning preview/staging hostnames).
+    const productionHeaders = isProduction
+      ? [
+          {
+            source: '/:path*',
+            headers: [
+              {
+                key: 'Strict-Transport-Security',
+                value: 'max-age=63072000; includeSubDomains; preload',
+              },
+            ],
+          },
+        ]
+      : [];
 
     return [
       ...stagingHeaders,
+      ...securityHeaders,
+      ...productionHeaders,
       {
         source: '/auth/:path*',
         headers: [{ key: 'Cache-Control', value: 'no-store, max-age=0' }],
