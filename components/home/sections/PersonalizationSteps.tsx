@@ -20,11 +20,24 @@ const STEPS: {
   anchor?: boolean;
 }[] = [
   { icon: Check, title: 'Seç', description: 'Dünyanızı ve ürününüzü seçin.' },
-  { icon: PencilLine, title: 'Kişiselleştir', description: 'İsim, tarih, renk, mühür — hikâyenize göre.' },
+  {
+    icon: PencilLine,
+    title: 'Kişiselleştir',
+    description: 'İsim, tarih, renk, mühür — hikâyenize göre.',
+  },
   { icon: Eye, title: 'Önizle', description: 'Tasarımı ekranda, gerçek hâliyle görün.' },
-  { icon: ShieldCheck, title: 'Onayla', description: 'Onayınız gelmeden hiçbir şey üretime girmez.', anchor: true },
+  {
+    icon: ShieldCheck,
+    title: 'Onayla',
+    description: 'Onayınız gelmeden hiçbir şey üretime girmez.',
+    anchor: true,
+  },
   { icon: Sparkles, title: 'Üret', description: 'Atölyede, el işçiliğiyle hayat bulur.' },
-  { icon: PackageCheck, title: 'Teslim', description: 'Özenle paketlenir, kapınıza gelir.' },
+  {
+    icon: PackageCheck,
+    title: 'Teslim',
+    description: 'Özenle paketlenir, kapınıza gelir.',
+  },
 ];
 
 /**
@@ -61,7 +74,9 @@ export function PersonalizationSteps() {
                   <Icon className="h-6 w-6" strokeWidth={1.6} aria-hidden />
                 </span>
                 <span className="mt-4 flex items-center gap-2 font-display text-xl text-cherie-ink">
-                  <span className="text-sm text-cherie-brass">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="text-sm text-cherie-brass">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   {step.title}
                 </span>
                 <p className="mt-1.5 max-w-[15rem] text-sm leading-6 text-cherie-soft-ink">
@@ -76,14 +91,18 @@ export function PersonalizationSteps() {
       {/* the promise, restated as a quiet guarantee line */}
       <Reveal className="mt-14">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-card-lg border border-cherie-lace bg-cherie-ivory px-8 py-7 text-center shadow-card sm:flex-row sm:text-left">
-          <ShieldCheck className="h-8 w-8 shrink-0 text-cherie-burgundy" strokeWidth={1.4} aria-hidden />
+          <ShieldCheck
+            className="h-8 w-8 shrink-0 text-cherie-burgundy"
+            strokeWidth={1.4}
+            aria-hidden
+          />
           <p className="flex-1 text-base leading-7 text-cherie-soft-ink">
             <span className="font-medium text-cherie-ink">Onay güvencesi:</span> Dijital
             provanızı görmeden, beğenmeden ve onaylamadan üretim başlamaz.
           </p>
           <Link
             href={ROUTES.maisonNasilCalisir}
-            className="shrink-0 text-sm font-medium text-cherie-burgundy underline-offset-4 hover:underline"
+            className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-cherie-burgundy underline-offset-4 hover:underline"
           >
             Süreci inceleyin
           </Link>

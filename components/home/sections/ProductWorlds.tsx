@@ -31,18 +31,170 @@ type Decor = {
 };
 
 const FLAGSHIP_DECOR: Decor[] = [
-  { kind: 'heart', motion: 'drift', tone: '#c99a63', size: 24, left: '6%', top: '18%', dur: '8s', delay: '0s', rot: '-8deg', tx: '5px', ty: '-12px', lo: '0.3', hi: '0.72' },
-  { kind: 'heart', motion: 'drift', tone: '#e8d8c7', size: 14, left: '30%', top: '12%', dur: '10s', delay: '1.4s', rot: '6deg', tx: '-6px', ty: '-10px', lo: '0.24', hi: '0.6' },
-  { kind: 'rose', motion: 'drift', tone: '#c99a63', size: 28, left: '10%', top: '50%', dur: '11s', delay: '0.8s', rot: '10deg', tx: '7px', ty: '-14px', lo: '0.26', hi: '0.6' },
-  { kind: 'heart', motion: 'drift', tone: '#d98a95', size: 13, left: '40%', top: '36%', dur: '9s', delay: '2.4s', rot: '0deg', tx: '4px', ty: '-9px', lo: '0.28', hi: '0.66' },
-  { kind: 'rose', motion: 'drift', tone: '#e8d8c7', size: 19, left: '4%', top: '40%', dur: '12s', delay: '3.2s', rot: '-12deg', tx: '-5px', ty: '-12px', lo: '0.24', hi: '0.58' },
-  { kind: 'heart', motion: 'drift', tone: '#c99a63', size: 17, left: '21%', top: '70%', dur: '8.5s', delay: '1s', rot: '8deg', tx: '6px', ty: '-10px', lo: '0.26', hi: '0.62' },
-  { kind: 'heart', motion: 'drift', tone: '#d98a95', size: 15, left: '15%', top: '32%', dur: '9.5s', delay: '3.8s', rot: '-4deg', tx: '-5px', ty: '-11px', lo: '0.22', hi: '0.56' },
-  { kind: 'rose', motion: 'drift', tone: '#c99a63', size: 22, left: '34%', top: '58%', dur: '10.5s', delay: '2s', rot: '12deg', tx: '6px', ty: '-13px', lo: '0.22', hi: '0.54' },
-  { kind: 'rose', motion: 'fly', tone: '#c99a63', size: 26, left: '9%', bottom: '4%', dur: '13s', delay: '0s', peak: '0.6' },
-  { kind: 'rose', motion: 'fly', tone: '#e8d8c7', size: 19, left: '33%', bottom: '2%', dur: '16s', delay: '4s', peak: '0.5' },
-  { kind: 'rose', motion: 'fly', tone: '#d98a95', size: 22, left: '45%', bottom: '7%', dur: '15s', delay: '7.5s', peak: '0.52' },
-  { kind: 'heart', motion: 'fly', tone: '#c99a63', size: 18, left: '20%', bottom: '3%', dur: '14s', delay: '2.5s', peak: '0.55' },
+  {
+    kind: 'heart',
+    motion: 'drift',
+    tone: '#c99a63',
+    size: 24,
+    left: '6%',
+    top: '18%',
+    dur: '8s',
+    delay: '0s',
+    rot: '-8deg',
+    tx: '5px',
+    ty: '-12px',
+    lo: '0.3',
+    hi: '0.72',
+  },
+  {
+    kind: 'heart',
+    motion: 'drift',
+    tone: '#e8d8c7',
+    size: 14,
+    left: '30%',
+    top: '12%',
+    dur: '10s',
+    delay: '1.4s',
+    rot: '6deg',
+    tx: '-6px',
+    ty: '-10px',
+    lo: '0.24',
+    hi: '0.6',
+  },
+  {
+    kind: 'rose',
+    motion: 'drift',
+    tone: '#c99a63',
+    size: 28,
+    left: '10%',
+    top: '50%',
+    dur: '11s',
+    delay: '0.8s',
+    rot: '10deg',
+    tx: '7px',
+    ty: '-14px',
+    lo: '0.26',
+    hi: '0.6',
+  },
+  {
+    kind: 'heart',
+    motion: 'drift',
+    tone: '#d98a95',
+    size: 13,
+    left: '40%',
+    top: '36%',
+    dur: '9s',
+    delay: '2.4s',
+    rot: '0deg',
+    tx: '4px',
+    ty: '-9px',
+    lo: '0.28',
+    hi: '0.66',
+  },
+  {
+    kind: 'rose',
+    motion: 'drift',
+    tone: '#e8d8c7',
+    size: 19,
+    left: '4%',
+    top: '40%',
+    dur: '12s',
+    delay: '3.2s',
+    rot: '-12deg',
+    tx: '-5px',
+    ty: '-12px',
+    lo: '0.24',
+    hi: '0.58',
+  },
+  {
+    kind: 'heart',
+    motion: 'drift',
+    tone: '#c99a63',
+    size: 17,
+    left: '21%',
+    top: '70%',
+    dur: '8.5s',
+    delay: '1s',
+    rot: '8deg',
+    tx: '6px',
+    ty: '-10px',
+    lo: '0.26',
+    hi: '0.62',
+  },
+  {
+    kind: 'heart',
+    motion: 'drift',
+    tone: '#d98a95',
+    size: 15,
+    left: '15%',
+    top: '32%',
+    dur: '9.5s',
+    delay: '3.8s',
+    rot: '-4deg',
+    tx: '-5px',
+    ty: '-11px',
+    lo: '0.22',
+    hi: '0.56',
+  },
+  {
+    kind: 'rose',
+    motion: 'drift',
+    tone: '#c99a63',
+    size: 22,
+    left: '34%',
+    top: '58%',
+    dur: '10.5s',
+    delay: '2s',
+    rot: '12deg',
+    tx: '6px',
+    ty: '-13px',
+    lo: '0.22',
+    hi: '0.54',
+  },
+  {
+    kind: 'rose',
+    motion: 'fly',
+    tone: '#c99a63',
+    size: 26,
+    left: '9%',
+    bottom: '4%',
+    dur: '13s',
+    delay: '0s',
+    peak: '0.6',
+  },
+  {
+    kind: 'rose',
+    motion: 'fly',
+    tone: '#e8d8c7',
+    size: 19,
+    left: '33%',
+    bottom: '2%',
+    dur: '16s',
+    delay: '4s',
+    peak: '0.5',
+  },
+  {
+    kind: 'rose',
+    motion: 'fly',
+    tone: '#d98a95',
+    size: 22,
+    left: '45%',
+    bottom: '7%',
+    dur: '15s',
+    delay: '7.5s',
+    peak: '0.52',
+  },
+  {
+    kind: 'heart',
+    motion: 'fly',
+    tone: '#c99a63',
+    size: 18,
+    left: '20%',
+    bottom: '3%',
+    dur: '14s',
+    delay: '2.5s',
+    peak: '0.55',
+  },
 ];
 
 /**
@@ -123,12 +275,12 @@ export function ProductWorlds({ worlds }: { worlds: Department[] }) {
             Mağaza
           </p>
           <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
-            <h2 className="max-w-xl text-h2 text-cherie-ink">
+            <h2 className="text-h2 max-w-xl text-cherie-ink">
               Bir maison, on altı dünya.
             </h2>
             <p className="max-w-md text-base leading-7 text-cherie-soft-ink">
-              Davetiyeden yüzüğe, mühürden hatıra albümüne — her dünya kendi
-              ritüelini taşır, hepsi aynı imzayla vitrine çıkar.
+              Davetiyeden yüzüğe, mühürden hatıra albümüne — her dünya kendi ritüelini
+              taşır, hepsi aynı imzayla vitrine çıkar.
             </p>
           </div>
           <div className="cd-rule mt-8 w-full" />
@@ -152,7 +304,13 @@ export function ProductWorlds({ worlds }: { worlds: Department[] }) {
                     const Icon = d.kind === 'heart' ? Heart : Flower2;
                     const style =
                       d.motion === 'fly'
-                        ? ({ left: d.left, bottom: d.bottom, '--dur': d.dur, '--delay': d.delay, '--peak': d.peak } as React.CSSProperties)
+                        ? ({
+                            left: d.left,
+                            bottom: d.bottom,
+                            '--dur': d.dur,
+                            '--delay': d.delay,
+                            '--peak': d.peak,
+                          } as React.CSSProperties)
                         : ({
                             left: d.left,
                             top: d.top,
@@ -165,7 +323,11 @@ export function ProductWorlds({ worlds }: { worlds: Department[] }) {
                             '--hi': d.hi,
                           } as React.CSSProperties);
                     return (
-                      <span key={i} className={d.motion === 'fly' ? 'cd-rose' : 'cd-ornament'} style={style}>
+                      <span
+                        key={i}
+                        className={d.motion === 'fly' ? 'cd-rose' : 'cd-ornament'}
+                        style={style}
+                      >
                         <Icon
                           size={d.size}
                           color={d.tone}
@@ -179,11 +341,23 @@ export function ProductWorlds({ worlds }: { worlds: Department[] }) {
 
                 {/* back invitation photo (sits in the top scene on mobile) */}
                 <div className="cd-shine absolute right-3 top-4 aspect-[4/5] w-28 rotate-6 overflow-hidden rounded-sm border border-cherie-ivory/40 shadow-[0_30px_60px_rgba(0,0,0,0.5)] transition-transform duration-500 ease-cherie group-hover:rotate-3 sm:right-6 sm:top-6 sm:w-52">
-                  <Image src="/home/hero/cutouts/Photo1.png" alt="" fill sizes="220px" className="object-cover" />
+                  <Image
+                    src="/home/hero/cutouts/Photo1.png"
+                    alt=""
+                    fill
+                    sizes="220px"
+                    className="object-cover"
+                  />
                 </div>
                 {/* front invitation photo */}
                 <div className="cd-shine absolute right-10 top-12 aspect-[4/5] w-28 -rotate-3 overflow-hidden rounded-sm border border-cherie-ivory/50 shadow-[0_34px_66px_rgba(0,0,0,0.55)] transition-transform duration-500 ease-cherie group-hover:-rotate-1 sm:right-24 sm:top-20 sm:w-52">
-                  <Image src="/home/hero/cutouts/PHOTO2.png" alt="" fill sizes="220px" className="object-cover" />
+                  <Image
+                    src="/home/hero/cutouts/PHOTO2.png"
+                    alt=""
+                    fill
+                    sizes="220px"
+                    className="object-cover"
+                  />
                 </div>
 
                 {/* velvet scrim — photos fade into velvet where the text lives,
@@ -216,7 +390,9 @@ export function ProductWorlds({ worlds }: { worlds: Department[] }) {
 
               {/* Amiral Dünya badge — lifted to the top-left corner */}
               <span className="absolute left-8 top-8 z-10 inline-flex items-center gap-2 rounded-full border border-cherie-brass/50 bg-cherie-ink/40 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-cherie-brass shadow-card backdrop-blur-sm sm:left-10 sm:top-10">
-                <span className="text-cherie-brass"><WorldMotif slug={flagship.slug} /></span>
+                <span className="text-cherie-brass">
+                  <WorldMotif slug={flagship.slug} />
+                </span>
                 Amiral Dünya
               </span>
 
@@ -231,7 +407,10 @@ export function ProductWorlds({ worlds }: { worlds: Department[] }) {
                 ) : null}
                 <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-cherie-ivory underline-offset-4 group-hover:underline">
                   Dünyayı Aç
-                  <ArrowUpRight className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+                  <ArrowUpRight
+                    className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
                 </span>
               </div>
             </Link>
@@ -253,7 +432,10 @@ export function ProductWorlds({ worlds }: { worlds: Department[] }) {
                     <span className="text-cherie-brass">
                       <WorldMotif slug={w.slug} />
                     </span>
-                    <ArrowUpRight className="h-4 w-4 text-cherie-brass opacity-0 transition-opacity duration-card ease-cherie group-hover:opacity-100" aria-hidden />
+                    <ArrowUpRight
+                      className="h-4 w-4 text-cherie-brass opacity-0 transition-opacity duration-card ease-cherie group-hover:opacity-100"
+                      aria-hidden
+                    />
                   </div>
                   <div>
                     <h3 className="font-display text-2xl text-cherie-ink">{w.name_tr}</h3>
@@ -281,7 +463,9 @@ export function ProductWorlds({ worlds }: { worlds: Department[] }) {
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cherie-lace text-cherie-brass transition-colors duration-card ease-cherie group-hover:border-cherie-brass">
                     <WorldMotif slug={w.slug} />
                   </span>
-                  <span className="font-display text-lg text-cherie-ink">{w.name_tr}</span>
+                  <span className="font-display text-lg text-cherie-ink">
+                    {w.name_tr}
+                  </span>
                 </Link>
               </Reveal>
             ))}
@@ -306,7 +490,7 @@ export function ProductWorlds({ worlds }: { worlds: Department[] }) {
                   href={`${ROUTES.magaza}/${d.slug}`}
                   tabIndex={i < departments.length ? 0 : -1}
                   aria-hidden={i >= departments.length}
-                  className="shrink-0 rounded-full border border-cherie-lace bg-cherie-ivory px-4 py-1.5 text-sm text-cherie-soft-ink transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-burgundy"
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-cherie-lace bg-cherie-ivory px-4 text-sm text-cherie-soft-ink transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-burgundy"
                 >
                   {d.name_tr}
                 </Link>

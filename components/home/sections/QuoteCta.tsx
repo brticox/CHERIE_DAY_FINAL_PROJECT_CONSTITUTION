@@ -67,8 +67,8 @@ export function QuoteCta() {
           Bir fikirle gelin; gerisini birlikte tasarlayalım.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-cherie-lace md:text-lg md:leading-8">
-          Davetiyeden organizasyona bütün günü, sizin hikâyenize göre kuralım.
-          Size özel teklifiniz 48 saat içinde elinizde.
+          Davetiyeden organizasyona bütün günü, sizin hikâyenize göre kuralım. Size özel
+          teklifiniz 48 saat içinde elinizde.
         </p>
 
         {/* tiered actions */}
@@ -80,7 +80,10 @@ export function QuoteCta() {
               className="group inline-flex h-12 items-center justify-center gap-2 rounded-control bg-cherie-ivory px-8 text-base font-medium text-cherie-burgundy shadow-lift transition-all duration-control ease-cherie hover:-translate-y-0.5 hover:bg-cherie-lace"
             >
               Size Özel Teklif Alın
-              <ArrowRight className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:translate-x-1" aria-hidden />
+              <ArrowRight
+                className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:translate-x-1"
+                aria-hidden
+              />
             </Link>
             {/* secondary */}
             <Link
@@ -93,7 +96,7 @@ export function QuoteCta() {
           {/* tertiary */}
           <Link
             href={ROUTES.magaza}
-            className="cta-brass text-sm font-medium text-cherie-lace hover:text-cherie-ivory"
+            className="cta-brass inline-flex min-h-11 items-center text-sm font-medium text-cherie-lace hover:text-cherie-ivory"
           >
             Ya da önce mağazayı gezin
           </Link>

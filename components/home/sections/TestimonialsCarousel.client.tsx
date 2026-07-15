@@ -89,7 +89,14 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
         <span
           aria-hidden
           className="cd-ornament absolute bottom-16 left-8"
-          style={{ '--lo': '0.1', '--hi': '0.28', '--dur': '11s', '--delay': '2s' } as React.CSSProperties}
+          style={
+            {
+              '--lo': '0.1',
+              '--hi': '0.28',
+              '--dur': '11s',
+              '--delay': '2s',
+            } as React.CSSProperties
+          }
         >
           <Heart size={14} color="#e8d8c7" fill="#e8d8c7" strokeWidth={0} />
         </span>
@@ -132,7 +139,12 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
 
               <figcaption className="mt-9 flex items-center justify-center gap-4">
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-cherie-brass/50 bg-cherie-ink/30">
-                  <Heart className="h-5 w-5 text-cherie-brass" fill="currentColor" strokeWidth={0} aria-hidden />
+                  <Heart
+                    className="h-5 w-5 text-cherie-brass"
+                    fill="currentColor"
+                    strokeWidth={0}
+                    aria-hidden
+                  />
                 </span>
                 <span className="text-left">
                   <span className="block font-medium tracking-wide text-cherie-ivory">
@@ -152,7 +164,10 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
         </div>
 
         {/* live autoplay progress bar */}
-        <div aria-hidden className="absolute inset-x-0 bottom-0 h-[3px] bg-cherie-ivory/10">
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-[3px] bg-cherie-ivory/10"
+        >
           {autoAvailable && playing && !reduced ? (
             <motion.div
               key={index}
@@ -191,7 +206,7 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
               aria-controls={`${groupId}-slide-${i}`}
               aria-label={`${i + 1}. yoruma git`}
               onClick={() => go(i, i > index ? 1 : -1)}
-              className="grid h-6 w-6 place-items-center"
+              className="grid size-11 place-items-center"
             >
               <span
                 className={`block rounded-full transition-all duration-control ease-cherie ${
@@ -220,7 +235,11 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
             aria-label={playing ? 'Otomatik geçişi durdur' : 'Otomatik geçişi başlat'}
             className="ml-1 grid h-11 w-11 place-items-center rounded-full border border-cherie-lace text-cherie-soft-ink transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-burgundy"
           >
-            {playing ? <Pause className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />}
+            {playing ? (
+              <Pause className="h-4 w-4" aria-hidden />
+            ) : (
+              <Play className="h-4 w-4" aria-hidden />
+            )}
           </button>
         ) : null}
       </div>

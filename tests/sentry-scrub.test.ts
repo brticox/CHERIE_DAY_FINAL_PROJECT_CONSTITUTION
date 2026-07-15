@@ -5,6 +5,7 @@ import { scrubSentryEvent } from '@/lib/observability/sentry';
 describe('Sentry privacy scrubbing', () => {
   it('removes PII, credentials, query strings, and sensitive extra fields', () => {
     const event = scrubSentryEvent({
+      type: undefined,
       user: { email: 'customer@example.com', ip_address: '127.0.0.1' },
       request: {
         url: 'https://staging.cherieday.eu/auth/callback?code=oauth-code',

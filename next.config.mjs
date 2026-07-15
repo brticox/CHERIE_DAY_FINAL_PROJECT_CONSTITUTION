@@ -43,7 +43,18 @@ const nextConfig = {
     ];
   },
   async headers() {
+    const stagingHeaders =
+      process.env.APP_ENV === 'production'
+        ? []
+        : [
+            {
+              source: '/:path*',
+              headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }],
+            },
+          ];
+
     return [
+      ...stagingHeaders,
       {
         source: '/auth/:path*',
         headers: [{ key: 'Cache-Control', value: 'no-store, max-age=0' }],
