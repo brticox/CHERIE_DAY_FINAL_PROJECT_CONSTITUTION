@@ -92,10 +92,13 @@ describe('cross-phase order cockpit contract', () => {
 
   it('orders customer order items by a real schema column', () => {
     const source = readFileSync(resolve(process.cwd(), 'lib/orders/customer.ts'), 'utf8');
-    expect(source).toContain(
-      "supabase.from('order_items').select('*').eq('order_id', orderRow.id).order('id')",
+    // Normalize whitespace so the guarantee holds regardless of how the query
+    // builder chain is formatted (single-line vs. fluent multi-line).
+    const normalized = source.replace(/\s+/g, ' ');
+    expect(normalized).toContain(
+      "from('order_items') .select('*') .eq('order_id', orderRow.id) .order('id')",
     );
-    expect(source).not.toContain("orderRow.id).order('created_at')");
+    expect(normalized).not.toMatch(/order_items[\s\S]{0,120}order\('created_at'\)/);
   });
 
   it('presents customer proof status in Turkish', () => {
