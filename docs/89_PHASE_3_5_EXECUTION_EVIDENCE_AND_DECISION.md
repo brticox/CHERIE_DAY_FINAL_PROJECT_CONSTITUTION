@@ -22,7 +22,7 @@ The brief's premise that EDA was already paused is false in provider state. Beca
 | Google OAuth | disabled; hosted setup blocked by missing access and Staging ref |
 | Apple | disabled |
 | Workers | local/CI implementation previously verified; hosted endpoints blocked by missing deployment |
-| GitHub CI | prior exact source SHA green; final evidence branch requires PR-triggered runs |
+| GitHub CI | Integration `29392225140` and Quality `29392225147` passed at evidence SHA `e66cc0db665edd794c8d0f308be4d4c99df02cb8` |
 | Browser E2E | blocked because `staging.cherieday.eu` does not resolve |
 
 ## Local integrity verification
