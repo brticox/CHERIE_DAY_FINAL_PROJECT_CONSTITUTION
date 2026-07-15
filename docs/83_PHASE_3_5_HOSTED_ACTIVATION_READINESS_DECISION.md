@@ -1,5 +1,7 @@
 # Phase 3.5 Hosted Activation Readiness Decision
 
+> Superseded (2026-07-15): the current readiness decision is `docs/94_PHASE_3_5_FINAL_READINESS_DECISION.md`.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 ## Decision

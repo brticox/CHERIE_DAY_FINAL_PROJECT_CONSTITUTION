@@ -1,5 +1,7 @@
 # Phase 3.5 Execution Evidence and Decision
 
+> Superseded (2026-07-15): the earlier “Staging does not exist” decision is no longer current. See `docs/90_PHASE_3_5_CURRENT_HOSTED_STATE.md` through `docs/94_PHASE_3_5_FINAL_READINESS_DECISION.md`.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 ## Executive verdict

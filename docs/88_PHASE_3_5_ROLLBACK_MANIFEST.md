@@ -1,5 +1,7 @@
 # Phase 3.5 Rollback Manifest
 
+> Current provider-specific rollback order is in `docs/93_PHASE_3_5_WORKERS_CI_E2E_AND_ROLLBACK.md`; never apply either manifest to EDA or the Production-candidate project.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 ## Git

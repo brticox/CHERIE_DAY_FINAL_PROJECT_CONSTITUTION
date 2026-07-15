@@ -1,5 +1,7 @@
 # CHERIE DAY Staging Manifest
 
+> Superseded (2026-07-15): Supabase Staging was subsequently created as `hdafztkhkyhqziqayerz` after the owner paused EDA. See `docs/90_PHASE_3_5_CURRENT_HOSTED_STATE.md`.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 Status: **not created — provider rejected the zero-cost creation request before any project mutation**.

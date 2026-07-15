@@ -1,5 +1,7 @@
 # Phase 3.5 Hosted Resource Snapshot
 
+> Historical snapshot: the post-activation resource inventory is now `docs/90_PHASE_3_5_CURRENT_HOSTED_STATE.md`.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 ## Supabase

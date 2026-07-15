@@ -28,7 +28,7 @@ Public DNS now delegates to Cloudflare and the zone is active:
 - nameservers: `armfazh.ns.cloudflare.com`, `christina.ns.cloudflare.com`
 - plan: Free Website (`$0`)
 
-The imported Squarespace apex and `www` records remain in place, so the public site has not been moved to Vercel. Cloudflare currently proxies those web records. Google Workspace MX, Google verification, Google DKIM, Resend DKIM, Resend return-path MX, and Resend return-path SPF are present and preserved. No `_dmarc` record was observed. `staging.cherieday.eu` does not exist because no Staging Vercel deployment target exists.
+The imported Squarespace apex and `www` records remain in place, so the public site has not been moved to Vercel. Cloudflare currently proxies those web records. Google Workspace MX, Google verification, Google DKIM, Resend DKIM, Resend return-path MX, and Resend return-path SPF are present and preserved. No `_dmarc` record was observed. Staging now uses DNS-only record `5471e71dc5a39f3f7626a59290660297`: `A staging.cherieday.eu 76.76.21.21`, the exact target reported by Vercel.
 
 ## Resend pending records
 
@@ -40,6 +40,6 @@ The imported Squarespace apex and `www` records remain in place, so the public s
 
 These records are now present in Cloudflare and Resend reports the domain verified and send-enabled. A single future apex SPF record must merge all authorized apex senders if one is required; do not publish two SPF TXT records at the same hostname.
 
-## Future Vercel records
+## Vercel Staging record
 
-Obtain the exact Vercel-assigned records after the project and domains are created. Only then add `staging`. Do not replace the apex Squarespace A records or `www` during this Staging-only mission. Keep auth, API, payment callback, worker, and Resend webhook paths unproxied/correctly uncached.
+The exact Vercel-assigned Staging record has been added and resolves publicly. Do not replace the apex Squarespace A records or `www` during this Staging-only mission. Keep auth, API, payment callback, worker, and Resend webhook paths unproxied/correctly uncached.

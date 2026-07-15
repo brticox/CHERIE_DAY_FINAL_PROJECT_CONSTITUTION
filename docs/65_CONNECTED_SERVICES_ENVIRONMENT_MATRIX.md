@@ -1,5 +1,7 @@
 # CHERIE DAY — Connected Services Environment Matrix
 
+> Current-state correction (2026-07-15): the “no Staging/Vercel/webhook/Sentry project” statements below are historical. The authoritative continuation is `docs/90_PHASE_3_5_CURRENT_HOSTED_STATE.md` through `docs/94_PHASE_3_5_FINAL_READINESS_DECISION.md`.
+
 Authoritative domain: **verified on Cloudflare**. Zone `cherieday.eu` (`74e8535e39b23167e5efef60e4c3797a`) is active and delegated to Cloudflare. Supabase project `CHERIE DAY` (`rkvubnuwfuocoevayhcd`) is connected and healthy. Resend domain `9ee62771-b1fc-48c4-b1b8-b128074fa460` is verified and send-enabled. No CHERIE DAY Vercel project, Supabase Staging project, Resend webhook, or Sentry project is currently available.
 
 | Field | Local | Preview | Staging | Production |

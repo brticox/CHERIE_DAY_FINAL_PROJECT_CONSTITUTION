@@ -1,5 +1,7 @@
 # Phase 3.5 Redacted Environment Matrix
 
+> Superseded environment state: use `docs/91_PHASE_3_5_ENVIRONMENT_CALLBACK_AND_DNS_MATRIX.md`. Secret values remain intentionally absent from both documents.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 No values are recorded in this file.

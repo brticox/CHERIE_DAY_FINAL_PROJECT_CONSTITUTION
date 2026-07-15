@@ -1,5 +1,7 @@
 # Phase 3.5 Strict Recovery Audit
 
+> Historical checkpoint: later hosted mutations are recorded in `docs/90_PHASE_3_5_CURRENT_HOSTED_STATE.md`; the backup/ref audit below remains evidence of the starting boundary.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 ## Git recovery baseline
