@@ -120,7 +120,7 @@ export function AuthForm({
               type="button"
               onClick={() => setShowPassword((value) => !value)}
               aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
-              className="absolute right-1 top-1 grid size-9 place-items-center rounded-control text-cherie-soft-ink hover:bg-cherie-paper"
+              className="absolute right-0 top-0 grid size-11 place-items-center rounded-control text-cherie-soft-ink hover:bg-cherie-paper"
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
