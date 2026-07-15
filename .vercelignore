@@ -4,7 +4,7 @@
 node_modules
 .eslintcache
 tsconfig.tsbuildinfo
-docs
-supabase
-tests
-_assets
+/docs
+/supabase
+/tests
+/_assets
