@@ -87,11 +87,13 @@ export async function getCustomerOrderDetail(
   const orderRow = order as OrderRow;
 
   const [items, events, shipments, proofs] = await Promise.all([
+    // order_items has no created_at column; sort by the stable primary key so
+    // line ordering is deterministic across reloads.
     supabase
       .from('order_items')
       .select('*')
       .eq('order_id', orderRow.id)
-      .order('created_at'),
+      .order('id'),
     supabase
       .from('order_status_events')
       .select('*')

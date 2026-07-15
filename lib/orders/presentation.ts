@@ -1,17 +1,21 @@
+// Keyed on the canonical `order_status` enum. Every enum member MUST appear here
+// so a real order never leaks a raw status string to the customer. Kept in sync
+// with supabase enum order_status: pending_payment, paid, in_design, proof_sent,
+// revision_requested, proof_approved, in_production, quality_check, packed,
+// shipped, delivered, completed, cancelled, refunded.
 const ORDER_LABELS: Record<string, string> = {
-  draft: 'Taslak',
-  pending_payment: 'Ödeme bekleniyor',
+  pending_payment: 'Ödeme doğrulanıyor',
   paid: 'Ödeme alındı',
-  confirmed: 'Sipariş onaylandı',
-  proof_pending: 'Tasarım hazırlanıyor',
-  proof_sent: 'Tasarım onayınızı bekliyor',
-  proof_revision_requested: 'Tasarım revize ediliyor',
-  proof_approved: 'Tasarım onaylandı',
+  in_design: 'Tasarım hazırlanıyor',
+  proof_sent: 'Provanız hazır',
+  revision_requested: 'Revizyon uygulanıyor',
+  proof_approved: 'Prova onaylandı',
   in_production: 'Üretimde',
-  quality_check: 'Kalite kontrolünde',
-  ready_to_ship: 'Gönderime hazır',
-  shipped: 'Kargoya verildi',
+  quality_check: 'Son kalite kontrolünde',
+  packed: 'Özenle paketlendi',
+  shipped: 'Yola çıktı',
   delivered: 'Teslim edildi',
+  completed: 'Tamamlandı',
   cancelled: 'İptal edildi',
   refunded: 'İade edildi',
 };
@@ -76,8 +80,12 @@ export function shipmentStatusLabel(status: string) {
   return SHIPMENT_LABELS[status] ?? status;
 }
 
+// Returns a stable three-value tone consumed by status chips in both the admin
+// and customer order lists. Accepts either an order_status or a payment_status.
 export function orderTone(status: string) {
-  if (['delivered', 'paid', 'proof_approved'].includes(status)) return 'success';
+  if (['delivered', 'completed', 'paid', 'authorized', 'proof_approved'].includes(status)) {
+    return 'success';
+  }
   if (['cancelled', 'refunded', 'failed'].includes(status)) return 'error';
   return 'warning';
 }
