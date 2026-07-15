@@ -64,7 +64,7 @@ export function ServiceDetail({ service }: { service: ServicePackage }) {
           <Row term="Şehir uygunluğu">
             <Link
               href={ROUTES.hizmetlerSehir}
-              className="text-cherie-burgundy hover:underline"
+              className="inline-flex min-h-11 min-w-11 items-center text-cherie-burgundy hover:underline"
             >
               Güncel şehir kapsamını kontrol edin
             </Link>

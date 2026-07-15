@@ -173,7 +173,7 @@ export function AuthForm({
         <div className="text-right">
           <Link
             href={ROUTES.hesapSifremiUnuttum}
-            className="text-sm text-cherie-burgundy hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center text-sm text-cherie-burgundy hover:underline"
           >
             Şifremi Unuttum
           </Link>
@@ -201,7 +201,7 @@ export function AuthForm({
           Henüz hesabınız yok mu?{' '}
           <Link
             href={ROUTES.hesapKayit}
-            className="font-medium text-cherie-burgundy hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center font-medium text-cherie-burgundy hover:underline"
           >
             Üye Ol
           </Link>
@@ -212,7 +212,7 @@ export function AuthForm({
           Zaten hesabınız var mı?{' '}
           <Link
             href={ROUTES.hesapGiris}
-            className="font-medium text-cherie-burgundy hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center font-medium text-cherie-burgundy hover:underline"
           >
             Giriş Yap
           </Link>

@@ -59,7 +59,7 @@ export function SiteFooter() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="inline-flex min-h-11 items-center text-sm text-cherie-lace/80 transition-colors duration-control ease-cherie hover:text-cherie-brass"
+                    className="inline-flex min-h-11 min-w-11 items-center text-sm text-cherie-lace/80 transition-colors duration-control ease-cherie hover:text-cherie-brass"
                   >
                     {item.label}
                   </Link>
@@ -76,19 +76,19 @@ export function SiteFooter() {
           <div className="flex flex-wrap gap-4">
             <Link
               href={`${ROUTES.kurumsal}/cerez-tercihleri`}
-              className="inline-flex min-h-11 items-center hover:text-cherie-brass"
+              className="inline-flex min-h-11 min-w-11 items-center hover:text-cherie-brass"
             >
               Çerez Tercihleri
             </Link>
             <Link
               href={`${ROUTES.kurumsal}/kvkk-aydinlatma`}
-              className="inline-flex min-h-11 items-center hover:text-cherie-brass"
+              className="inline-flex min-h-11 min-w-11 items-center hover:text-cherie-brass"
             >
               KVKK Aydınlatma Metni
             </Link>
             <Link
               href={`${ROUTES.kurumsal}/satici-bilgileri`}
-              className="inline-flex min-h-11 items-center hover:text-cherie-brass"
+              className="inline-flex min-h-11 min-w-11 items-center hover:text-cherie-brass"
             >
               Satıcı Bilgileri
             </Link>
