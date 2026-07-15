@@ -186,17 +186,17 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
       </div>
 
       {/* ── controls ── */}
-      <div className="mt-7 flex items-center justify-center gap-3">
+      <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
         <button
           type="button"
           onClick={() => go(index - 1, -1)}
           aria-label="Önceki yorum"
-          className="grid h-11 w-11 place-items-center rounded-full border border-cherie-lace text-cherie-ink transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-burgundy"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cherie-lace text-cherie-ink transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-burgundy"
         >
           <ChevronLeft className="h-5 w-5" aria-hidden />
         </button>
 
-        <div className="flex items-center gap-2" role="tablist" aria-label="Yorum seç">
+        <div className="flex shrink-0 items-center gap-2" role="tablist" aria-label="Yorum seç">
           {testimonials.map((t, i) => (
             <button
               key={t.id}
@@ -223,7 +223,7 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
           type="button"
           onClick={() => go(index + 1, 1)}
           aria-label="Sonraki yorum"
-          className="grid h-11 w-11 place-items-center rounded-full border border-cherie-lace text-cherie-ink transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-burgundy"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cherie-lace text-cherie-ink transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-burgundy"
         >
           <ChevronRight className="h-5 w-5" aria-hidden />
         </button>
@@ -233,7 +233,7 @@ export function TestimonialsCarousel({ testimonials }: { testimonials: Testimoni
             type="button"
             onClick={() => setPlaying((p) => !p)}
             aria-label={playing ? 'Otomatik geçişi durdur' : 'Otomatik geçişi başlat'}
-            className="ml-1 grid h-11 w-11 place-items-center rounded-full border border-cherie-lace text-cherie-soft-ink transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-burgundy"
+            className="ml-1 grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cherie-lace text-cherie-soft-ink transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-burgundy"
           >
             {playing ? (
               <Pause className="h-4 w-4" aria-hidden />
