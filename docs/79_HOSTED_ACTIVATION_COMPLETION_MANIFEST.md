@@ -36,6 +36,16 @@ Public nameservers resolve to Cloudflare. Google Workspace MX and DKIM, Google v
 
 No hosted secret was copied or printed. `.env.local` remains uncommitted. Staging and Preview require separate Supabase credentials; server-only service-role, Resend, worker, cron, payment, and Sentry secrets must never use `NEXT_PUBLIC_`. `AUTH_GOOGLE_ENABLED=false`, `AUTH_APPLE_ENABLED=false`, `PAYTR_TEST_MODE=true`, and notification sending must remain fail-closed until Staging exists.
 
+## Hosted CI evidence
+
+Draft PR `#1` targets `integration/hosted-platform-activation-20260714` from the continuation branch at `e01ab43f5e007aeada433bbcd48afa91e31ff1b3`.
+
+- Quality Gate run `29390152255`: passed (`lint`, typecheck, unit tests, build, dependency audit).
+- Cross-phase Integration Integrity run `29390152284`: failed in `supabase/tests/identity_email_services.sql:32` before the callback burst and audit steps.
+- Root cause: the identity test sets JSON `request.jwt.claims`, while the vanilla-Postgres `auth.uid()` shim reads `request.jwt.claim.sub`; `ensure_current_customer_profile()` therefore raises `authentication required`.
+
+This is an existing test-harness mismatch, not a documentation regression. The focused proposed fix is to set `request.jwt.claim.sub` to the synthetic user UUID in the identity SQL test, run the identity suite locally, push the test-only commit, and rerun the failed hosted job. That code change awaits explicit approval under the CI-fix workflow.
+
 ## Rollback
 
 - Git: restore from the bundle or backup ref; do not reset other worktrees.
