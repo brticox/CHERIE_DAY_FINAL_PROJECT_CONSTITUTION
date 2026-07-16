@@ -4,7 +4,7 @@ import {
   products as seedProducts,
 } from '@/content/seed/catalog';
 import { getPublicClient } from '@/lib/supabase/public';
-import { readPublic } from './source';
+import { failPublicData, localSeedFallback, readPublic } from './source';
 import type {
   Category,
   Collection,
@@ -44,11 +44,15 @@ export async function getDepartmentBySlug(slug: string): Promise<Department | nu
 
 export async function getCategories(departmentSlug?: string): Promise<Category[]> {
   const supabase = getPublicClient();
-  if (!supabase) return [];
-  const [{ data: categories }, { data: departments }] = await Promise.all([
+  if (!supabase) return localSeedFallback('categories_public', []);
+  const [categoryResult, departmentResult] = await Promise.all([
     supabase.from('categories_public').select('*').order('sort_order'),
     supabase.from('departments_public').select('id, slug'),
-  ]);
+  ]).catch((error) => failPublicData('categories_public', 'query_failed', error));
+  const failed = [categoryResult, departmentResult].find((result) => result.error);
+  if (failed?.error) failPublicData('categories_public', 'query_failed', failed.error);
+  const categories = categoryResult.data;
+  const departments = departmentResult.data;
   const departmentById = new Map(
     ((departments ?? []) as unknown as { id: string; slug: string }[]).map((row) => [
       row.id,
@@ -108,67 +112,66 @@ function filterSeed(list: Product[], q?: ProductQuery): Product[] {
 
 export async function getProducts(q?: ProductQuery): Promise<Product[]> {
   const supabase = getPublicClient();
-  if (!supabase) return filterSeed(seedProducts, q);
+  if (!supabase) return filterSeed(localSeedFallback('products_public', seedProducts), q);
 
-  try {
-    // Resolve category→department and collection slug maps (views lack these).
-    const [cats, deps, cols, rows, media] = await Promise.all([
-      supabase.from('categories_public').select('id, department_id, slug'),
-      supabase.from('departments_public').select('id, slug'),
-      supabase.from('collections_public').select('id, slug'),
-      supabase.from('products_public').select('*'),
-      supabase.from('product_media_public').select('*').order('sort_order'),
-    ]);
-    if (rows.error || !rows.data) return filterSeed(seedProducts, q);
+  // Resolve category→department and collection slug maps (views lack these).
+  const [cats, deps, cols, rows, media] = await Promise.all([
+    supabase.from('categories_public').select('id, department_id, slug'),
+    supabase.from('departments_public').select('id, slug'),
+    supabase.from('collections_public').select('id, slug'),
+    supabase.from('products_public').select('*'),
+    supabase.from('product_media_public').select('*').order('sort_order'),
+  ]).catch((error) => failPublicData('catalog', 'query_failed', error));
 
-    const catRows = (cats.data ?? []) as unknown as Record<string, unknown>[];
-    const depRows = (deps.data ?? []) as unknown as Record<string, unknown>[];
-    const colRows = (cols.data ?? []) as unknown as Record<string, unknown>[];
+  const failed = [cats, deps, cols, rows, media].find((result) => result.error);
+  if (failed?.error) failPublicData('catalog', 'query_failed', failed.error);
+  if (!rows.data || rows.data.length === 0) return [];
 
-    const depById = new Map(depRows.map((d) => [String(d.id), String(d.slug)]));
-    const depByCat = new Map(
-      catRows.map((c) => [String(c.id), depById.get(String(c.department_id)) ?? '']),
-    );
-    const colById = new Map(colRows.map((c) => [String(c.id), String(c.slug)]));
-    const mediaRows = (media.data ?? []) as unknown as (ProductMedia & {
-      product_id: string;
-    })[];
+  const catRows = (cats.data ?? []) as unknown as Record<string, unknown>[];
+  const depRows = (deps.data ?? []) as unknown as Record<string, unknown>[];
+  const colRows = (cols.data ?? []) as unknown as Record<string, unknown>[];
 
-    const mapped: Product[] = (rows.data as unknown as Record<string, unknown>[]).map(
-      (r) => ({
-        id: String(r.id),
-        name: String(r.name),
-        slug: String(r.slug),
-        department_slug: depByCat.get(r.category_id as string) ?? '',
-        collection_slug: r.collection_id
-          ? (colById.get(r.collection_id as string) ?? null)
-          : null,
-        description: (r.description as string) ?? null,
-        category_slug: catRows.find((c) => String(c.id) === String(r.category_id))
-          ?.slug as string | undefined,
-        category_name: catRows.find((c) => String(c.id) === String(r.category_id))
-          ?.name as string | undefined,
-        material_story: (r.material_story as string) ?? null,
-        behavior_type: r.behavior_type as Product['behavior_type'],
-        base_price: (r.base_price as number) ?? null,
-        currency: (r.currency as string) ?? 'TRY',
-        stock_mode: (r.stock_mode as Product['stock_mode']) ?? 'made_to_order',
-        production_time_days: (r.production_time_days as number) ?? null,
-        price_band: (r.price_band as Product['price_band']) ?? null,
-        proof_required: Boolean(r.proof_required),
-        is_personalizable: Boolean(r.is_personalizable),
-        return_note: (r.return_note as string) ?? null,
-        delivery_note: (r.delivery_note as string) ?? null,
-        media_ids: (r.media_ids as string[]) ?? [],
-        sku: (r.sku as string) ?? null,
-        gift_wrapping_available: Boolean(r.gift_wrapping_available),
-        media: mediaRows.filter((item) => item.product_id === String(r.id)),
-      }),
-    );
-    return filterSeed(mapped, q);
-  } catch {
-    return filterSeed(seedProducts, q);
-  }
+  const depById = new Map(depRows.map((d) => [String(d.id), String(d.slug)]));
+  const depByCat = new Map(
+    catRows.map((c) => [String(c.id), depById.get(String(c.department_id)) ?? '']),
+  );
+  const colById = new Map(colRows.map((c) => [String(c.id), String(c.slug)]));
+  const mediaRows = (media.data ?? []) as unknown as (ProductMedia & {
+    product_id: string;
+  })[];
+
+  const mapped: Product[] = (rows.data as unknown as Record<string, unknown>[]).map(
+    (r) => ({
+      id: String(r.id),
+      name: String(r.name),
+      slug: String(r.slug),
+      department_slug: depByCat.get(r.category_id as string) ?? '',
+      collection_slug: r.collection_id
+        ? (colById.get(r.collection_id as string) ?? null)
+        : null,
+      description: (r.description as string) ?? null,
+      category_slug: catRows.find((c) => String(c.id) === String(r.category_id))?.slug as
+        string | undefined,
+      category_name: catRows.find((c) => String(c.id) === String(r.category_id))?.name as
+        string | undefined,
+      material_story: (r.material_story as string) ?? null,
+      behavior_type: r.behavior_type as Product['behavior_type'],
+      base_price: (r.base_price as number) ?? null,
+      currency: (r.currency as string) ?? 'TRY',
+      stock_mode: (r.stock_mode as Product['stock_mode']) ?? 'made_to_order',
+      production_time_days: (r.production_time_days as number) ?? null,
+      price_band: (r.price_band as Product['price_band']) ?? null,
+      proof_required: Boolean(r.proof_required),
+      is_personalizable: Boolean(r.is_personalizable),
+      return_note: (r.return_note as string) ?? null,
+      delivery_note: (r.delivery_note as string) ?? null,
+      media_ids: (r.media_ids as string[]) ?? [],
+      sku: (r.sku as string) ?? null,
+      gift_wrapping_available: Boolean(r.gift_wrapping_available),
+      media: mediaRows.filter((item) => item.product_id === String(r.id)),
+    }),
+  );
+  return filterSeed(mapped, q);
 }
 
 export async function getProductBySlug(
@@ -183,52 +186,53 @@ export async function getProductBySlug(
 async function loadProductCommerceDetails(product: Product): Promise<Product> {
   const supabase = getPublicClient();
   if (!supabase) return product;
-  try {
-    const [variants, tiers, addons, fields, colors, materials] = await Promise.all([
-      supabase
-        .from('product_variants_public')
-        .select('*')
-        .eq('product_id', product.id)
-        .order('sort_order'),
-      supabase
-        .from('product_price_tiers_public')
-        .select('*')
-        .eq('product_id', product.id)
-        .order('min_qty'),
-      supabase
-        .from('product_addons_public')
-        .select('*')
-        .or(`product_id.eq.${product.id},product_id.is.null`)
-        .order('sort_order'),
-      supabase
-        .from('product_personalization_fields_public')
-        .select('*')
-        .eq('product_id', product.id)
-        .order('sort_order'),
-      supabase
-        .from('product_colors_public')
-        .select('*')
-        .eq('product_id', product.id)
-        .order('sort_order'),
-      supabase
-        .from('product_materials_public')
-        .select('*')
-        .eq('product_id', product.id)
-        .order('sort_order'),
-    ]);
-    return {
-      ...product,
-      variants: (variants.data ?? []) as unknown as ProductVariant[],
-      price_tiers: (tiers.data ?? []) as unknown as ProductPriceTier[],
-      addons: (addons.data ?? []) as unknown as ProductAddon[],
-      personalization_fields: (fields.data ??
-        []) as unknown as ProductPersonalizationField[],
-      colors: (colors.data ?? []) as unknown as ProductAttribute[],
-      materials: (materials.data ?? []) as unknown as ProductAttribute[],
-    };
-  } catch {
-    return product;
-  }
+  const [variants, tiers, addons, fields, colors, materials] = await Promise.all([
+    supabase
+      .from('product_variants_public')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('sort_order'),
+    supabase
+      .from('product_price_tiers_public')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('min_qty'),
+    supabase
+      .from('product_addons_public')
+      .select('*')
+      .or(`product_id.eq.${product.id},product_id.is.null`)
+      .order('sort_order'),
+    supabase
+      .from('product_personalization_fields_public')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('sort_order'),
+    supabase
+      .from('product_colors_public')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('sort_order'),
+    supabase
+      .from('product_materials_public')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('sort_order'),
+  ]).catch((error) => failPublicData('product-commerce-details', 'query_failed', error));
+  const failed = [variants, tiers, addons, fields, colors, materials].find(
+    (result) => result.error,
+  );
+  if (failed?.error)
+    failPublicData('product-commerce-details', 'query_failed', failed.error);
+  return {
+    ...product,
+    variants: (variants.data ?? []) as unknown as ProductVariant[],
+    price_tiers: (tiers.data ?? []) as unknown as ProductPriceTier[],
+    addons: (addons.data ?? []) as unknown as ProductAddon[],
+    personalization_fields: (fields.data ??
+      []) as unknown as ProductPersonalizationField[],
+    colors: (colors.data ?? []) as unknown as ProductAttribute[],
+    materials: (materials.data ?? []) as unknown as ProductAttribute[],
+  };
 }
 
 export async function getRelatedProducts(
