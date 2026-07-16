@@ -5,7 +5,8 @@ import { redirect } from 'next/navigation';
 
 import { requireStaff } from '@/lib/auth/guards';
 import { can } from '@/lib/admin/permissions';
-import { revalidateCatalog } from '@/lib/data/catalog-cache';
+import { revalidateCatalog, revalidateProductPaths } from '@/lib/data/catalog-cache';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { adminProductSchema } from '@/lib/validation/admin-product';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -28,6 +29,40 @@ async function audit(
       entity_id: entityId,
       diff: diff as Json,
     });
+}
+
+// Evict the exact public PDP route(s) for a product so a mutation clears an
+// on-demand-cached notFound() (the only case the broad catalog tag cannot
+// reach) for a newly published or renamed product. Resolves the department +
+// current slug itself; callers pass any previous slugs to also evict on rename.
+async function revalidateProductStorefront(
+  db: SupabaseClient,
+  productId: string,
+  previousSlugs: string[] = [],
+) {
+  const { data: product } = await db
+    .from('products')
+    .select('slug, category_id')
+    .eq('id', productId)
+    .maybeSingle();
+  if (!product?.slug || !product?.category_id) return;
+  const { data: category } = await db
+    .from('categories')
+    .select('department_id')
+    .eq('id', product.category_id)
+    .maybeSingle();
+  if (!category?.department_id) return;
+  const { data: department } = await db
+    .from('departments')
+    .select('slug')
+    .eq('id', category.department_id)
+    .maybeSingle();
+  const departmentSlug = department?.slug as string | undefined;
+  if (!departmentSlug) return;
+  revalidateProductPaths(departmentSlug, [
+    product.slug as string,
+    ...previousSlugs,
+  ]);
 }
 
 export async function saveProduct(formData: FormData) {
@@ -111,6 +146,13 @@ export async function saveProduct(formData: FormData) {
   });
   revalidatePath('/admin/commerce/products');
   revalidateCatalog();
+  // Evict the exact PDP for the current slug (clears a pre-cached 404) and the
+  // previous slug on a rename (so the old URL stops resolving).
+  await revalidateProductStorefront(
+    db as unknown as SupabaseClient,
+    data.id,
+    before?.slug && before.slug !== input.slug ? [before.slug] : [],
+  );
   redirect(`/admin/commerce/products/${data.id}?saved=1`);
 }
 
@@ -139,6 +181,7 @@ export async function changeProductLifecycle(
   revalidatePath('/admin/commerce/products');
   revalidatePath(productPath(id));
   revalidateCatalog();
+  await revalidateProductStorefront(createAdminClient() as unknown as SupabaseClient, id);
   redirect(`${productPath(id)}?saved=1`);
 }
 
@@ -178,6 +221,7 @@ export async function saveProductSeo(formData: FormData) {
   await audit(staff.id, 'product.seo.updated', id, { seo_metadata_id: result.data.id });
   revalidatePath(productPath(id));
   revalidateCatalog();
+  await revalidateProductStorefront(createAdminClient() as unknown as SupabaseClient, id);
   redirect(`${productPath(id)}?saved=1`);
 }
 
@@ -229,6 +273,7 @@ export async function addProductOption(formData: FormData) {
   await audit(staff.id, `product.${kind}.created`, id);
   revalidatePath(productPath(id));
   revalidateCatalog();
+  await revalidateProductStorefront(createAdminClient() as unknown as SupabaseClient, id);
   redirect(`${productPath(id)}?saved=1`);
 }
 
@@ -291,6 +336,7 @@ export async function saveProductTaxonomy(formData: FormData) {
   });
   revalidatePath(productPath(id));
   revalidateCatalog();
+  await revalidateProductStorefront(createAdminClient() as unknown as SupabaseClient, id);
   redirect(`${productPath(id)}?saved=1`);
 }
 
@@ -313,6 +359,7 @@ export async function setProductMedia(formData: FormData) {
   if (error) redirect(`${productPath(id)}?error=${encodeURIComponent(error.message)}`);
   revalidatePath(productPath(id));
   revalidateCatalog();
+  await revalidateProductStorefront(createAdminClient() as unknown as SupabaseClient, id);
   redirect(`${productPath(id)}?saved=1`);
 }
 

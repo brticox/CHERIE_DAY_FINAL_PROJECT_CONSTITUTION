@@ -16,7 +16,13 @@ vi.mock('next/cache', () => ({
   unstable_cache: unstableCache,
 }));
 
-import { CATALOG_TAG, cachedCatalogRead, revalidateCatalog } from '@/lib/data/catalog-cache';
+import {
+  CATALOG_TAG,
+  cachedCatalogRead,
+  revalidateCatalog,
+  revalidateProductPaths,
+  revalidateStorefrontPaths,
+} from '@/lib/data/catalog-cache';
 
 afterEach(() => vi.clearAllMocks());
 
@@ -28,17 +34,35 @@ describe('public catalog cache tag layer', () => {
     expect(CATALOG_TAG).toBe('catalog');
   });
 
-  it('revalidateCatalog invalidates the catalog tag and clears cached-404 route patterns', () => {
+  it('revalidateCatalog invalidates the catalog tag broadly (no path purge)', () => {
     revalidateCatalog();
     expect(revalidateTag).toHaveBeenCalledTimes(1);
     expect(revalidateTag).toHaveBeenCalledWith('catalog');
-    // The dynamic storefront patterns (PDP, department, collection, event) must
-    // be path-revalidated so a full-route-cached notFound() cannot survive.
+    // Broad invalidation is tag-only; exact-path eviction is a separate, precise
+    // step so it can reach on-demand-cached notFound() entries.
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('revalidateProductPaths evicts the exact PDP path for each slug', () => {
+    revalidateProductPaths('davetiye', ['yeni-slug', 'eski-slug']);
     const paths = revalidatePath.mock.calls.map((c) => c[0]);
-    expect(paths).toContain('/magaza/[department]/[product-slug]');
-    expect(paths).toContain('/magaza/[department]');
-    expect(paths).toContain('/koleksiyonlar/[slug]');
-    for (const call of revalidatePath.mock.calls) expect(call[1]).toBe('page');
+    expect(paths).toEqual([
+      '/magaza/davetiye/yeni-slug',
+      '/magaza/davetiye/eski-slug',
+    ]);
+  });
+
+  it('revalidateProductPaths is a no-op without a department', () => {
+    revalidateProductPaths('', ['x']);
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('revalidateStorefrontPaths clears each supplied exact path', () => {
+    revalidateStorefrontPaths(['/magaza/davetiye/a', '/koleksiyonlar/cherry']);
+    expect(revalidatePath.mock.calls.map((c) => c[0])).toEqual([
+      '/magaza/davetiye/a',
+      '/koleksiyonlar/cherry',
+    ]);
   });
 
   it('cachedCatalogRead tags the read with the catalog tag and namespaces the key', async () => {

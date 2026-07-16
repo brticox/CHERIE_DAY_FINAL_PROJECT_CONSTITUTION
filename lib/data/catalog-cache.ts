@@ -40,28 +40,36 @@ export function cachedCatalogRead<A extends unknown[], R>(
  * mutation from a Server Action or Route Handler.
  */
 export function revalidateCatalog(): void {
-  // Busts the tagged Data Cache and every route that rendered a tagged read
-  // (listings, homepage sections, search, sitemap, and successfully-rendered
-  // PDPs).
+  // Busts the tagged Data Cache and every route that rendered a tagged read:
+  // the static homepage/listings, search results, the sitemap, and any PDP that
+  // was previously served as 200 (all tag-associated). The dynamic department
+  // listings render per-request and are always fresh.
   revalidateTag(CATALOG_TAG);
-  // A full-route-cached `notFound()` (a product URL visited before it was
-  // published, or after an unpublish/slug change) is NOT tag-associated, so the
-  // tag alone leaves a stale 404. Clear the storefront's dynamic route patterns
-  // by path — targeted to the catalog surfaces only, never a full-site purge.
-  for (const route of PUBLIC_CATALOG_ROUTE_PATTERNS) {
-    revalidatePath(route, 'page');
-  }
 }
 
 /**
- * Dynamic storefront route patterns whose full-route cache (including cached
- * `notFound()` 404s) must be dropped on a catalog change. Kept in one place so
- * the set stays complete and auditable rather than scattered across actions.
+ * Clear specific storefront routes by exact path. Required to evict an
+ * on-demand-cached `notFound()` (a product URL requested before it was
+ * published, or a slug's previous path after a rename) — a broad tag cannot
+ * reach those entries, but an exact-path revalidation can.
  */
-const PUBLIC_CATALOG_ROUTE_PATTERNS = [
-  '/magaza/[department]',
-  '/magaza/[department]/[product-slug]',
-  '/magaza/koleksiyon/[collection-slug]',
-  '/magaza/etkinlik/[event-slug]',
-  '/koleksiyonlar/[slug]',
-] as const;
+export function revalidateStorefrontPaths(paths: readonly string[]): void {
+  for (const path of paths) revalidatePath(path);
+}
+
+/**
+ * Build and clear the public PDP path(s) for a product. Pass every slug the
+ * product has had this mutation (new + previous on a rename) so both the live
+ * and the now-stale URL are evicted.
+ */
+export function revalidateProductPaths(
+  departmentSlug: string,
+  productSlugs: readonly string[],
+): void {
+  if (!departmentSlug) return;
+  revalidateStorefrontPaths(
+    productSlugs
+      .filter(Boolean)
+      .map((slug) => `/magaza/${departmentSlug}/${slug}`),
+  );
+}
