@@ -92,11 +92,11 @@ describe('cross-phase order cockpit contract', () => {
 
   it('orders customer order items by a real schema column', () => {
     const source = readFileSync(resolve(process.cwd(), 'lib/orders/customer.ts'), 'utf8');
-    // Normalize whitespace so the guarantee holds regardless of how the query
-    // builder chain is formatted (single-line vs. fluent multi-line).
-    const normalized = source.replace(/\s+/g, ' ');
+    // Remove formatting whitespace so the guarantee holds for both a
+    // single-line builder and a fluent builder split across lines.
+    const normalized = source.replace(/\s+/g, '');
     expect(normalized).toContain(
-      "from('order_items') .select('*') .eq('order_id', orderRow.id) .order('id')",
+      "from('order_items').select('*').eq('order_id',orderRow.id).order('id')",
     );
     expect(normalized).not.toMatch(/order_items[\s\S]{0,120}order\('created_at'\)/);
   });
