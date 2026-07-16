@@ -3,7 +3,45 @@ import { fileURLToPath } from 'node:url';
 
 import { withSentryConfig } from '@sentry/nextjs';
 
+import { supabaseImageRemotePatterns } from './lib/media/next-image.mjs';
+
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+
+function origin(value) {
+  if (!value) return null;
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
+function contentSecurityPolicy(isProduction) {
+  const supabaseOrigin = origin(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const sentryOrigin = origin(process.env.NEXT_PUBLIC_SENTRY_DSN);
+  const connect = ["'self'", supabaseOrigin, sentryOrigin]
+    .filter(Boolean)
+    .join(' ');
+  const images = ["'self'", 'data:', 'blob:', supabaseOrigin].filter(Boolean).join(' ');
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${isProduction ? '' : " 'unsafe-eval'"}`,
+    "style-src 'self' 'unsafe-inline'",
+    `img-src ${images}`,
+    "font-src 'self' data:",
+    `connect-src ${connect}`,
+    "media-src 'self' blob:",
+    "worker-src 'self' blob:",
+    "frame-src 'self' https://www.paytr.com https://*.paytr.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    isProduction ? 'upgrade-insecure-requests' : '',
+  ]
+    .filter(Boolean)
+    .join('; ');
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -11,6 +49,9 @@ const nextConfig = {
   poweredByHeader: false,
   // A stray lockfile exists in a parent dir; pin the tracing root to this project.
   outputFileTracingRoot: projectRoot,
+  images: {
+    remotePatterns: supabaseImageRemotePatterns(process.env.NEXT_PUBLIC_SUPABASE_URL),
+  },
 
   // Turkish-first canonical URLs. Legacy English top-level paths 301 → Turkish.
   // These are the ONLY live public top-level surfaces; no duplicated English routes.
@@ -44,6 +85,9 @@ const nextConfig = {
   },
   async headers() {
     const isProduction = process.env.APP_ENV === 'production';
+    const isSecureProduction =
+      isProduction && origin(process.env.NEXT_PUBLIC_SITE_URL)?.startsWith('https://');
+    const csp = contentSecurityPolicy(Boolean(isSecureProduction));
 
     // Staging/preview stay unindexed; Production drops the noindex tag.
     const stagingHeaders = isProduction
@@ -55,9 +99,8 @@ const nextConfig = {
           },
         ];
 
-    // Baseline security headers for every response. The CSP intentionally scopes
-    // only `frame-ancestors` (clickjacking protection) so it cannot break
-    // Supabase / Google OAuth / Sentry / Resend / PayTR / Vercel resource loads.
+    // A complete allowlist covers browser-side resources. Server-only Resend and
+    // payment calls never need CSP access; Supabase/Sentry origins are exact.
     const securityHeaders = [
       {
         source: '/:path*',
@@ -65,7 +108,7 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+          { key: 'Content-Security-Policy', value: csp },
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
@@ -75,7 +118,7 @@ const nextConfig = {
     ];
 
     // HSTS only in Production (avoids pinning preview/staging hostnames).
-    const productionHeaders = isProduction
+    const productionHeaders = isSecureProduction
       ? [
           {
             source: '/:path*',
