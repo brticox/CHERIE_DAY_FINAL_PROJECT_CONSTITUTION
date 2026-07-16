@@ -43,11 +43,12 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ module: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }) {
   const { module } = await params;
   const config = configs[module as keyof typeof configs];
   if (!config) notFound();
+  const query = await searchParams;
   return (
     <DataWorkspace
       config={{
@@ -56,7 +57,8 @@ export default async function Page({
         description: 'Katalog sınıflandırmasının gerçek veritabanı kayıtları.',
         ...config,
       }}
-      query={(await searchParams).q}
+      query={query.q}
+      page={Number(query.page ?? 1)}
     />
   );
 }

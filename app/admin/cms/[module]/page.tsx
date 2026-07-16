@@ -26,6 +26,7 @@ const configs = {
     ],
     statusKey: 'status',
     dateKey: 'updated_at',
+    manageResource: 'articles',
   },
   digital: {
     title: 'Dijital içerikler',
@@ -36,6 +37,7 @@ const configs = {
       { key: 'delivery_mode', label: 'Teslim' },
     ],
     statusKey: 'status',
+    manageResource: 'faqs',
     dateKey: 'updated_at',
   },
   experiences: {
@@ -69,6 +71,7 @@ const configs = {
     ],
     statusKey: 'status',
     dateKey: 'created_at',
+    manageResource: 'galleries',
   },
   memory: {
     title: 'Hatıra teklifleri',
@@ -90,6 +93,7 @@ const configs = {
     ],
     statusKey: 'status',
     dateKey: 'created_at',
+    manageResource: 'testimonials',
   },
   seo: {
     title: 'Arama görünümü kayıtları',
@@ -128,11 +132,12 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ module: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }) {
   const { module } = await params;
   const config = configs[module as keyof typeof configs];
   if (!config) notFound();
+  const query = await searchParams;
   return (
     <DataWorkspace
       config={{
@@ -142,7 +147,8 @@ export default async function Page({
           'İçerik kayıtlarının gerçek veritabanı görünümü; yayın durumu açıkça gösterilir.',
         ...config,
       }}
-      query={(await searchParams).q}
+      query={query.q}
+      page={Number(query.page ?? 1)}
     />
   );
 }

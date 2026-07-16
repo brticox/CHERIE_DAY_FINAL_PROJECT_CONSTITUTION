@@ -3,6 +3,8 @@ import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from './resource-list';
 import { AdminPageHeader, AdminToolbar } from './admin-workspace';
+import Link from 'next/link';
+import { canWriteManagedResource, getManagedResource, type ManagedResourceKey } from '@/lib/admin/managed-resources';
 type Config = {
   path: string;
   title: string;
@@ -12,26 +14,35 @@ type Config = {
   fields: readonly { key: string; label: string }[];
   statusKey?: string;
   dateKey?: string;
+  manageResource?: ManagedResourceKey;
 };
 export async function DataWorkspace({
   config,
   query,
+  page = 1,
 }: {
   config: Config;
   query?: string;
+  page?: number;
 }) {
-  await requireCapability(config.capability, config.path);
+  const { staff } = await requireCapability(config.capability, config.path);
+  const managedResource = config.manageResource ? getManagedResource(config.manageResource) : null;
+  const mayCreate = managedResource ? canWriteManagedResource(staff.role, managedResource) : false;
   const db = createAdminClient();
+  const pageSize = 25;
+  const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+  const from = (safePage - 1) * pageSize;
   let request = db
     .from(config.table as 'faqs')
-    .select('*', { count: 'exact' })
-    .limit(150);
+    .select('*', { count: 'exact' });
   if (query && config.fields[0])
     request = request.ilike(
       config.fields[0].key as 'question',
       `%${query.replace(/[,%]/g, '')}%`,
     );
-  const { data, count, error } = await request;
+  const { data, count, error } = await request
+    .order((config.dateKey ?? 'id') as 'id', { ascending: false })
+    .range(from, from + pageSize - 1);
   const rows = (data ?? []) as unknown as Record<string, unknown>[];
   return (
     <div className="mx-auto max-w-[1680px] space-y-7 p-4 md:p-7 xl:p-9">
@@ -40,6 +51,16 @@ export async function DataWorkspace({
         title={config.title}
         description={`${config.description} Toplam ${count ?? 0} kayıt bulunuyor.`}
       />
+      {config.manageResource && mayCreate && (
+        <div className="flex justify-end">
+          <Link
+            href={`/admin/manage/${config.manageResource}/new`}
+            className="cherie-button-primary min-h-12"
+          >
+            Yeni kayıt oluştur
+          </Link>
+        </div>
+      )}
       <AdminToolbar label={`${config.title} arama araçları`}>
         <form className="flex flex-col gap-3 sm:flex-row">
           <input
@@ -103,6 +124,14 @@ export async function DataWorkspace({
                     />
                   </p>
                 )}
+                {config.manageResource && Boolean(row.id) && (
+                  <Link
+                    href={`/admin/manage/${config.manageResource}/${String(row.id)}`}
+                    className="cherie-button-secondary mt-4 inline-flex min-h-11 items-center"
+                  >
+                    Ayrıntı ve düzenleme
+                  </Link>
+                )}
               </article>
             ))}
           </section>
@@ -117,6 +146,7 @@ export async function DataWorkspace({
                   ))}
                   {config.statusKey && <th>Durum</th>}
                   {config.dateKey && <th>Zaman</th>}
+                  {config.manageResource && <th className="p-3">İşlem</th>}
                 </tr>
               </thead>
               <tbody>
@@ -146,14 +176,53 @@ export async function DataWorkspace({
                         />
                       </td>
                     )}
+                    {config.manageResource && Boolean(row.id) && (
+                      <td className="p-3">
+                        <Link
+                          href={`/admin/manage/${config.manageResource}/${String(row.id)}`}
+                          className="font-semibold text-cherie-plum underline-offset-4 hover:underline"
+                        >
+                          Aç ve düzenle
+                        </Link>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <Pagination
+            path={config.path}
+            page={safePage}
+            pageSize={pageSize}
+            total={count ?? 0}
+            query={query}
+          />
         </>
       )}
     </div>
+  );
+}
+
+function Pagination({ path, page, pageSize, total, query }: {
+  path: string; page: number; pageSize: number; total: number; query?: string;
+}) {
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  if (pages <= 1) return null;
+  const href = (next: number) => {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    params.set('page', String(next));
+    return `${path}?${params.toString()}`;
+  };
+  return (
+    <nav aria-label="Sayfalama" className="admin-surface flex items-center justify-between gap-4 p-4">
+      <span className="text-sm text-cherie-soft-ink">Sayfa {page} / {pages}</span>
+      <div className="flex gap-2">
+        {page > 1 && <Link href={href(page - 1)} className="cherie-button-secondary min-h-11">Önceki</Link>}
+        {page < pages && <Link href={href(page + 1)} className="cherie-button-secondary min-h-11">Sonraki</Link>}
+      </div>
+    </nav>
   );
 }
 function display(value: unknown) {

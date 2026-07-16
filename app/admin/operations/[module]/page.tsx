@@ -24,21 +24,23 @@ const configs = {
     table: 'suppliers',
     fields: [
       { key: 'name', label: 'Ad' },
-      { key: 'category', label: 'Kategori' },
-      { key: 'contact_name', label: 'İletişim' },
+      { key: 'capability_tags', label: 'Yetenekler' },
+      { key: 'internal_rating', label: 'İç puan' },
     ],
-    statusKey: 'is_active',
+    statusKey: 'status',
     dateKey: 'created_at',
+    manageResource: 'suppliers',
   },
   teams: {
     title: 'Ekipler',
     table: 'teams',
     fields: [
       { key: 'name', label: 'Ekip' },
-      { key: 'description', label: 'Açıklama' },
+      { key: 'member_names', label: 'Üyeler' },
+      { key: 'capability_tags', label: 'Yetenekler' },
     ],
-    statusKey: 'is_active',
     dateKey: 'created_at',
+    manageResource: 'teams',
   },
 } as const;
 export default async function Page({
@@ -46,11 +48,12 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ module: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }) {
   const { module } = await params;
   const config = configs[module as keyof typeof configs];
   if (!config) notFound();
+  const query = await searchParams;
   return (
     <DataWorkspace
       config={{
@@ -59,7 +62,8 @@ export default async function Page({
         description: 'Operasyon kaynaklarının gerçek veritabanı görünümü.',
         ...config,
       }}
-      query={(await searchParams).q}
+      query={query.q}
+      page={Number(query.page ?? 1)}
     />
   );
 }

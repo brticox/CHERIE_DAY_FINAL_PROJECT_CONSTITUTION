@@ -5,8 +5,8 @@ import type { AdminCapability } from '@/lib/admin/permissions';
 // Read-side capability per module (fail-closed to the most restrictive).
 const CAPS: Record<string, AdminCapability> = {
   'abandoned-carts': 'crm.read',
-  campaigns: 'content.read',
-  coupons: 'content.read',
+  campaigns: 'catalog.read',
+  coupons: 'catalog.read',
 };
 const configs = {
   'abandoned-carts': {
@@ -14,8 +14,8 @@ const configs = {
     table: 'abandoned_carts',
     fields: [
       { key: 'cart_id', label: 'Sepet' },
-      { key: 'recovery_status', label: 'Kurtarma' },
-      { key: 'recovered_at', label: 'Dönüş' },
+      { key: 'last_step', label: 'Son adım' },
+      { key: 'recovered', label: 'Kurtarıldı' },
     ],
     dateKey: 'created_at',
   },
@@ -29,6 +29,7 @@ const configs = {
     ],
     statusKey: 'is_active',
     dateKey: 'created_at',
+    manageResource: 'campaigns',
   },
   coupons: {
     title: 'Kuponlar',
@@ -40,6 +41,7 @@ const configs = {
     ],
     statusKey: 'is_active',
     dateKey: 'created_at',
+    manageResource: 'coupons',
   },
 } as const;
 export default async function Page({
@@ -47,11 +49,12 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ module: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }) {
   const { module } = await params;
   const config = configs[module as keyof typeof configs];
   if (!config) notFound();
+  const query = await searchParams;
   return (
     <DataWorkspace
       config={{
@@ -60,7 +63,8 @@ export default async function Page({
         description: 'Pazarlama kayıtlarının izinli ve gerçek veritabanı görünümü.',
         ...config,
       }}
-      query={(await searchParams).q}
+      query={query.q}
+      page={Number(query.page ?? 1)}
     />
   );
 }
