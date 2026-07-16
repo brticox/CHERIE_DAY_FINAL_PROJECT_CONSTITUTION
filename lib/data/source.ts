@@ -23,8 +23,20 @@ export function allowLocalSeedFallback() {
   return process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
 }
 
+/**
+ * During `next build` static generation the public database may be unreachable
+ * or unconfigured (e.g. the secret-less CI Quality Gate). We tolerate that at
+ * BUILD time by yielding an empty projection — never seed fiction — so pages
+ * pre-render empty and surface the real database on-demand at runtime, where
+ * strict `not_configured` enforcement still applies.
+ */
+export function isBuildPhase() {
+  return process.env.NEXT_PHASE === 'phase-production-build';
+}
+
 export function localSeedFallback<T>(source: string, fallback: T[]): T[] {
   if (allowLocalSeedFallback()) return fallback;
+  if (isBuildPhase()) return [];
   return failPublicData(source, 'not_configured');
 }
 
