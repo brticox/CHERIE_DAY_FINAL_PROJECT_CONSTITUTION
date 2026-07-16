@@ -4,6 +4,7 @@ import {
   products as seedProducts,
 } from '@/content/seed/catalog';
 import { getPublicClient } from '@/lib/supabase/public';
+import { cachedCatalogRead } from './catalog-cache';
 import { failPublicData, localSeedFallback, readPublic } from './source';
 import type {
   Category,
@@ -31,18 +32,23 @@ export type ProductQuery = {
 };
 
 // ---- Departments -----------------------------------------------------------
-export async function getDepartments(): Promise<Department[]> {
-  return readPublic<Department>('departments_public', seedDepartments, {
-    order: 'sort_order',
-  });
-}
+export const getDepartments = cachedCatalogRead(
+  ['departments'],
+  async function getDepartments(): Promise<Department[]> {
+    return readPublic<Department>('departments_public', seedDepartments, {
+      order: 'sort_order',
+    });
+  },
+);
 
 export async function getDepartmentBySlug(slug: string): Promise<Department | null> {
   const all = await getDepartments();
   return all.find((d) => d.slug === slug) ?? null;
 }
 
-export async function getCategories(departmentSlug?: string): Promise<Category[]> {
+export const getCategories = cachedCatalogRead(
+  ['categories'],
+  async function getCategories(departmentSlug?: string): Promise<Category[]> {
   const supabase = getPublicClient();
   if (!supabase) return localSeedFallback('categories_public', []);
   const [categoryResult, departmentResult] = await Promise.all([
@@ -67,14 +73,18 @@ export async function getCategories(departmentSlug?: string): Promise<Category[]
         : null,
     }))
     .filter((category) => !departmentSlug || category.department_slug === departmentSlug);
-}
+  },
+);
 
 // ---- Collections -----------------------------------------------------------
-export async function getCollections(): Promise<Collection[]> {
-  return readPublic<Collection>('collections_public', seedCollections, {
-    order: 'sort_order',
-  });
-}
+export const getCollections = cachedCatalogRead(
+  ['collections'],
+  async function getCollections(): Promise<Collection[]> {
+    return readPublic<Collection>('collections_public', seedCollections, {
+      order: 'sort_order',
+    });
+  },
+);
 
 export async function getCollectionBySlug(slug: string): Promise<Collection | null> {
   const all = await getCollections();
@@ -110,7 +120,9 @@ function filterSeed(list: Product[], q?: ProductQuery): Product[] {
   return out;
 }
 
-export async function getProducts(q?: ProductQuery): Promise<Product[]> {
+export const getProducts = cachedCatalogRead(
+  ['products'],
+  async function getProducts(q?: ProductQuery): Promise<Product[]> {
   const supabase = getPublicClient();
   if (!supabase) return filterSeed(localSeedFallback('products_public', seedProducts), q);
 
@@ -172,16 +184,20 @@ export async function getProducts(q?: ProductQuery): Promise<Product[]> {
     }),
   );
   return filterSeed(mapped, q);
-}
+  },
+);
 
-export async function getProductBySlug(
-  department: string,
-  slug: string,
-): Promise<Product | null> {
-  const list = await getProducts({ department });
-  const product = list.find((p) => p.slug === slug) ?? null;
-  return product ? loadProductCommerceDetails(product) : null;
-}
+export const getProductBySlug = cachedCatalogRead(
+  ['product-by-slug'],
+  async function getProductBySlug(
+    department: string,
+    slug: string,
+  ): Promise<Product | null> {
+    const list = await getProducts({ department });
+    const product = list.find((p) => p.slug === slug) ?? null;
+    return product ? loadProductCommerceDetails(product) : null;
+  },
+);
 
 async function loadProductCommerceDetails(product: Product): Promise<Product> {
   const supabase = getPublicClient();

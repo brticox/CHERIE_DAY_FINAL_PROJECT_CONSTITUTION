@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireStaff } from '@/lib/auth/guards';
+import { revalidateCatalog } from '@/lib/data/catalog-cache';
 import { createClient } from '@/lib/supabase/server';
 
 type Rpc = (name: 'admin_adjust_inventory', args: {
@@ -35,5 +36,6 @@ export async function adjustInventory(fd: FormData) {
   });
   if (error) redirect(`${path}?error=${encodeURIComponent(error.message)}`);
   revalidatePath(path);
+  revalidateCatalog();
   redirect(`${path}?saved=1`);
 }

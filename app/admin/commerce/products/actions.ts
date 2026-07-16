@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 
 import { requireStaff } from '@/lib/auth/guards';
 import { can } from '@/lib/admin/permissions';
+import { revalidateCatalog } from '@/lib/data/catalog-cache';
 import { adminProductSchema } from '@/lib/validation/admin-product';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -109,6 +110,7 @@ export async function saveProduct(formData: FormData) {
     },
   });
   revalidatePath('/admin/commerce/products');
+  revalidateCatalog();
   redirect(`/admin/commerce/products/${data.id}?saved=1`);
 }
 
@@ -136,6 +138,7 @@ export async function changeProductLifecycle(
   if (error) redirect(`${productPath(id)}?error=${encodeURIComponent(error.message)}`);
   revalidatePath('/admin/commerce/products');
   revalidatePath(productPath(id));
+  revalidateCatalog();
   redirect(`${productPath(id)}?saved=1`);
 }
 
@@ -174,6 +177,7 @@ export async function saveProductSeo(formData: FormData) {
     await db.from('products').update({ seo_metadata_id: result.data.id }).eq('id', id);
   await audit(staff.id, 'product.seo.updated', id, { seo_metadata_id: result.data.id });
   revalidatePath(productPath(id));
+  revalidateCatalog();
   redirect(`${productPath(id)}?saved=1`);
 }
 
@@ -224,6 +228,7 @@ export async function addProductOption(formData: FormData) {
     redirect(`${productPath(id)}?error=${encodeURIComponent(result.error.message)}`);
   await audit(staff.id, `product.${kind}.created`, id);
   revalidatePath(productPath(id));
+  revalidateCatalog();
   redirect(`${productPath(id)}?saved=1`);
 }
 
@@ -252,6 +257,7 @@ export async function deleteProductOption(formData: FormData) {
     redirect(`${productPath(productId)}?error=${encodeURIComponent(error.message)}`);
   await audit(staff.id, `product.${kind}.deleted`, productId, { row_id: rowId });
   revalidatePath(productPath(productId));
+  revalidateCatalog();
 }
 
 export async function saveProductTaxonomy(formData: FormData) {
@@ -284,6 +290,7 @@ export async function saveProductTaxonomy(formData: FormData) {
     color_ids: colorIds,
   });
   revalidatePath(productPath(id));
+  revalidateCatalog();
   redirect(`${productPath(id)}?saved=1`);
 }
 
@@ -305,6 +312,7 @@ export async function setProductMedia(formData: FormData) {
   });
   if (error) redirect(`${productPath(id)}?error=${encodeURIComponent(error.message)}`);
   revalidatePath(productPath(id));
+  revalidateCatalog();
   redirect(`${productPath(id)}?saved=1`);
 }
 
@@ -387,5 +395,6 @@ export async function duplicateProduct(formData: FormData) {
     entity_id: data.id,
     diff: { source_id: id },
   });
+  revalidateCatalog();
   redirect(`/admin/commerce/products/${data.id}?saved=1`);
 }

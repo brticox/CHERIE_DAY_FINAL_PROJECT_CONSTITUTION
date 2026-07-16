@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireStaff } from '@/lib/auth/guards';
 import { can } from '@/lib/admin/permissions';
+import { revalidateCatalog } from '@/lib/data/catalog-cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
@@ -48,6 +49,7 @@ export async function updateMediaMetadata(formData: FormData) {
     diff: { before, after: { title, alt_text: alt, focal_x, focal_y } },
   });
   revalidatePath('/admin/media');
+  revalidateCatalog();
 }
 
 export async function archiveMedia(formData: FormData) {
@@ -63,4 +65,5 @@ export async function archiveMedia(formData: FormData) {
   const { error } = await rpc('admin_archive_media', { p_media_id: id });
   if (error) redirect(`/admin/media?error=${encodeURIComponent(error.message)}`);
   revalidatePath('/admin/media');
+  revalidateCatalog();
 }
