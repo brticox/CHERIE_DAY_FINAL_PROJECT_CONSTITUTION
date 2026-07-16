@@ -8,3 +8,6 @@ tsconfig.tsbuildinfo
 /supabase
 /tests
 /_assets
+
+artifacts
+test-results
