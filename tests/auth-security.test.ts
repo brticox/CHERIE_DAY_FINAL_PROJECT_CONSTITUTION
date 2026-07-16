@@ -70,4 +70,22 @@ describe('kimlik yönlendirme güvenliği', () => {
       expect(source).not.toContain('{{ .ConfirmationURL }}');
     }
   });
+
+  it('şifre kurtarma formlarını dağıtımlar arasında sabit API rotalarına bağlar', () => {
+    const form = readFileSync(
+      resolve(process.cwd(), 'components/auth/password-recovery-form.tsx'),
+      'utf8',
+    );
+    expect(form).toContain('fetch(`/api/auth/password/${mode}`');
+    expect(form).toContain('PASSWORD_RULES');
+
+    for (const route of ['forgot', 'update']) {
+      const source = readFileSync(
+        resolve(process.cwd(), `app/api/auth/password/${route}/route.ts`),
+        'utf8',
+      );
+      expect(source).toContain('sameOrigin(request)');
+      expect(source).toContain('Object.fromEntries(await request.formData())');
+    }
+  });
 });
