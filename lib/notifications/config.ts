@@ -5,7 +5,7 @@ import { z } from 'zod';
 const booleanString = z.enum(['true', 'false']).transform((value) => value === 'true');
 
 const configSchema = z.object({
-  APP_ENV: z.enum(['development', 'preview', 'production']).default('development'),
+  APP_ENV: z.enum(['development', 'preview', 'staging', 'production']).default('development'),
   NOTIFICATION_SEND_ENABLED: booleanString.default('false'),
   NOTIFICATION_FROM_EMAIL: z.string().email().optional(),
   NOTIFICATION_FROM_NAME: z.string().min(2).max(80).default('CHERIE DAY'),
@@ -17,6 +17,7 @@ const configSchema = z.object({
   EMAIL_LEGAL: z.string().email().optional(),
   NOTIFICATION_RECIPIENT_OVERRIDE: z.string().email().optional(),
   NOTIFICATION_STAFF_EMAILS: z.string().optional(),
+  NOTIFICATION_STAGING_RECIPIENT_ALLOWLIST: z.string().optional(),
   RESEND_API_KEY: z.string().min(10).optional(),
   RESEND_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional(),
 });
@@ -39,7 +40,29 @@ export function getNotificationConfig() {
   ) {
     throw new Error('Üretim bildirimleri için Resend webhook imza sırrı zorunludur.');
   }
+  if (
+    config.APP_ENV === 'staging' &&
+    config.NOTIFICATION_SEND_ENABLED &&
+    !config.NOTIFICATION_STAGING_RECIPIENT_ALLOWLIST
+  ) {
+    throw new Error('Staging gönderimleri için onaylı alıcı listesi zorunludur.');
+  }
   return config;
+}
+
+export function notificationBaseUrl() {
+  const config = getNotificationConfig();
+  const fallback = config.APP_ENV === 'development' ? 'http://localhost:3000' : undefined;
+  const value = process.env.NEXT_PUBLIC_SITE_URL ?? fallback;
+  if (!value) throw new Error('Bildirimler için kanonik site adresi zorunludur.');
+  const url = new URL(value);
+  if (
+    ['staging', 'production'].includes(config.APP_ENV) &&
+    ['localhost', '127.0.0.1'].includes(url.hostname)
+  ) {
+    throw new Error('Barındırılan bildirimlerde localhost kullanılamaz.');
+  }
+  return url.origin;
 }
 
 export function notificationReadiness() {
