@@ -56,7 +56,7 @@ export async function archiveMedia(formData: FormData) {
   if (!can(staff.role, 'catalog.write') && !can(staff.role, 'content.write'))
     redirect('/admin/media?error=permission');
   const db = await createClient();
-  const rpc = db.rpc as unknown as (
+  const rpc = db.rpc.bind(db) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ error: { message: string } | null }>;

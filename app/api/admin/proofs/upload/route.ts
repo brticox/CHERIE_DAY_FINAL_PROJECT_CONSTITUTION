@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         { error: 'Dosya güvenli prova alanına yüklenemedi.' },
         { status: 502 },
       );
-    const rpc = supabase.rpc as unknown as (
+    const rpc = supabase.rpc.bind(supabase) as unknown as (
       name: string,
       args: Record<string, unknown>,
     ) => Promise<{ data: string | null; error: { message: string } | null }>;

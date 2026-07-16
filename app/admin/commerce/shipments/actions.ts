@@ -54,7 +54,7 @@ export async function createShipment(formData: FormData) {
   if (!can(staff.role, 'orders.transition'))
     redirect('/admin/commerce/shipments?error=permission');
   const db = await import('@/lib/supabase/server').then((x) => x.createClient());
-  const rpc = db.rpc as unknown as (
+  const rpc = db.rpc.bind(db) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ error: { message: string } | null }>;

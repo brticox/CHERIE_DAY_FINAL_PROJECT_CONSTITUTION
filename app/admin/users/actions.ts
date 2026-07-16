@@ -9,7 +9,7 @@ export async function updateStaff(fd: FormData) {
   const { staff } = await requireStaff('/admin/users');
   if (!can(staff.role, 'staff.manage')) redirect('/admin/users?error=permission');
   const db = await createClient();
-  const rpc = db.rpc as unknown as (
+  const rpc = db.rpc.bind(db) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ error: { message: string } | null }>;

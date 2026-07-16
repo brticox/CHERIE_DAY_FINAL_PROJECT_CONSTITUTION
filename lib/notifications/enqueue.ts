@@ -17,7 +17,7 @@ export async function enqueueNotification(input: {
   category?: 'transactional' | 'operational' | 'security';
 }) {
   const admin = createAdminClient();
-  const rpc = admin.rpc as unknown as (
+  const rpc = admin.rpc.bind(admin) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ data: string | null; error: { code: string } | null }>;
