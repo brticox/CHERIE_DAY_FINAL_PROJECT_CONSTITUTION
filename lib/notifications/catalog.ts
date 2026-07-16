@@ -13,159 +13,132 @@ export interface NotificationEventDefinition {
   classification: NotificationCategory | 'legal';
   templateKey: string;
   deduplicationKey: string;
-  retryPolicy: 'transactional_bounded' | 'staff_critical' | 'marketing_separate';
-  suppressionPolicy: 'never_for_security' | 'permanent_delivery_failure' | 'consent_and_delivery_failure';
+  retryPolicy: 'transactional_bounded' | 'staff_critical';
+  suppressionPolicy: 'never_for_security' | 'permanent_delivery_failure';
   adminOwner: NotificationOwner;
-  sentryEscalation: 'none' | 'permanent_failure' | 'immediate';
-  requiredConsent: 'service_contract' | 'legal_obligation' | 'legitimate_interest' | 'marketing_opt_in';
-  retention: 'identity_audit' | 'commerce_audit' | 'support_record' | 'marketing_consent';
-  connection: 'connected' | 'implemented_not_yet_triggered' | 'provider_managed';
+  sentryEscalation: 'permanent_failure' | 'immediate';
+  requiredConsent: 'service_contract' | 'legal_obligation' | 'legitimate_interest';
+  retention: 'identity_audit' | 'commerce_audit' | 'support_record';
+  connection: 'connected' | 'provider_managed';
 }
 
-type Family = Omit<NotificationEventDefinition, 'eventKey' | 'templateKey'> & {
-  templatePrefix: string;
-};
+type Input = Pick<
+  NotificationEventDefinition,
+  | 'eventKey'
+  | 'templateKey'
+  | 'source'
+  | 'recipient'
+  | 'replyTo'
+  | 'classification'
+  | 'deduplicationKey'
+> &
+  Partial<NotificationEventDefinition>;
 
-function define(keys: readonly string[], family: Family): NotificationEventDefinition[] {
-  return keys.map((eventKey) => ({
-    ...family,
-    eventKey,
-    templateKey: `${family.templatePrefix}-${eventKey.split('.').slice(1).join('-')}`,
-  }));
+function connected(input: Input): NotificationEventDefinition {
+  return {
+    trigger: 'Doğrulanmış uygulama işlemi veya veritabanı yaşam döngüsü olayı',
+    sender: 'hello',
+    retryPolicy: input.recipient === 'staff' ? 'staff_critical' : 'transactional_bounded',
+    suppressionPolicy:
+      input.classification === 'security'
+        ? 'never_for_security'
+        : 'permanent_delivery_failure',
+    adminOwner: input.replyTo,
+    sentryEscalation: input.recipient === 'staff' ? 'immediate' : 'permanent_failure',
+    requiredConsent:
+      input.classification === 'security' ? 'legitimate_interest' : 'service_contract',
+    retention:
+      input.classification === 'security'
+        ? 'identity_audit'
+        : input.replyTo === 'support'
+          ? 'support_record'
+          : 'commerce_audit',
+    connection: 'connected',
+    ...input,
+  };
 }
 
-const auth = define(
-  [
-    'auth.registration_requested', 'auth.email_confirmation_sent', 'auth.email_confirmed',
-    'auth.welcome', 'auth.password_reset_requested', 'auth.password_changed',
-    'auth.email_change_requested', 'auth.email_changed', 'auth.login_new_device',
-    'auth.login_security_alert', 'auth.account_disabled', 'auth.account_archived',
-    'auth.account_reactivated', 'auth.support_needed',
-  ],
-  {
-    trigger: 'Doğrulanmış kimlik yaşam döngüsü değişikliği',
-    source: 'Supabase Auth / customer_identity_events',
-    recipient: 'customer', sender: 'hello', replyTo: 'support', classification: 'security',
-    templatePrefix: 'auth', deduplicationKey: '{event}:{auth_user_id}:{event_id}',
-    retryPolicy: 'transactional_bounded', suppressionPolicy: 'never_for_security',
-    adminOwner: 'support', sentryEscalation: 'permanent_failure',
-    requiredConsent: 'legitimate_interest', retention: 'identity_audit',
+function providerManaged(input: Input): NotificationEventDefinition {
+  return connected({
+    ...input,
+    trigger: 'Supabase Auth sağlayıcı yaşam döngüsü',
     connection: 'provider_managed',
-  },
-);
+  });
+}
 
-const order = define(
-  ['order.received', 'order.confirmed', 'order.awaiting_information', 'order.customization_received', 'order.updated', 'order.cancelled', 'order.completed'],
-  {
-    trigger: 'Atomik sipariş veya sipariş durumu işlemi', source: 'orders / order_status_events',
-    recipient: 'customer', sender: 'hello', replyTo: 'orders', classification: 'transactional',
-    templatePrefix: 'order', deduplicationKey: '{event}:{order_id}:{event_id}',
-    retryPolicy: 'transactional_bounded', suppressionPolicy: 'permanent_delivery_failure',
-    adminOwner: 'orders', sentryEscalation: 'permanent_failure', requiredConsent: 'service_contract',
-    retention: 'commerce_audit', connection: 'connected',
-  },
-);
+const customer = 'customer' as const;
+const staff = 'staff' as const;
+const transactional = 'transactional' as const;
 
-const payment = define(
-  ['payment.pending', 'payment.authorized', 'payment.paid', 'payment.failed', 'payment.amount_mismatch', 'payment.review_required', 'payment.refund_requested', 'payment.refund_approved', 'payment.refund_processing', 'payment.refunded', 'payment.refund_failed', 'payment.reconciliation_discrepancy'],
-  {
-    trigger: 'İmzalı ödeme olayı veya denetlenmiş finans işlemi', source: 'payments / payment_events / refunds',
-    recipient: 'customer_and_staff', sender: 'hello', replyTo: 'payments', classification: 'transactional',
-    templatePrefix: 'payment', deduplicationKey: '{event}:{payment_id}:{provider_event_id}',
-    retryPolicy: 'staff_critical', suppressionPolicy: 'permanent_delivery_failure',
-    adminOwner: 'payments', sentryEscalation: 'immediate', requiredConsent: 'service_contract',
-    retention: 'commerce_audit', connection: 'connected',
-  },
-);
+export const notificationEventCatalog: NotificationEventDefinition[] = [
+  providerManaged({ eventKey: 'auth.registration_requested', templateKey: 'auth-email-confirmation', source: 'Supabase Auth signUp', recipient: customer, replyTo: 'support', classification: 'security', deduplicationKey: 'provider:{auth_user_id}:signup' }),
+  providerManaged({ eventKey: 'auth.email_confirmation_sent', templateKey: 'auth-email-confirmation', source: 'Supabase Auth confirmation mailer', recipient: customer, replyTo: 'support', classification: 'security', deduplicationKey: 'provider:{auth_user_id}:confirmation' }),
+  providerManaged({ eventKey: 'auth.password_reset_requested', templateKey: 'auth-password-reset', source: 'Supabase Auth recovery mailer', recipient: customer, replyTo: 'support', classification: 'security', deduplicationKey: 'provider:{auth_user_id}:recovery' }),
+  connected({ eventKey: 'auth.welcome', templateKey: 'account_welcome', source: 'auth callback / confirmed immediate session', recipient: customer, replyTo: 'support', classification: transactional, deduplicationKey: 'auth_welcome:{auth_user_id}' }),
+  connected({ eventKey: 'auth.password_changed', templateKey: 'auth-password-changed', source: 'password update actions', recipient: customer, replyTo: 'support', classification: 'security', deduplicationKey: 'auth_password_changed:{auth_user_id}:{updated_at}' }),
 
-const proof = define(
-  ['proof.preparing', 'proof.ready', 'proof.sent', 'proof.reminder', 'proof.revision_requested', 'proof.updated', 'proof.approved', 'proof.approval_recorded'],
-  {
-    trigger: 'Denetlenmiş prova veya tasarım yaşam döngüsü işlemi', source: 'order_proofs / order_status_events',
-    recipient: 'customer_and_staff', sender: 'hello', replyTo: 'orders', classification: 'transactional',
-    templatePrefix: 'proof', deduplicationKey: '{event}:{proof_id}:{version}',
-    retryPolicy: 'transactional_bounded', suppressionPolicy: 'permanent_delivery_failure',
-    adminOwner: 'orders', sentryEscalation: 'permanent_failure', requiredConsent: 'service_contract',
-    retention: 'commerce_audit', connection: 'connected',
-  },
-);
+  connected({ eventKey: 'order.received', templateKey: 'order_received', source: 'orders INSERT trigger', recipient: customer, replyTo: 'orders', classification: transactional, deduplicationKey: 'order_received:{order_id}:customer' }),
+  ...([
+    'paid','in_design','proof_sent','revision_requested','proof_approved','in_production',
+    'quality_check','packed','shipped','delivered','completed','cancelled','refunded',
+  ] as const).map((status) => connected({
+    eventKey: `order.${status}`,
+    templateKey: `order_status_${status}`,
+    source: 'order_status_events INSERT trigger', recipient: customer, replyTo: 'orders',
+    classification: transactional,
+    deduplicationKey: `order_status:{order_id}:${status}:{event_id}`,
+  })),
 
-const fulfilment = define(
-  ['production.started', 'production.milestone', 'quality.review', 'quality.issue', 'packaging.ready', 'shipment.label_created', 'shipment.dispatched', 'shipment.in_transit', 'shipment.delayed', 'shipment.delivered', 'shipment.delivery_problem'],
-  {
-    trigger: 'Denetlenmiş üretim veya teslimat durumu değişikliği', source: 'order_status_events / shipments',
-    recipient: 'customer_and_staff', sender: 'hello', replyTo: 'orders', classification: 'transactional',
-    templatePrefix: 'fulfilment', deduplicationKey: '{event}:{order_id}:{event_id}',
-    retryPolicy: 'transactional_bounded', suppressionPolicy: 'permanent_delivery_failure',
-    adminOwner: 'orders', sentryEscalation: 'permanent_failure', requiredConsent: 'service_contract',
-    retention: 'commerce_audit', connection: 'connected',
-  },
-);
+  connected({ eventKey: 'payment.pending', templateKey: 'payment_pending', source: 'orders INSERT trigger', recipient: customer, replyTo: 'payments', classification: transactional, deduplicationKey: 'order_received:{order_id}:customer' }),
+  connected({ eventKey: 'payment.failed', templateKey: 'order_status_failed', source: 'verified applied payment_events trigger', recipient: customer, replyTo: 'payments', classification: transactional, deduplicationKey: 'payment_failed:{payment_id}:{provider_event_id}' }),
+  connected({ eventKey: 'invoice.issued', templateKey: 'invoice_issued', source: 'orders e-invoice transition trigger', recipient: customer, replyTo: 'payments', classification: transactional, deduplicationKey: 'invoice_issued:{order_id}:{einvoice_ref}' }),
+  ...([
+    ['refund.requested','refund_requested'],
+    ['refund.approved','refund_approved'],
+    ['refund.processing','refund_submitted'],
+    ['refund.succeeded','refund_succeeded'],
+    ['refund.failed','refund_failed'],
+  ] as const).map(([eventKey, templateKey]) => connected({
+    eventKey, templateKey, source: 'audited refund RPC', recipient: customer,
+    replyTo: 'payments', classification: transactional,
+    deduplicationKey: `${eventKey}:{refund_id}:customer`,
+  })),
 
-const service = define(
-  ['contact.received', 'contact.acknowledged', 'quote.requested', 'quote.ready', 'quote.accepted', 'quote.expiring', 'appointment.requested', 'appointment.confirmed', 'appointment.reminder_24h', 'appointment.reminder_2h', 'appointment.rescheduled', 'appointment.cancelled', 'reservation.received', 'reservation.confirmed', 'reservation.updated', 'event.milestone_reminder', 'concierge.follow_up'],
-  {
-    trigger: 'Müşteri talebi veya denetlenmiş hizmet planı değişikliği', source: 'leads / appointments / reservations',
-    recipient: 'customer_and_staff', sender: 'hello', replyTo: 'hello', classification: 'transactional',
-    templatePrefix: 'service', deduplicationKey: '{event}:{aggregate_id}:{event_id}',
-    retryPolicy: 'transactional_bounded', suppressionPolicy: 'permanent_delivery_failure',
-    adminOwner: 'hello', sentryEscalation: 'permanent_failure', requiredConsent: 'service_contract',
-    retention: 'support_record', connection: 'implemented_not_yet_triggered',
-  },
-);
+  connected({ eventKey: 'shipment.dispatched', templateKey: 'shipment-dispatched', source: 'shipments status trigger', recipient: customer, replyTo: 'orders', classification: transactional, deduplicationKey: 'shipment_dispatched:{shipment_id}:shipped' }),
+  connected({ eventKey: 'shipment.in_transit', templateKey: 'shipment_in_transit', source: 'shipments status trigger', recipient: customer, replyTo: 'orders', classification: transactional, deduplicationKey: 'shipment_in_transit:{shipment_id}:in_transit' }),
+  connected({ eventKey: 'shipment.delivered', templateKey: 'shipment-delivered', source: 'shipments status trigger', recipient: customer, replyTo: 'orders', classification: transactional, deduplicationKey: 'shipment_delivered:{shipment_id}:delivered' }),
+  connected({ eventKey: 'shipment.returned', templateKey: 'shipment_returned', source: 'shipments status trigger', recipient: customer, replyTo: 'orders', classification: transactional, deduplicationKey: 'shipment_returned:{shipment_id}:returned' }),
 
-const digital = define(
-  ['digital.project_created', 'digital.draft_ready', 'digital.published', 'digital.rsvp_received', 'digital.guest_update', 'digital.expiry_warning'],
-  {
-    trigger: 'Dijital davetiye yaşam döngüsü işlemi', source: 'digital invitation service',
-    recipient: 'customer', sender: 'hello', replyTo: 'orders', classification: 'transactional',
-    templatePrefix: 'digital', deduplicationKey: '{event}:{project_id}:{event_id}',
-    retryPolicy: 'transactional_bounded', suppressionPolicy: 'permanent_delivery_failure',
-    adminOwner: 'orders', sentryEscalation: 'permanent_failure', requiredConsent: 'service_contract',
-    retention: 'commerce_audit', connection: 'implemented_not_yet_triggered',
-  },
-);
+  ...([
+    ['appointment.requested','appointment-requested'],
+    ['appointment.confirmed','appointment-confirmed'],
+    ['appointment.rescheduled','appointment-rescheduled'],
+    ['appointment.cancelled','appointment-cancelled'],
+  ] as const).map(([eventKey, templateKey]) => connected({
+    eventKey, templateKey, source: 'consultations lifecycle trigger', recipient: customer,
+    replyTo: 'hello', classification: transactional,
+    deduplicationKey: `${eventKey}:{consultation_id}:{slot_signature}`,
+  })),
+  ...([
+    ['contact.received','intake_contact_received'],
+    ['quote.requested','intake_quote_received'],
+    ['appointment.intake_received','intake_appointment_received'],
+    ['dream.received','intake_dream_received'],
+  ] as const).map(([eventKey, templateKey]) => connected({
+    eventKey, templateKey, source: 'leads INSERT trigger', recipient: customer,
+    replyTo: 'hello', classification: transactional,
+    deduplicationKey: `intake_received:{lead_id}:customer`,
+  })),
 
-const support = define(
-  ['support.case_created', 'support.reply_received', 'support.case_updated', 'support.case_resolved', 'support.sla_warning'],
-  {
-    trigger: 'Destek kaydı veya SLA durumu değişikliği', source: 'support service',
-    recipient: 'customer_and_staff', sender: 'hello', replyTo: 'support', classification: 'transactional',
-    templatePrefix: 'support', deduplicationKey: '{event}:{case_id}:{event_id}',
-    retryPolicy: 'staff_critical', suppressionPolicy: 'permanent_delivery_failure',
-    adminOwner: 'support', sentryEscalation: 'permanent_failure', requiredConsent: 'legitimate_interest',
-    retention: 'support_record', connection: 'implemented_not_yet_triggered',
-  },
-);
+  connected({ eventKey: 'support.case_created', templateKey: 'support-case-created', source: 'support thread INSERT trigger', recipient: customer, replyTo: 'support', classification: transactional, deduplicationKey: 'support_case_created:{thread_id}:open' }),
+  connected({ eventKey: 'support.reply_received', templateKey: 'support-case-updated', source: 'public staff support reply trigger', recipient: customer, replyTo: 'support', classification: transactional, deduplicationKey: 'support_reply_received:{message_id}' }),
+  connected({ eventKey: 'support.case_updated', templateKey: 'support-case-updated', source: 'support thread status trigger', recipient: customer, replyTo: 'support', classification: transactional, deduplicationKey: 'support_case_updated:{thread_id}:{status}' }),
+  connected({ eventKey: 'support.case_resolved', templateKey: 'support-case-resolved', source: 'support thread closed trigger', recipient: customer, replyTo: 'support', classification: transactional, deduplicationKey: 'support_case_resolved:{thread_id}:closed' }),
 
-const staff = define(
-  ['staff.new_order', 'staff.payment_failure', 'staff.payment_mismatch', 'staff.refund_required', 'staff.proof_overdue', 'staff.production_blocked', 'staff.shipment_failure', 'staff.email_bounced', 'staff.email_complained', 'staff.auth_failure_spike', 'staff.worker_failure', 'staff.reconciliation_critical', 'staff.legal_request', 'staff.security_incident'],
-  {
-    trigger: 'Kritik operasyon eşiği veya kalıcı hata', source: 'outbox / auth / commerce observability',
-    recipient: 'staff', sender: 'hello', replyTo: 'support', classification: 'operational',
-    templatePrefix: 'staff', deduplicationKey: '{event}:{aggregate_id}:{window}',
-    retryPolicy: 'staff_critical', suppressionPolicy: 'permanent_delivery_failure',
-    adminOwner: 'platform', sentryEscalation: 'immediate', requiredConsent: 'legitimate_interest',
-    retention: 'support_record', connection: 'implemented_not_yet_triggered',
-  },
-);
-
-const marketing = define(
-  ['marketing.welcome_series', 'marketing.abandoned_cart', 'marketing.wishlist_reminder', 'marketing.back_in_stock', 'marketing.new_collection', 'marketing.anniversary', 'marketing.vip_invitation'],
-  {
-    trigger: 'Ayrı pazarlama servisi ve geçerli açık rıza', source: 'marketing service / notification_preferences',
-    recipient: 'customer', sender: 'hello', replyTo: 'hello', classification: 'marketing',
-    templatePrefix: 'marketing', deduplicationKey: '{event}:{customer_id}:{campaign_id}',
-    retryPolicy: 'marketing_separate', suppressionPolicy: 'consent_and_delivery_failure',
-    adminOwner: 'hello', sentryEscalation: 'none', requiredConsent: 'marketing_opt_in',
-    retention: 'marketing_consent', connection: 'implemented_not_yet_triggered',
-  },
-);
-
-export const notificationEventCatalog = [
-  ...auth, ...order, ...payment, ...proof, ...fulfilment, ...service, ...digital,
-  ...support, ...staff, ...marketing,
-] as const;
+  connected({ eventKey: 'staff.payment_failure', templateKey: 'staff_payment_failed', source: 'verified applied payment_events trigger', recipient: staff, replyTo: 'payments', classification: 'operational', deduplicationKey: 'payment_failed:{payment_id}:{provider_event_id}:staff' }),
+  connected({ eventKey: 'staff.refund_failure', templateKey: 'staff_refund_failed', source: 'audited refund result RPC', recipient: staff, replyTo: 'payments', classification: 'operational', deduplicationKey: 'refund_failed:{refund_id}:staff' }),
+  connected({ eventKey: 'staff.notification_permanently_failed', templateKey: 'staff_notification_permanently_failed', source: 'notification worker terminal failure', recipient: staff, replyTo: 'support', classification: 'operational', deduplicationKey: 'notification_failed:{notification_id}:staff' }),
+];
 
 export const notificationEventByKey = new Map(
   notificationEventCatalog.map((definition) => [definition.eventKey, definition]),

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/public';
 import { updatePasswordSchema } from '@/lib/validation/auth';
+import { enqueueAccountNotification } from '@/lib/notifications/account';
 
 function sameOrigin(request: Request) {
   const origin = request.headers.get('origin');
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { error } = await supabase.auth.updateUser({
+  const { data: updateData, error } = await supabase.auth.updateUser({
     password: parsed.data.password,
   });
   if (error) {
@@ -66,6 +67,11 @@ export async function POST(request: Request) {
     );
   }
 
+  await enqueueAccountNotification(
+    userData.user.id,
+    'password_changed',
+    updateData.user.updated_at,
+  );
   await supabase.auth.signOut({ scope: 'global' });
   return NextResponse.json({
     status: 'success',

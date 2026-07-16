@@ -15,6 +15,7 @@ import { isSupabaseConfigured } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase/server';
 import { mergeGuestCartForCurrentUser } from '@/lib/cart/server';
 import { authCallbackUrl, getAuthConfig } from '@/lib/auth/config';
+import { enqueueAccountNotification } from '@/lib/notifications/account';
 
 const UNAVAILABLE: AuthActionState = {
   status: 'error',
@@ -113,7 +114,10 @@ export async function registerAction(
     };
   }
 
-  if (data.session) redirect('/hesap');
+  if (data.session && data.user) {
+    await enqueueAccountNotification(data.user.id, 'welcome');
+    redirect('/hesap');
+  }
 
   return {
     status: 'success',
@@ -169,12 +173,20 @@ export async function updatePasswordAction(
     };
   }
 
-  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  const { data: updateData, error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
   if (error)
     return {
       status: 'error',
       message: 'Şifreniz güncellenemedi. Lütfen tekrar deneyin.',
     };
+
+  await enqueueAccountNotification(
+    userData.user.id,
+    'password_changed',
+    updateData.user.updated_at,
+  );
 
   await supabase.auth.signOut({ scope: 'global' });
 

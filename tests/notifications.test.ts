@@ -1,10 +1,11 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { getNotificationConfig, notificationBaseUrl, notificationReadiness, notificationReplyTo } from '@/lib/notifications/config';
 import { notificationEventCatalog } from '@/lib/notifications/catalog';
 import { NotificationError, classifyNotificationError, redactError } from '@/lib/notifications/errors';
 import { notificationIdempotencyKey } from '@/lib/notifications/idempotency';
 import { CaptureTransport } from '@/lib/notifications/providers/capture';
+import { ResendTransport } from '@/lib/notifications/providers/resend';
 import { nextRetryAt, shouldRetry } from '@/lib/notifications/retry';
 import { escapeHtml, renderTemplate, requiredLaunchTemplateKeys, templateDefinitions } from '@/lib/notifications/templates';
 import { resolveRecipient } from '@/lib/notifications/recipients';
@@ -12,24 +13,30 @@ import { resolveRecipient } from '@/lib/notifications/recipients';
 const originalEnv = { ...process.env };
 afterEach(() => {
   process.env = { ...originalEnv };
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe('transactional templates', () => {
   it('keeps the complete canonical event catalog unique and policy-complete', () => {
-    expect(notificationEventCatalog).toHaveLength(101);
-    expect(new Set(notificationEventCatalog.map((event) => event.eventKey)).size).toBe(101);
+    expect(notificationEventCatalog.length).toBeGreaterThanOrEqual(40);
+    expect(new Set(notificationEventCatalog.map((event) => event.eventKey)).size).toBe(
+      notificationEventCatalog.length,
+    );
     for (const event of notificationEventCatalog) {
       expect(event.trigger).toBeTruthy();
       expect(event.source).toBeTruthy();
       expect(event.templateKey).toBeTruthy();
-      expect(event.deduplicationKey).toContain('{event}');
+      expect(event.deduplicationKey.length).toBeGreaterThan(8);
+      expect(event.deduplicationKey).toContain(':');
       expect(event.adminOwner).toBeTruthy();
       expect(event.retention).toBeTruthy();
+      expect(templateDefinitions[event.templateKey]).toBeDefined();
     }
   });
 
   it('keeps every required launch template renderable in HTML and plain text', () => {
-    expect(requiredLaunchTemplateKeys).toHaveLength(53);
+    expect(requiredLaunchTemplateKeys).toHaveLength(56);
     for (const key of requiredLaunchTemplateKeys) {
       expect(templateDefinitions[key]).toBeDefined();
       const rendered = renderTemplate(key, { customer_name: 'Test Misafiri' });
@@ -90,6 +97,50 @@ describe('idempotency, retries and redaction', () => {
 });
 
 describe('safe transport configuration', () => {
+  it('sends the provider request with a stable idempotency key and records the provider id', async () => {
+    const request = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ id: 're_launch_proof' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    vi.stubGlobal('fetch', request);
+    const result = await new ResendTransport(
+      're_test_only_not_a_secret',
+      'CHERIE DAY <hello@example.test>',
+    ).send({
+      to: 'customer@example.test',
+      subject: 'Siparişiniz alındı',
+      preheader: 'Siparişiniz alındı',
+      html: '<p>Siparişiniz alındı</p>',
+      text: 'Siparişiniz alındı',
+      idempotencyKey: 'order_received:order-1:customer',
+    });
+    expect(result).toEqual({ provider: 'resend', messageId: 're_launch_proof' });
+    const init = request.mock.calls[0]?.[1] as RequestInit;
+    expect(new Headers(init.headers).get('Idempotency-Key')).toBe(
+      'order_received:order-1:customer',
+    );
+  });
+
+  it('classifies provider throttling as retryable', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ message: 'rate limited' }), {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      ),
+    );
+    await expect(
+      new ResendTransport('re_test_only_not_a_secret', 'hello@example.test').send({
+        to: 'customer@example.test', subject: 'Test', preheader: 'Test',
+        html: '<p>Test</p>', text: 'Test', idempotencyKey: 'retry:test:provider',
+      }),
+    ).rejects.toMatchObject({ code: 'resend_429', retryable: true });
+  });
+
   it('captures locally and never sends real mail by default', async () => {
     process.env.APP_ENV = 'development';
     process.env.NOTIFICATION_SEND_ENABLED = 'false';

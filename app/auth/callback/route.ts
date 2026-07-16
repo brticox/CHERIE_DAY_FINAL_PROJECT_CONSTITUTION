@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from '@/lib/supabase/public';
 import { safeNextPath } from '@/lib/validation/auth';
 import { mergeGuestCartForCurrentUser } from '@/lib/cart/server';
 import { getAuthConfig } from '@/lib/auth/config';
+import { enqueueAccountNotification } from '@/lib/notifications/account';
 
 const PROVIDERS = new Set(['email', 'google', 'apple']);
 
@@ -70,6 +71,7 @@ export async function GET(request: Request) {
         p_provider: provider,
         p_event_type: 'signed_in',
       });
+      await enqueueAccountNotification(userData.user.id, 'welcome');
       try {
         await mergeGuestCartForCurrentUser();
       } catch {

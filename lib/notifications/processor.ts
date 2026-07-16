@@ -15,6 +15,24 @@ import { notificationReplyTo } from './config';
 
 type OutboxRow = Database['public']['Tables']['notification_outbox']['Row'];
 
+export type NotificationOutboxHealth = {
+  due_count: number;
+  oldest_due_seconds: number;
+  processing_count: number;
+  retrying_count: number;
+  permanently_failed_24h: number;
+};
+
+export async function getNotificationOutboxHealth(): Promise<NotificationOutboxHealth> {
+  const admin = createAdminClient();
+  const rpc = admin.rpc.bind(admin) as unknown as (
+    name: string,
+  ) => Promise<{ data: NotificationOutboxHealth | null; error: { code: string } | null }>;
+  const { data, error } = await rpc('notification_outbox_health');
+  if (error || !data) throw new Error(`Outbox health check failed: ${error?.code ?? 'empty'}`);
+  return data;
+}
+
 export async function processNotificationBatch(batchSize = 20) {
   const admin = createAdminClient();
   const workerId = `notification-worker:${randomUUID()}`;
@@ -94,7 +112,7 @@ export async function processNotificationBatch(batchSize = 20) {
       }
     }
   }
-  return summary;
+  return { ...summary, health: await getNotificationOutboxHealth() };
 }
 
 function payloadObject(payload: Json): NotificationPayload {
