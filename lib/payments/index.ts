@@ -1,7 +1,9 @@
 /** Turkey-only, TRY-only normalized payment contract. */
 export type PaymentProvider = 'iyzico' | 'paytr' | 'bank_transfer' | 'manual';
 
-export type OnlinePaymentProvider = Extract<PaymentProvider, 'iyzico' | 'paytr'>;
+// Historical rows may contain other providers; new checkout is PayTR-only until
+// another adapter has initialization, callback, refund, and reconciliation proof.
+export type OnlinePaymentProvider = Extract<PaymentProvider, 'paytr'>;
 
 export type NormalizedPaymentStatus =
   | 'pending'
@@ -36,24 +38,10 @@ export type ProviderReadiness = {
 };
 
 export function getPaymentProviderReadiness(): ProviderReadiness[] {
-  const iyzicoCredentials = Boolean(
-    process.env.IYZICO_API_KEY && process.env.IYZICO_SECRET_KEY,
-  );
-  return [
-    paytrReadiness(),
-    {
-      provider: 'iyzico',
-      configured: false,
-      label: 'iyzico',
-      mode: 'unavailable',
-      reason: iyzicoCredentials
-        ? 'Kimlik/fatura politikası onaylandıktan sonra etkinleştirilecek.'
-        : 'iyzico mağaza anahtarları bekleniyor.',
-    },
-  ];
+  return [paytrReadiness()];
 }
 
 export function isOnlineProvider(value: string): value is OnlinePaymentProvider {
-  return value === 'iyzico' || value === 'paytr';
+  return value === 'paytr';
 }
 import { paytrReadiness } from './environment';

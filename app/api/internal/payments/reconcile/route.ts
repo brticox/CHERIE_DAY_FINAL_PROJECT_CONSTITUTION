@@ -7,7 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 async function reconcile(request: Request) {
-  if (!authorizeInternalRequest(request.headers.get('authorization')))
+  if (!authorizeInternalRequest(request.headers.get('authorization'), 'payment'))
     return NextResponse.json({ ok: false, code: 'unauthorized' }, { status: 401 });
   const admin = createAdminClient();
   const { data, error } = await admin.rpc('detect_payment_discrepancies', {

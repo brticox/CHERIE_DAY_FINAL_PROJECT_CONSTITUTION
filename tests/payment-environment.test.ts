@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { validatePaytrEnvironment } from '@/lib/payments/environment';
+import { getPaymentProviderReadiness, isOnlineProvider } from '@/lib/payments';
 
 const sandbox = {
   PAYTR_MERCHANT_ID: 'test-id',
@@ -12,6 +13,13 @@ const sandbox = {
 };
 
 describe('payment environment readiness', () => {
+  it('exposes only the provider with a complete launch adapter', () => {
+    expect(getPaymentProviderReadiness().map((provider) => provider.provider)).toEqual([
+      'paytr',
+    ]);
+    expect(isOnlineProvider('paytr')).toBe(true);
+    expect(isOnlineProvider('iyzico')).toBe(false);
+  });
   it('accepts explicit local sandbox configuration', () => {
     expect(validatePaytrEnvironment(sandbox).ready).toBe(true);
   });
