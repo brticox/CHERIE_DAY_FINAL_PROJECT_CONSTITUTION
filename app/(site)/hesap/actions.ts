@@ -56,7 +56,7 @@ export async function loginAction(
     };
   }
 
-  const identityRpc = supabase.rpc as unknown as (
+  const identityRpc = supabase.rpc.bind(supabase) as unknown as (
     name: string,
     args?: Record<string, unknown>,
   ) => Promise<{ data: { status: string } | null; error: { code: string } | null }>;
@@ -90,12 +90,17 @@ export async function registerAction(
   if (!isSupabaseConfigured()) return UNAVAILABLE;
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  let siteUrl: URL;
+  try {
+    siteUrl = getAuthConfig().siteUrl;
+  } catch {
+    return UNAVAILABLE;
+  }
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo: `${siteUrl}/auth/callback?next=/hesap`,
+      emailRedirectTo: new URL('/auth/callback?next=/hesap', siteUrl).toString(),
       data: { name: parsed.data.name, phone: parsed.data.phone ?? null },
     },
   });
@@ -171,9 +176,11 @@ export async function updatePasswordAction(
       message: 'Şifreniz güncellenemedi. Lütfen tekrar deneyin.',
     };
 
+  await supabase.auth.signOut({ scope: 'global' });
+
   return {
     status: 'success',
-    message: 'Şifreniz güvenle güncellendi. Hesabınıza dönebilirsiniz.',
+    message: 'Şifreniz güvenle güncellendi. Tüm oturumlar kapatıldı; yeni şifrenizle giriş yapın.',
   };
 }
 

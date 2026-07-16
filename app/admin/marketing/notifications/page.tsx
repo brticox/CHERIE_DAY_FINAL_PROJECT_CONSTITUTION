@@ -1,9 +1,14 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 
 import { requireStaff } from '@/lib/auth/guards';
 import { notificationReadiness } from '@/lib/notifications/config';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { retryNotification } from './actions';
+import {
+  cancelNotification,
+  markNotificationForReview,
+  retryNotification,
+} from './actions';
 import {
   AdminEmptyState,
   AdminPageHeader,
@@ -19,6 +24,9 @@ const allowedRoles = new Set([
   'order_operations',
   'commerce_manager',
   'support_agent',
+  'service_operations',
+  'finance_viewer',
+  'operations',
 ]);
 
 export default async function Page({
@@ -61,10 +69,15 @@ export default async function Page({
         title="Bildirim teslimatı"
         description="Son 100 teslimatın durumunu, yeniden deneme risklerini ve sağlayıcı izini güvenli biçimde yönetin."
         action={
-          <AdminStatus
-            value={readiness.mode === 'invalid' ? 'failed' : 'ready'}
-            label={`Teslimat: ${readinessLabel(readiness.mode)}`}
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <AdminStatus
+              value={readiness.mode === 'invalid' ? 'failed' : 'ready'}
+              label={`Teslimat: ${readinessLabel(readiness.mode)}`}
+            />
+            <Link href="/admin/marketing/notifications/templates" className="cherie-button-secondary">
+              Şablon kataloğu
+            </Link>
+          </div>
         }
       />
 
@@ -112,8 +125,10 @@ export default async function Page({
               'bounced',
               'complained',
               'failed',
+              'suppressed',
               'retry_scheduled',
               'permanently_failed',
+              'review_required',
               'cancelled',
             ].map((x) => (
               <option key={x} value={x}>
@@ -221,6 +236,13 @@ export default async function Page({
                       )}
                     </td>
                     <td className="p-3">
+                      <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={`/admin/marketing/notifications/${row.id}`}
+                        className="cherie-button-secondary"
+                      >
+                        Ayrıntı
+                      </Link>
                       {['retry_scheduled', 'permanently_failed'].includes(row.status) && (
                         <form action={retryNotification}>
                           <input type="hidden" name="id" value={row.id} />
@@ -233,6 +255,23 @@ export default async function Page({
                           </button>
                         </form>
                       )}
+                      {['queued', 'retry_scheduled', 'review_required'].includes(row.status) && (
+                        <form action={cancelNotification}>
+                          <input type="hidden" name="id" value={row.id} />
+                          <button name="confirm" value="cancel" className="cherie-button-secondary">
+                            İptal et
+                          </button>
+                        </form>
+                      )}
+                      {!['delivered', 'cancelled', 'review_required'].includes(row.status) && (
+                        <form action={markNotificationForReview}>
+                          <input type="hidden" name="id" value={row.id} />
+                          <button name="confirm" value="review" className="cherie-button-secondary">
+                            İncelemeye al
+                          </button>
+                        </form>
+                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -290,8 +329,10 @@ function statusLabel(value: string) {
         bounced: 'Geri döndü',
         complained: 'İstenmeyen olarak bildirildi',
         failed: 'Teslim edilemedi',
+        suppressed: 'Gönderim engellendi',
         retry_scheduled: 'Tekrar bekliyor',
         permanently_failed: 'Kalıcı hata',
+        review_required: 'İnceleme gerekiyor',
         cancelled: 'İptal',
       } as Record<string, string>
     )[value] ?? value

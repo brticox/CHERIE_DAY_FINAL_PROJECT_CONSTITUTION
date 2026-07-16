@@ -1,21 +1,146 @@
 <!doctype html>
 <html lang="tr">
-  <body style="margin:0;background:#f5efe6;color:#24191b;font-family:Arial,sans-serif">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:32px 16px">
-      <tr><td align="center">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fffaf2;border:1px solid #dfd0bd;border-radius:20px;overflow:hidden">
-          <tr><td style="background:#4b0f1e;padding:28px 32px;color:#fffaf2;font-family:Georgia,serif;font-size:26px;letter-spacing:.08em">CHERIE DAY</td></tr>
-          <tr><td style="padding:36px 32px">
-            <p style="margin:0 0 10px;color:#a4773c;font-size:12px;letter-spacing:.18em;text-transform:uppercase">Maison hesabı</p>
-            <h1 style="margin:0 0 18px;font-family:Georgia,serif;font-size:30px;line-height:1.25">Güvenli giriş bağlantınız</h1>
-            <p style="margin:0 0 26px;font-size:16px;line-height:1.65">Hesabınıza şifresiz giriş için tek kullanımlık bağlantınız hazır. Bu yöntemi istemediyseniz hesabınızda herhangi bir değişiklik yapılmaz.</p>
-            <p style="margin:0 0 26px"><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#7d1830;color:#fffaf2;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:bold">Hesabıma giriş yap</a></p>
-            <p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#66565a">Düğme çalışmazsa bu güvenli adresi tarayıcınıza kopyalayın:</p>
-            <p style="margin:0;word-break:break-all;font-size:12px;line-height:1.6;color:#7d1830">{{ .ConfirmationURL }}</p>
-          </td></tr>
-          <tr><td style="border-top:1px solid #dfd0bd;padding:22px 32px;font-size:12px;line-height:1.6;color:#66565a">Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz. Yardım için <a href="{{ .SiteURL }}/kurumsal/iletisim" style="color:#7d1830">CHERIE DAY destek sayfasını</a> kullanın.</td></tr>
-        </table>
-      </td></tr>
+  <body
+    style="margin: 0; background: #f5efe6; color: #24191b; font-family: Arial, sans-serif"
+  >
+    <div
+      style="
+        display: none;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        color: transparent;
+      "
+    >
+      CHERIE DAY hesabınıza güvenli ve tek kullanımlık giriş bağlantınız.
+    </div>
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      style="padding: 32px 16px"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            width="100%"
+            cellspacing="0"
+            cellpadding="0"
+            style="
+              max-width: 600px;
+              background: #fffaf2;
+              border: 1px solid #dfd0bd;
+              border-radius: 20px;
+              overflow: hidden;
+            "
+          >
+            <tr>
+              <td style="background: #4b0f1e; padding: 24px 32px" align="center">
+                <img
+                  src="{{ .SiteURL }}/brand/email-logo.png"
+                  width="200"
+                  alt="CHERIE DAY"
+                  style="
+                    display: block;
+                    width: 200px;
+                    max-width: 100%;
+                    height: auto;
+                    border: 0;
+                    color: #fffaf2;
+                    font-family: Georgia, serif;
+                    font-size: 24px;
+                  "
+                />
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 36px 32px">
+                <p
+                  style="
+                    margin: 0 0 10px;
+                    color: #a4773c;
+                    font-size: 12px;
+                    letter-spacing: 0.18em;
+                    text-transform: uppercase;
+                  "
+                >
+                  Maison hesabı
+                </p>
+                <h1
+                  style="
+                    margin: 0 0 18px;
+                    font-family: Georgia, serif;
+                    font-size: 30px;
+                    line-height: 1.25;
+                  "
+                >
+                  Güvenli giriş bağlantınız
+                </h1>
+                <p style="margin: 0 0 26px; font-size: 16px; line-height: 1.65">
+                  Hesabınıza şifresiz giriş için tek kullanımlık bağlantınız hazır. Bu
+                  yöntemi istemediyseniz hesabınızda herhangi bir değişiklik yapılmaz.
+                </p>
+                <p style="margin: 0 0 26px">
+                  <a
+                    href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=magiclink&amp;next=%2Fhesap"
+                    style="
+                      display: inline-block;
+                      background: #7d1830;
+                      color: #fffaf2;
+                      text-decoration: none;
+                      padding: 14px 22px;
+                      border-radius: 10px;
+                      font-weight: bold;
+                    "
+                    >Hesabıma giriş yap</a
+                  >
+                </p>
+                <p
+                  style="
+                    margin: 0 0 8px;
+                    font-size: 13px;
+                    line-height: 1.6;
+                    color: #66565a;
+                  "
+                >
+                  Düğme çalışmazsa bu güvenli adresi tarayıcınıza kopyalayın:
+                </p>
+                <p
+                  style="
+                    margin: 0;
+                    word-break: break-all;
+                    font-size: 12px;
+                    line-height: 1.6;
+                    color: #7d1830;
+                  "
+                >
+                  {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash
+                  }}&amp;type=magiclink&amp;next=%2Fhesap
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  border-top: 1px solid #dfd0bd;
+                  padding: 22px 32px;
+                  font-size: 12px;
+                  line-height: 1.6;
+                  color: #66565a;
+                "
+              >
+                Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz. Yardım için
+                <a href="{{ .SiteURL }}/kurumsal/iletisim" style="color: #7d1830"
+                  >CHERIE DAY destek sayfasını</a
+                >
+                kullanın.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
     </table>
   </body>
 </html>

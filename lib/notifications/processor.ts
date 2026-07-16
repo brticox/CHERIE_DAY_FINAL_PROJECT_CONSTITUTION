@@ -28,7 +28,11 @@ export async function processNotificationBatch(batchSize = 20) {
   const summary = { claimed: data.length, sent: 0, retried: 0, permanentlyFailed: 0 };
   for (const row of data as OutboxRow[]) {
     try {
-      const recipient = resolveRecipient(row.recipient_kind, row.recipient_email);
+      const recipient = resolveRecipient(
+        row.recipient_kind,
+        row.recipient_email,
+        row.template_key,
+      );
       const rendered = renderTemplate(row.template_key, payloadObject(row.payload));
       const transport = getEmailTransport();
       const result = await transport.send({

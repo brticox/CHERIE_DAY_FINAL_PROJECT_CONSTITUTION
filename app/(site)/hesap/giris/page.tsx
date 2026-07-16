@@ -22,6 +22,7 @@ const REASONS: Record<string, string> = {
     'Giriş sağlayıcısına şu anda ulaşılamıyor. E-posta ile devam edebilirsiniz.',
   provider_unavailable: 'Bu giriş yöntemi henüz güvenli biçimde yapılandırılmadı.',
   account_blocked: 'Hesabınıza şu anda erişilemiyor. Destek ekibimizle iletişime geçin.',
+  password_updated: 'Şifreniz güvenle güncellendi. Yeni şifrenizle giriş yapabilirsiniz.',
 };
 
 export default async function Page({

@@ -12,7 +12,7 @@
         color: transparent;
       "
     >
-      Maison hesabınızı güvenle tamamlamak için e-posta adresinizi doğrulayın.
+      CHERIE DAY Maison hesabı davetiniz hazır.
     </div>
     <table
       role="presentation"
@@ -76,16 +76,15 @@
                     line-height: 1.25;
                   "
                 >
-                  E-posta adresinizi doğrulayın
+                  CHERIE DAY’e davetlisiniz
                 </h1>
                 <p style="margin: 0 0 26px; font-size: 16px; line-height: 1.65">
-                  Maison hesabınızı güvenle tamamlamak için e-posta adresinizi doğrulayın.
-                  Bağlantı tek kullanımlıktır ve süre dolduğunda yeniden doğrulama
-                  isteyebilirsiniz.
+                  Sizin için güvenli bir Maison hesabı daveti oluşturuldu. Hesabınızı
+                  tamamlamak için aşağıdaki tek kullanımlık bağlantıyı kullanın.
                 </p>
                 <p style="margin: 0 0 26px">
                   <a
-                    href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=signup&amp;next=%2Fhesap"
+                    href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=invite&amp;next=%2Fhesap"
                     style="
                       display: inline-block;
                       background: #7d1830;
@@ -95,7 +94,7 @@
                       border-radius: 10px;
                       font-weight: bold;
                     "
-                    >E-posta adresimi doğrula</a
+                    >Davetimi kabul et</a
                   >
                 </p>
                 <p
@@ -118,7 +117,7 @@
                   "
                 >
                   {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash
-                  }}&amp;type=signup&amp;next=%2Fhesap
+                  }}&amp;type=invite&amp;next=%2Fhesap
                 </p>
               </td>
             </tr>
@@ -132,9 +131,12 @@
                   color: #66565a;
                 "
               >
-                Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz. Yardım için
+                Bu daveti beklemiyorsanız e-postayı yok sayabilirsiniz. Yardım için
                 <a href="{{ .SiteURL }}/kurumsal/iletisim" style="color: #7d1830"
-                  >CHERIE DAY destek sayfasını</a
+                  >destek sayfamızı</a
+                >, gizlilik ayrıntıları için
+                <a href="{{ .SiteURL }}/kurumsal/gizlilik" style="color: #7d1830"
+                  >gizlilik sayfamızı</a
                 >
                 kullanın.
               </td>

@@ -37,6 +37,14 @@ content_path = "./supabase/templates/email-change.html"
 subject = "Güvenli giriş bağlantınız — CHERIE DAY"
 content_path = "./supabase/templates/magic-link.html"
 
+[auth.email.template.invite]
+subject = "CHERIE DAY Maison hesabı davetiniz"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.reauthentication]
+subject = "Güvenlik doğrulama kodunuz — CHERIE DAY"
+content_path = "./supabase/templates/reauthentication.html"
+
 [auth.external.google]
 enabled = false
 

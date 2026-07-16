@@ -1,9 +1,80 @@
 import { NotificationError } from '../errors';
 import type { NotificationPayload, RenderedEmail } from '../types';
+import { notificationBaseUrl } from '../config';
+import { escapeHtml, renderBrandedEmail, renderPlainText } from './components';
 
-type Definition = { subject: string; title: string; intro: string; cta: string };
+export { escapeHtml } from './components';
+
+export type Definition = { subject: string; title: string; intro: string; cta: string };
+
+const d = (subject: string, title: string, intro: string, cta = 'Ayrıntıları Gör'): Definition => ({
+  subject, title, intro, cta,
+});
+
+// Canonical inventory required for launch. Entries without a database trigger are
+// marked as such in the event catalog and remain previewable with safe fixture data.
+const requiredTemplateDefinitions: Record<string, Definition> = {
+  'auth-email-confirmation': d('E-posta adresinizi doğrulayın', 'Maison hesabınızı doğrulayın', 'Hesabınızı güvenle tamamlamak için doğrulama bağlantısını kullanın.', 'E-postamı Doğrula'),
+  'auth-welcome': d('CHERIE DAY’e hoş geldiniz', 'Maison’a hoş geldiniz', 'Hesabınız hazır. Seçimlerinizi ve sipariş yolculuğunuzu tek yerden izleyebilirsiniz.', 'Hesabımı Aç'),
+  'auth-password-reset': d('Şifrenizi güvenle yenileyin', 'Şifre yenileme talebiniz', 'Bu talebi siz oluşturduysanız güvenli bağlantı üzerinden yeni şifrenizi belirleyin.', 'Şifremi Yenile'),
+  'auth-password-changed': d('Şifreniz değiştirildi', 'Güvenlik güncellemesi tamamlandı', 'Hesap şifreniz değiştirildi. Bu işlem size ait değilse destek ekibimizle hemen iletişime geçin.', 'Hesap Güvenliğini Aç'),
+  'auth-email-changed': d('E-posta adresiniz değiştirildi', 'Hesap iletişim adresi güncellendi', 'Hesabınıza bağlı e-posta adresi güvenli biçimde güncellendi.', 'Hesabımı Aç'),
+  'auth-new-login-alert': d('Hesabınıza yeni giriş', 'Yeni bir oturum algılandı', 'Tanımadığınız bir girişse şifrenizi yenileyin ve destek ekibimize ulaşın.', 'Hesap Güvenliğini Aç'),
+  'auth-account-disabled-support': d('Hesap erişiminiz hakkında', 'Hesabınız destek incelemesinde', 'Güvenli erişim için destek ekibimiz kaydınızı incelemektedir.', 'Destek Al'),
+  'order-received': d('Siparişinizi aldık', 'Siparişiniz kaydedildi', 'Sipariş ayrıntılarınız güvenli biçimde kaydedildi.', 'Siparişi Gör'),
+  'order-confirmed': d('Siparişiniz onaylandı', 'Hazırlık yolculuğu başladı', 'Siparişiniz onaylandı ve operasyon planına alındı.', 'Siparişi İzle'),
+  'order-updated': d('Siparişiniz güncellendi', 'Sipariş ayrıntıları yenilendi', 'Siparişinizdeki son değişiklik hesabınıza işlendi.', 'Siparişi Gör'),
+  'order-cancelled': d('Siparişiniz iptal edildi', 'İptal kaydınız tamamlandı', 'Sipariş durumunuz güncellendi; finansal bir işlem varsa ayrıca bildirilecektir.', 'Siparişi Gör'),
+  'order-completed': d('Siparişiniz tamamlandı', 'Yolculuğunuz tamamlandı', 'Bu özel güne eşlik etmemize izin verdiğiniz için teşekkür ederiz.', 'Siparişi Gör'),
+  'payment-pending': d('Ödemeniz bekleniyor', 'Sipariş özetiniz hazır', 'Ödeme doğrulandıktan sonra siparişiniz bir sonraki adıma geçecektir.', 'Ödemeyi İncele'),
+  'payment-paid': d('Ödemeniz alındı', 'Ödemeniz güvenle doğrulandı', 'Siparişinizi hazırlık sırasına aldık.', 'Siparişi İzle'),
+  'payment-failed': d('Ödeme tamamlanamadı', 'Ödemeniz doğrulanamadı', 'Kartınızdan tahsilat doğrulanmadı; güvenli ödeme adımını yeniden deneyebilirsiniz.', 'Ödemeyi Yeniden Dene'),
+  'payment-review-required': d('Ödemeniz inceleniyor', 'Güvenli finans incelemesi', 'Ödeme kaydınız finans ekibimizin güvenli inceleme sırasındadır.', 'Siparişi Gör'),
+  'payment-refunded': d('İadeniz tamamlandı', 'İade sonucu doğrulandı', 'Ödeme sağlayıcısı iade işlemini başarılı olarak bildirdi.', 'İadeyi Gör'),
+  'payment-refund-failed': d('İade işlemi inceleniyor', 'İade henüz tamamlanmadı', 'Finans ekibimiz sağlayıcı sonucunu güvenle incelemektedir.', 'İadeyi Gör'),
+  'payment-receipt-ready': d('Ödeme belgeniz hazır', 'Sipariş ve ödeme özetiniz', 'Bu belge yasal fatura yerine geçmez; doğrulanmış işlem özetinizi hesabınızdan görebilirsiniz.', 'Özeti Aç'),
+  'proof-ready': d('Tasarımınız onaya hazır', 'Provanız sizi bekliyor', 'Üretim öncesi tasarımınızı inceleyebilir, onaylayabilir veya revizyon isteyebilirsiniz.', 'Tasarıma Bak'),
+  'proof-reminder': d('Tasarımınız onayınızı bekliyor', 'Nazik bir prova hatırlatması', 'Üretim planının ilerlemesi için tasarım provanızı incelemenizi rica ederiz.', 'Tasarıma Bak'),
+  'proof-revision-received': d('Revizyon talebinizi aldık', 'Notunuz tasarım ekibimizde', 'Güncellenen prova hazır olduğunda sizi bilgilendireceğiz.', 'Siparişi Gör'),
+  'proof-updated': d('Tasarım provanız güncellendi', 'Yeni prova hazır', 'Revizyon notlarınıza göre hazırlanan yeni tasarımı inceleyebilirsiniz.', 'Yeni Provayı Aç'),
+  'proof-approved': d('Tasarım onayınız kaydedildi', 'Onayınız tamamlandı', 'Onaylanan tasarım üretim hazırlığına geçti.', 'Siparişi İzle'),
+  'production-started': d('Üretim başladı', 'Atölye süreci başladı', 'Onaylanan ayrıntılarla siparişiniz özenle hazırlanıyor.', 'Siparişi İzle'),
+  'quality-issue': d('Siparişiniz için ek inceleme', 'Kalite ekibimiz ayrıntıları inceliyor', 'Teslimat standardımızı korumak için siparişiniz ek kalite kontrolüne alındı.', 'Siparişi Gör'),
+  'shipment-dispatched': d('Siparişiniz yola çıktı', 'Gönderiniz yolda', 'Mevcut takip bilgilerini hesabınızdan görebilirsiniz.', 'Gönderiyi İzle'),
+  'shipment-delayed': d('Gönderinizde gecikme var', 'Teslimat planı güncelleniyor', 'Kargo hareketini izliyor, yeni bilgiyi hesabınıza yansıtıyoruz.', 'Gönderiyi İzle'),
+  'shipment-delivered': d('Siparişiniz teslim edildi', 'Teslimat tamamlandı', 'Siparişinizin teslim edildiği bilgisi bize ulaştı.', 'Siparişi Gör'),
+  'shipment-problem': d('Gönderiniz için destek gerekiyor', 'Teslimat kaydı inceleniyor', 'Operasyon ekibimiz gönderi kaydındaki sorunu çözmek için çalışıyor.', 'Destek Kaydını Aç'),
+  'contact-received': d('Mesajınızı aldık', 'Talebiniz bize ulaştı', 'Notunuzu özenle inceleyip verdiğiniz iletişim bilgileri üzerinden dönüş yapacağız.', 'CHERIE DAY’i Keşfet'),
+  'quote-requested': d('Teklif talebinizi aldık', 'Hayaliniz için ilk not alındı', 'İhtiyaçlarınızı inceleyip kapsamı netleştirmek için sizinle iletişime geçeceğiz.', 'Talebi Gör'),
+  'quote-ready': d('Teklifiniz hazır', 'Size özel çalışma hazırlandı', 'Teklif ayrıntılarını güvenli hesabınızdan inceleyebilirsiniz.', 'Teklifi Aç'),
+  'appointment-requested': d('Randevu talebinizi aldık', 'Buluşma talebiniz kaydedildi', 'Uygunluk kontrolünün ardından sizinle iletişime geçeceğiz.', 'Talebi Gör'),
+  'appointment-confirmed': d('Randevunuz onaylandı', 'Buluşma planınız hazır', 'Randevu ayrıntıları güvenli biçimde kaydedildi.', 'Randevuyu Gör'),
+  'appointment-reminder': d('Randevunuz yaklaşıyor', 'Buluşmamız için küçük bir hatırlatma', 'Randevu saati ve ayrıntılarını hesabınızdan kontrol edebilirsiniz.', 'Randevuyu Gör'),
+  'appointment-rescheduled': d('Randevunuz güncellendi', 'Yeni buluşma zamanı kaydedildi', 'Güncel tarih ve saat bilgilerini hesabınızdan görebilirsiniz.', 'Randevuyu Gör'),
+  'appointment-cancelled': d('Randevunuz iptal edildi', 'İptal kaydı tamamlandı', 'Yeni bir zaman planlamak isterseniz concierge ekibimiz yanınızdadır.', 'Yeni Randevu İste'),
+  'reservation-confirmed': d('Rezervasyonunuz onaylandı', 'Rezervasyon planınız hazır', 'Rezervasyon ayrıntıları güvenli biçimde kaydedildi.', 'Rezervasyonu Gör'),
+  'support-case-created': d('Destek talebinizi aldık', 'Destek kaydınız oluşturuldu', 'Ekibimiz talebinizi inceleyip kayıt üzerinden size dönüş yapacaktır.', 'Destek Kaydını Aç'),
+  'support-case-updated': d('Destek kaydınız güncellendi', 'Talebinizde yeni bir gelişme var', 'Son yanıtı ve kayıt ayrıntılarını güvenli hesabınızdan görebilirsiniz.', 'Destek Kaydını Aç'),
+  'support-case-resolved': d('Destek kaydınız çözüldü', 'Talebiniz sonuçlandı', 'Çözüm ayrıntıları destek kaydınıza işlendi.', 'Çözümü Gör'),
+  'legal-request-received': d('Yasal talebinizi aldık', 'Gizlilik talebiniz kaydedildi', 'Talebiniz yetkili ekip tarafından güvenli biçimde incelenecektir.', 'Talebi Gör'),
+  'staff-new-order': d('Yeni sipariş operasyon bekliyor', 'Yeni sipariş kaydı', 'Doğrulanmış sipariş operasyon sırasına alınabilir.', 'Siparişi Aç'),
+  'staff-payment-failure': d('Ödeme hatası inceleme gerektiriyor', 'Başarısız ödeme bildirimi', 'Müşteri ve sağlayıcı kaydı finans incelemesi bekliyor.', 'Ödemeyi Aç'),
+  'staff-payment-mismatch': d('Ödeme tutarı uyuşmuyor', 'Finansal eşleşme incelemesi', 'Sipariş ve sağlayıcı tutarları arasında fark algılandı.', 'İncelemeyi Aç'),
+  'staff-refund-review': d('İade incelemesi bekliyor', 'Finans onayı gerekiyor', 'İade kaydı güvenli manuel değerlendirme bekliyor.', 'İadeyi Aç'),
+  'staff-proof-overdue': d('Prova onayı gecikti', 'Operasyon takibi gerekiyor', 'Prova zaman eşiğini aştı ve takip bekliyor.', 'Provayı Aç'),
+  'staff-shipment-failure': d('Gönderi sorunu inceleme gerektiriyor', 'Teslimat müdahalesi gerekiyor', 'Kargo kaydı operasyon ekibinin incelemesini bekliyor.', 'Gönderiyi Aç'),
+  'staff-email-failure': d('Bildirim teslim edilemedi', 'E-posta müdahalesi gerekiyor', 'Kalıcı teslimat hatası güvenli inceleme bekliyor.', 'Bildirimleri Aç'),
+  'staff-auth-failure': d('Kimlik doğrulama hata eşiği aşıldı', 'Hesap erişimi incelemesi', 'Staging kimlik akışında olağandışı hata artışı algılandı.', 'Kimlik Kayıtlarını Aç'),
+  'staff-worker-failure': d('Bildirim işçisi çalışamadı', 'Kuyruk müdahalesi gerekiyor', 'Bildirim işleme görevi güvenli inceleme bekliyor.', 'Bildirimleri Aç'),
+  'staff-reconciliation-critical': d('Kritik mutabakat farkı', 'Finansal müdahale gerekiyor', 'Ödeme mutabakatında kritik bir fark algılandı.', 'Mutabakatı Aç'),
+};
+
+export const requiredLaunchTemplateKeys = Object.freeze(
+  Object.keys(requiredTemplateDefinitions),
+);
 
 export const templateDefinitions: Record<string, Definition> = {
+  ...requiredTemplateDefinitions,
   account_welcome: {
     subject: 'CHERIE DAY’e hoş geldiniz',
     title: 'Maison’a hoş geldiniz',
@@ -252,9 +323,8 @@ export function renderTemplate(
     );
   const rawName = textValue(payload.customer_name) || 'Değerli misafirimiz';
   const rawIdentifier = textValue(payload.order_number) || textValue(payload.lead_id);
-  const name = escapeHtml(rawName);
   const identifier = escapeHtml(rawIdentifier);
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const baseUrl = notificationBaseUrl();
   const isStaff = templateKey.startsWith('staff_');
   const href = isStaff
     ? `${baseUrl}/admin/marketing/notifications`
@@ -263,38 +333,26 @@ export function renderTemplate(
       : baseUrl;
   const subjectSuffix = identifier ? ` · ${identifier}` : '';
   const preheader = `${definition.title}. ${definition.intro}`;
-  const text = `${definition.title}\n\n${rawName},\n\n${definition.intro}${rawIdentifier ? `\n\nReferans: ${rawIdentifier}` : ''}\n\n${definition.cta}: ${href}\n\nDestek: ${process.env.NOTIFICATION_REPLY_TO_EMAIL ?? 'CHERIE DAY destek ekibi'}\n\nBu ileti hizmet/operasyon bilgilendirmesidir; pazarlama iletisi değildir.`;
+  const text = renderPlainText({
+    content: definition,
+    customerName: rawName,
+    identifier: rawIdentifier,
+    href,
+    contact: process.env.NOTIFICATION_REPLY_TO_EMAIL ?? 'CHERIE DAY destek ekibi',
+  });
   return {
     subject: `${definition.subject}${subjectSuffix}`,
     preheader,
     text,
-    html: emailShell({ name, identifier, definition, href, preheader }),
+    html: renderBrandedEmail({
+      content: definition,
+      customerName: rawName,
+      identifier: rawIdentifier,
+      href,
+      preheader,
+      logoUrl: `${baseUrl}/brand/logo.svg`,
+    }),
   };
-}
-
-function emailShell({
-  name,
-  identifier,
-  definition,
-  href,
-  preheader,
-}: {
-  name: string;
-  identifier: string;
-  definition: Definition;
-  href: string;
-  preheader: string;
-}) {
-  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#f6f0e7;color:#321b20;font-family:Arial,sans-serif"><div style="display:none;max-height:0;overflow:hidden">${escapeHtml(preheader)}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="100%" style="max-width:620px;background:#fffaf2;border:1px solid #dfd1c0;border-radius:18px" cellspacing="0" cellpadding="0"><tr><td style="padding:28px 32px;border-bottom:1px solid #dfd1c0;color:#771d32;font-family:Georgia,serif;font-size:24px">CHERIE DAY</td></tr><tr><td style="padding:36px 32px"><p style="margin:0 0 16px;color:#806b62;font-size:14px">${name},</p><h1 style="margin:0 0 18px;font-family:Georgia,serif;font-size:34px;line-height:1.15;color:#4d1725">${escapeHtml(definition.title)}</h1><p style="margin:0 0 18px;font-size:16px;line-height:1.7">${escapeHtml(definition.intro)}</p>${identifier ? `<p style="margin:0 0 24px;color:#806b62;font-size:14px">Referans: <strong>${identifier}</strong></p>` : ''}<a href="${escapeHtml(href)}" style="display:inline-block;padding:13px 20px;background:#6f1730;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">${escapeHtml(definition.cta)}</a></td></tr><tr><td style="padding:22px 32px;border-top:1px solid #dfd1c0;color:#806b62;font-size:12px;line-height:1.6">Bu ileti hizmet veya operasyon bilgilendirmesidir; pazarlama iletisi değildir.<br>CHERIE DAY · İstanbul, Türkiye</td></tr></table></td></tr></table></body></html>`;
-}
-
-export function escapeHtml(value: string) {
-  return value.replace(
-    /[&<>'"]/g,
-    (char) =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char] ??
-      char,
-  );
 }
 
 function textValue(value: unknown) {

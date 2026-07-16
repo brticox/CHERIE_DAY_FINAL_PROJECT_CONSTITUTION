@@ -1,11 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { getNotificationConfig, notificationReadiness, notificationReplyTo } from '@/lib/notifications/config';
+import { getNotificationConfig, notificationBaseUrl, notificationReadiness, notificationReplyTo } from '@/lib/notifications/config';
+import { notificationEventCatalog } from '@/lib/notifications/catalog';
 import { NotificationError, classifyNotificationError, redactError } from '@/lib/notifications/errors';
 import { notificationIdempotencyKey } from '@/lib/notifications/idempotency';
 import { CaptureTransport } from '@/lib/notifications/providers/capture';
 import { nextRetryAt, shouldRetry } from '@/lib/notifications/retry';
-import { escapeHtml, renderTemplate, templateDefinitions } from '@/lib/notifications/templates';
+import { escapeHtml, renderTemplate, requiredLaunchTemplateKeys, templateDefinitions } from '@/lib/notifications/templates';
+import { resolveRecipient } from '@/lib/notifications/recipients';
 
 const originalEnv = { ...process.env };
 afterEach(() => {
@@ -13,6 +15,29 @@ afterEach(() => {
 });
 
 describe('transactional templates', () => {
+  it('keeps the complete canonical event catalog unique and policy-complete', () => {
+    expect(notificationEventCatalog).toHaveLength(101);
+    expect(new Set(notificationEventCatalog.map((event) => event.eventKey)).size).toBe(101);
+    for (const event of notificationEventCatalog) {
+      expect(event.trigger).toBeTruthy();
+      expect(event.source).toBeTruthy();
+      expect(event.templateKey).toBeTruthy();
+      expect(event.deduplicationKey).toContain('{event}');
+      expect(event.adminOwner).toBeTruthy();
+      expect(event.retention).toBeTruthy();
+    }
+  });
+
+  it('keeps every required launch template renderable in HTML and plain text', () => {
+    expect(requiredLaunchTemplateKeys).toHaveLength(53);
+    for (const key of requiredLaunchTemplateKeys) {
+      expect(templateDefinitions[key]).toBeDefined();
+      const rendered = renderTemplate(key, { customer_name: 'Test Misafiri' });
+      expect(rendered.html).toContain('alt="CHERIE DAY"');
+      expect(rendered.text).toContain('CHERIE DAY');
+    }
+  });
+
   it.each(Object.keys(templateDefinitions))('renders HTML and text for %s', (key) => {
     const rendered = renderTemplate(key, { customer_name: 'Şule & Çağrı', order_number: 'CD-ÇĞ-123' });
     expect(rendered.subject).toContain('CD-ÇĞ-123');
@@ -51,8 +76,8 @@ describe('idempotency, retries and redaction', () => {
 
   it('applies bounded exponential retry and maximum attempts', () => {
     const before = Date.now();
-    expect(nextRetryAt(1, 0).getTime() - before).toBeGreaterThanOrEqual(59_900);
-    expect(nextRetryAt(5, 0).getTime() - before).toBeGreaterThanOrEqual(21_599_900);
+    expect(nextRetryAt(1, 0).getTime() - before).toBeGreaterThanOrEqual(299_900);
+    expect(nextRetryAt(4, 0).getTime() - before).toBeGreaterThanOrEqual(43_199_900);
     expect(shouldRetry(true, 4, 5)).toBe(true);
     expect(shouldRetry(true, 5, 5)).toBe(false);
   });
@@ -88,6 +113,32 @@ describe('safe transport configuration', () => {
     delete process.env.RESEND_API_KEY;
     delete process.env.NOTIFICATION_FROM_EMAIL;
     expect(() => getNotificationConfig()).toThrow('Resend');
+  });
+
+  it('fails closed when staging sending has no approved recipient list', () => {
+    process.env.APP_ENV = 'staging';
+    process.env.NOTIFICATION_SEND_ENABLED = 'true';
+    process.env.RESEND_API_KEY = 're_test_only_not_a_secret';
+    process.env.NOTIFICATION_FROM_EMAIL = 'hello@example.test';
+    delete process.env.NOTIFICATION_STAGING_RECIPIENT_ALLOWLIST;
+    expect(() => getNotificationConfig()).toThrow('onaylı alıcı');
+  });
+
+  it('blocks recipients outside the staging allowlist', () => {
+    process.env.APP_ENV = 'staging';
+    process.env.NOTIFICATION_SEND_ENABLED = 'true';
+    process.env.RESEND_API_KEY = 're_test_only_not_a_secret';
+    process.env.NOTIFICATION_FROM_EMAIL = 'hello@example.test';
+    process.env.NOTIFICATION_STAGING_RECIPIENT_ALLOWLIST = 'approved@example.test';
+    expect(resolveRecipient('customer', 'approved@example.test')).toBe('approved@example.test');
+    expect(() => resolveRecipient('customer', 'blocked@example.test')).toThrow('onaylı listede');
+  });
+
+  it('rejects localhost links in hosted email environments', () => {
+    process.env.APP_ENV = 'staging';
+    process.env.NOTIFICATION_SEND_ENABLED = 'false';
+    process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000';
+    expect(() => notificationBaseUrl()).toThrow('localhost');
   });
 
   it('routes customer replies to the responsible human inbox', () => {

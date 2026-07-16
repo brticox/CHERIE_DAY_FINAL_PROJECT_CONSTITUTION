@@ -115,7 +115,7 @@ export async function publishLegalDraft(formData: FormData) {
   const { staff } = await requireStaff(path(key));
   if (!can(staff.role, 'legal.publish')) redirect(`${path(key)}?error=permission`);
   const db = await createClient();
-  const rpc = db.rpc as unknown as (
+  const rpc = db.rpc.bind(db) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ error: { message: string } | null }>;

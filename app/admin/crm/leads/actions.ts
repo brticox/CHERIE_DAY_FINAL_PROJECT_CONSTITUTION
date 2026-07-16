@@ -17,7 +17,7 @@ export async function updateLead(formData: FormData) {
     formData.get('status'),
   ) as Database['public']['Enums']['lead_status'];
   const db = await createClient();
-  const { error } = await (db.rpc as unknown as Rpc)('admin_update_lead', {
+  const { error } = await (db.rpc.bind(db) as unknown as Rpc)('admin_update_lead', {
     p_lead_id: id,
     p_status: status,
     p_priority: String(formData.get('priority') || 'normal'),
@@ -33,7 +33,7 @@ export async function convertLead(formData: FormData) {
   const { staff } = await requireStaff('/admin/crm/leads');
   if (!can(staff.role, 'crm.write')) redirect('/admin/crm/leads?error=permission');
   const db = await createClient();
-  const { error } = await (db.rpc as unknown as Rpc)('admin_convert_lead', {
+  const { error } = await (db.rpc.bind(db) as unknown as Rpc)('admin_convert_lead', {
     p_lead_id: String(formData.get('id')),
     p_target: String(formData.get('target')),
   });
