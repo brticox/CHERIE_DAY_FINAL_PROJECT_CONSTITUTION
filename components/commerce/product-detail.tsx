@@ -74,7 +74,7 @@ export function ProductDetail({
           {product.collection_slug && (
             <Link
               href={`${ROUTES.koleksiyonlar}/${product.collection_slug}`}
-              className="text-xs text-cherie-brass hover:text-cherie-burgundy"
+              className="inline-flex min-h-11 min-w-11 items-center text-xs text-cherie-brass hover:text-cherie-burgundy"
             >
               {product.collection_slug} koleksiyonu
             </Link>
@@ -170,7 +170,7 @@ export function ProductDetail({
             <Row term="Departman">
               <Link
                 href={`${ROUTES.magaza}/${department.slug}`}
-                className="text-cherie-burgundy hover:underline"
+                className="inline-flex min-h-11 min-w-11 items-center text-cherie-burgundy hover:underline"
               >
                 {department.name_tr}
               </Link>

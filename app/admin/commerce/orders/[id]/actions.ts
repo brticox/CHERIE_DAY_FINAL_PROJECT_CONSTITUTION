@@ -41,7 +41,7 @@ export async function updateOrderOperations(formData: FormData) {
   const { staff } = await requireStaff(path);
   if (!can(staff.role, 'orders.transition')) redirect(`${path}?transition=permission`);
   const supabase = await createClient();
-  const rpc = supabase.rpc as unknown as (
+  const rpc = supabase.rpc.bind(supabase) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ error: { message: string } | null }>;

@@ -1,5 +1,7 @@
 # Hosted Activation Continuation Manifest
 
+> Superseded (2026-07-15): the earlier capacity blocker was resolved by the owner’s EDA pause. Current hosted resources and remaining consent-gated actions are in `docs/90_PHASE_3_5_CURRENT_HOSTED_STATE.md` through `docs/94_PHASE_3_5_FINAL_READINESS_DECISION.md`.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 ## Executive verdict

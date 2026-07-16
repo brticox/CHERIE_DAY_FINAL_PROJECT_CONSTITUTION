@@ -1,5 +1,7 @@
 # EDA Pause and Recovery Manifest
 
+> Current-state correction (2026-07-15): the owner has since paused EDA. It is protected and must not be modified or resumed by this work. Backup checksum remains verified; see `docs/90_PHASE_3_5_CURRENT_HOSTED_STATE.md`.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 ## Verdict

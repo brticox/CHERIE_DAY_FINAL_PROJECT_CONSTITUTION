@@ -401,7 +401,7 @@ export async function mergeGuestCartForCurrentUser() {
   const context = await owner(false);
   if (!context.customerId || !context.tokenHash) return;
   const userClient = await createClient();
-  const mergeRpc = userClient.rpc as unknown as (
+  const mergeRpc = userClient.rpc.bind(userClient) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ error: { code: string } | null }>;

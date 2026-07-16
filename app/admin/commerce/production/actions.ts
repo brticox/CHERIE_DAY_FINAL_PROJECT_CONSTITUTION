@@ -87,7 +87,7 @@ export async function completeQualityCheck(formData: FormData) {
     note: String(formData.get(`${key}_note`) ?? '').slice(0, 500),
   }));
   const db = await import('@/lib/supabase/server').then((x) => x.createClient());
-  const rpc = db.rpc as unknown as (
+  const rpc = db.rpc.bind(db) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ error: { message: string } | null }>;

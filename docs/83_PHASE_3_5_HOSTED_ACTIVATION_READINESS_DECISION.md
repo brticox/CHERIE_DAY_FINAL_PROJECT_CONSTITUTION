@@ -1,10 +1,12 @@
 # Phase 3.5 Hosted Activation Readiness Decision
 
+> Superseded (2026-07-15): the current readiness decision is `docs/94_PHASE_3_5_FINAL_READINESS_DECISION.md`.
+
 Date: 2026-07-15 (Europe/Istanbul)
 
 ## Decision
 
-Phase 3.5 is **not complete**. The CI harness correction and hosted CI are complete and green, but Supabase Staging and every dependent hosted activation step are blocked by the proven two-active-Free-project limit.
+Phase 3.5 is **not complete**. The CI harness correction and prior hosted CI are complete and green, but Supabase Staging and every dependent hosted activation step remain blocked by the proven two-active-Free-project limit. A fresh zero-cost creation request was attempted and rejected without mutation or charge.
 
 ## Evidence index
 
@@ -24,7 +26,7 @@ Phase 3.5 is **not complete**. The CI harness correction and hosted CI are compl
 
 ## Safety conclusions
 
-- EDA remains `ACTIVE_HEALTHY`; no interruption or data change occurred.
+- EDA remains `ACTIVE_HEALTHY`; the new owner brief's statement that it was paused is not consistent with provider state. No interruption or data change occurred.
 - Cloudflare remains authoritative and Workspace/Resend mail records are intact.
 - `staging.cherieday.eu` remains intentionally absent.
 - Production was not deployed.
@@ -42,4 +44,4 @@ Phase 3.5 is **not complete**. The CI harness correction and hosted CI are compl
 - Production transactional email: **no**
 - real money: **no**
 
-Exact next step: upgrade the Supabase organization, then resume Phase 3.5 from creation of the isolated Staging project. Do not pause EDA on the Free plan.
+Exact next step: obtain an explicit owner choice between pausing the actually active, live-dependent EDA project and approving a paid Supabase organization upgrade. Do not infer outage approval from the incorrect paused-state premise.

@@ -44,7 +44,13 @@ export default function YardimPage() {
       </div>
       <p className="mt-10 text-sm text-cherie-soft-ink">
         Bir sorunuz mu var?{' '}
-        <Link href={ROUTES.iletisim} className="text-cherie-burgundy hover:underline">İletişime geçin</Link>.
+        <Link
+          href={ROUTES.iletisim}
+          className="inline-flex min-h-11 min-w-11 items-center text-cherie-burgundy hover:underline"
+        >
+          İletişime geçin
+        </Link>
+        .
       </p>
     </div>
   );

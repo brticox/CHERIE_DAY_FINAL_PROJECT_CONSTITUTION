@@ -74,7 +74,7 @@ export async function savePage(formData: FormData) {
   if (title.length < 3 || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug))
     redirect(`/admin/cms/pages/${id}?error=validation`);
   const db = await createClient();
-  const { error } = await (db.rpc as unknown as Rpc)('admin_save_page', {
+  const { error } = await (db.rpc.bind(db) as unknown as Rpc)('admin_save_page', {
     p_page_id: id,
     p_title: title,
     p_slug: slug,
@@ -91,7 +91,7 @@ export async function publishPage(formData: FormData) {
   if (!can(staff.role, 'content.publish'))
     redirect(`/admin/cms/pages/${id}?error=publish_permission`);
   const db = await createClient();
-  const { error } = await (db.rpc as unknown as Rpc)('admin_publish_page', {
+  const { error } = await (db.rpc.bind(db) as unknown as Rpc)('admin_publish_page', {
     p_page_id: id,
   });
   if (error)
@@ -106,7 +106,7 @@ export async function rollbackPage(formData: FormData) {
   if (!can(staff.role, 'content.write'))
     redirect(`/admin/cms/pages/${id}?error=permission`);
   const db = await createClient();
-  const { error } = await (db.rpc as unknown as Rpc)('admin_rollback_page', {
+  const { error } = await (db.rpc.bind(db) as unknown as Rpc)('admin_rollback_page', {
     p_page_id: id,
     p_revision_id: revisionId,
   });

@@ -121,7 +121,7 @@ export async function changeProductLifecycle(
   const needed = intent === 'publish' ? 'catalog.publish' : 'catalog.write';
   if (!can(staff.role, needed)) redirect(`${productPath(id)}?error=permission`);
   const db = await createClient();
-  const rpc = db.rpc as unknown as (
+  const rpc = db.rpc.bind(db) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ error: { message: string } | null }>;
@@ -295,7 +295,7 @@ export async function setProductMedia(formData: FormData) {
   const { staff } = await requireStaff(productPath(id));
   if (!can(staff.role, 'catalog.write')) redirect(`${productPath(id)}?error=permission`);
   const db = await createClient();
-  const rpc = db.rpc as unknown as (
+  const rpc = db.rpc.bind(db) as unknown as (
     name: string,
     args: Record<string, unknown>,
   ) => Promise<{ error: { message: string } | null }>;

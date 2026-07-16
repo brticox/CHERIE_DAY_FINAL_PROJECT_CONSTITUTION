@@ -12,7 +12,7 @@ import type { Database } from '@/lib/supabase/database.types';
 
 export async function requestRefundAction(formData: FormData) {
   const session = await requireFinanceMutation('/admin/finance/refunds');
-  const rpc = session.supabase.rpc as unknown as FinanceRpc;
+  const rpc = session.supabase.rpc.bind(session.supabase) as unknown as FinanceRpc;
   const paymentId = String(formData.get('payment_id') ?? '');
   const amount = String(formData.get('amount') ?? '');
   const confirmation = String(formData.get('confirmation') ?? '');
@@ -45,7 +45,7 @@ export async function requestRefundAction(formData: FormData) {
 
 export async function approveRefundAction(formData: FormData) {
   const session = await requireFinanceMutation('/admin/finance/refunds');
-  const rpc = session.supabase.rpc as unknown as FinanceRpc;
+  const rpc = session.supabase.rpc.bind(session.supabase) as unknown as FinanceRpc;
   const refundId = String(formData.get('refund_id') ?? '');
   const confirmation = String(formData.get('confirmation') ?? '');
   const { error } = await rpc('approve_finance_refund', {
@@ -79,7 +79,7 @@ export async function simulateRefundAction(formData: FormData) {
 
 export async function resolveDiscrepancyAction(formData: FormData) {
   const session = await requireFinanceMutation('/admin/finance/reconciliation');
-  const rpc = session.supabase.rpc as unknown as FinanceRpc;
+  const rpc = session.supabase.rpc.bind(session.supabase) as unknown as FinanceRpc;
   const discrepancyId = String(formData.get('discrepancy_id') ?? '');
   const status = String(formData.get('status') ?? 'investigating');
   const notes = String(formData.get('notes') ?? '');

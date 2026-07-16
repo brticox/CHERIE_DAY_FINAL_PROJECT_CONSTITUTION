@@ -1,5 +1,7 @@
 # CHERIE DAY — Supabase Hosted Environments
 
+> Current-state correction (2026-07-15): EDA is now owner-paused and protected, and isolated Staging `hdafztkhkyhqziqayerz` exists. See `docs/90_PHASE_3_5_CURRENT_HOSTED_STATE.md`; the earlier capacity analysis below remains historical evidence only.
+
 Production candidate: `CHERIE DAY`, ref `rkvubnuwfuocoevayhcd`, region `eu-central-1`, status `ACTIVE_HEALTHY`.
 
 It contains seed catalog data and no customer/staff rows were observed. It is not yet a verified production target: its hosted migrations stop before the reviewed Phase 2, Phase 3, and identity/email migrations in this branch. Security advisor findings also require review before deployment.

@@ -33,8 +33,8 @@ export function FaqPreview({ faqs }: { faqs: Faq[] }) {
               Sorunuzu burada bulamadınız mı?
             </h3>
             <p className="mt-3 text-sm leading-6 text-cherie-soft-ink">
-              Bir konsiyerjimiz, gününüzün tüm ayrıntılarını sizinle tek tek
-              konuşmak için hazır. Yazmanız yeter.
+              Bir konsiyerjimiz, gününüzün tüm ayrıntılarını sizinle tek tek konuşmak için
+              hazır. Yazmanız yeter.
             </p>
             <div className="mt-6 flex flex-col gap-3">
               <Link
@@ -42,11 +42,14 @@ export function FaqPreview({ faqs }: { faqs: Faq[] }) {
                 className="group inline-flex h-11 items-center justify-center gap-2 rounded-control bg-cherie-burgundy px-5 text-sm font-medium text-cherie-ivory transition-colors duration-control ease-cherie hover:bg-cherie-cherry"
               >
                 Bize Yazın
-                <ArrowRight className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:translate-x-1" aria-hidden />
+                <ArrowRight
+                  className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:translate-x-1"
+                  aria-hidden
+                />
               </Link>
               <Link
                 href={ROUTES.sss}
-                className="text-center text-sm font-medium text-cherie-burgundy underline-offset-4 hover:underline"
+                className="inline-flex min-h-11 items-center justify-center text-center text-sm font-medium text-cherie-burgundy underline-offset-4 hover:underline"
               >
                 Tüm Soruları Gör
               </Link>

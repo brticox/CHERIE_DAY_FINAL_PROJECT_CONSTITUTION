@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,14 +14,13 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Phase 1: surface to console; wired to real logging in a later phase.
-    console.error(error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
       <p className="text-xs uppercase tracking-[0.18em] text-cherie-brass">Hata</p>
-      <h1 className="mt-4 text-h1 text-cherie-ink">Bir aksaklık yaşıyoruz</h1>
+      <h1 className="text-h1 mt-4 text-cherie-ink">Bir aksaklık yaşıyoruz</h1>
       <p className="mt-4 max-w-md text-cherie-soft-ink">
         Şu an bir aksaklık yaşıyoruz. Ekibimiz durumdan haberdar. Birazdan tekrar
         deneyebilirsiniz.

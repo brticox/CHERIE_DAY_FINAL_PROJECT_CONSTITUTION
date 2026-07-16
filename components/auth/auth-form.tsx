@@ -120,7 +120,7 @@ export function AuthForm({
               type="button"
               onClick={() => setShowPassword((value) => !value)}
               aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
-              className="absolute right-1 top-1 grid size-9 place-items-center rounded-control text-cherie-soft-ink hover:bg-cherie-paper"
+              className="absolute right-0 top-0 grid size-11 place-items-center rounded-control text-cherie-soft-ink hover:bg-cherie-paper"
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
@@ -173,7 +173,7 @@ export function AuthForm({
         <div className="text-right">
           <Link
             href={ROUTES.hesapSifremiUnuttum}
-            className="text-sm text-cherie-burgundy hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center text-sm text-cherie-burgundy hover:underline"
           >
             Şifremi Unuttum
           </Link>
@@ -201,7 +201,7 @@ export function AuthForm({
           Henüz hesabınız yok mu?{' '}
           <Link
             href={ROUTES.hesapKayit}
-            className="font-medium text-cherie-burgundy hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center font-medium text-cherie-burgundy hover:underline"
           >
             Üye Ol
           </Link>
@@ -212,7 +212,7 @@ export function AuthForm({
           Zaten hesabınız var mı?{' '}
           <Link
             href={ROUTES.hesapGiris}
-            className="font-medium text-cherie-burgundy hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center font-medium text-cherie-burgundy hover:underline"
           >
             Giriş Yap
           </Link>

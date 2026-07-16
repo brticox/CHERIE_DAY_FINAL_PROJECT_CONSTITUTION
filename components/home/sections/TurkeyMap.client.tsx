@@ -18,22 +18,75 @@ const CYCLE_MS = 2600;
  * transform as the city coordinates, so silhouette and pins share one system.
  */
 const RING_ANATOLIA: [number, number][] = [
-  [36.913, 41.335], [38.348, 40.949], [39.513, 41.103], [40.373, 41.014], [41.554, 41.536],
-  [42.62, 41.583], [43.583, 41.092], [43.753, 40.74], [43.656, 40.254], [44.4, 40.005],
-  [44.794, 39.713], [44.109, 39.428], [44.421, 38.281], [44.226, 37.972], [44.773, 37.17],
-  [44.293, 37.002], [43.942, 37.256], [42.779, 37.385], [42.35, 37.23], [41.212, 37.074],
-  [40.673, 37.091], [39.523, 36.716], [38.7, 36.713], [38.168, 36.901], [37.067, 36.623],
-  [36.739, 36.818], [36.685, 36.26], [36.418, 36.041], [36.15, 35.822], [35.782, 36.275],
-  [36.161, 36.651], [35.551, 36.565], [34.715, 36.796], [34.027, 36.22], [32.509, 36.108],
-  [31.7, 36.644], [30.622, 36.678], [30.391, 36.263], [29.7, 36.144], [28.733, 36.677],
-  [27.641, 36.659], [27.049, 37.653], [26.318, 38.208], [26.805, 38.986], [26.171, 39.464],
-  [27.28, 40.42], [28.82, 40.46], [29.24, 41.22], [31.146, 41.088], [32.348, 41.736],
-  [33.513, 42.019], [35.168, 42.04], [36.913, 41.335],
+  [36.913, 41.335],
+  [38.348, 40.949],
+  [39.513, 41.103],
+  [40.373, 41.014],
+  [41.554, 41.536],
+  [42.62, 41.583],
+  [43.583, 41.092],
+  [43.753, 40.74],
+  [43.656, 40.254],
+  [44.4, 40.005],
+  [44.794, 39.713],
+  [44.109, 39.428],
+  [44.421, 38.281],
+  [44.226, 37.972],
+  [44.773, 37.17],
+  [44.293, 37.002],
+  [43.942, 37.256],
+  [42.779, 37.385],
+  [42.35, 37.23],
+  [41.212, 37.074],
+  [40.673, 37.091],
+  [39.523, 36.716],
+  [38.7, 36.713],
+  [38.168, 36.901],
+  [37.067, 36.623],
+  [36.739, 36.818],
+  [36.685, 36.26],
+  [36.418, 36.041],
+  [36.15, 35.822],
+  [35.782, 36.275],
+  [36.161, 36.651],
+  [35.551, 36.565],
+  [34.715, 36.796],
+  [34.027, 36.22],
+  [32.509, 36.108],
+  [31.7, 36.644],
+  [30.622, 36.678],
+  [30.391, 36.263],
+  [29.7, 36.144],
+  [28.733, 36.677],
+  [27.641, 36.659],
+  [27.049, 37.653],
+  [26.318, 38.208],
+  [26.805, 38.986],
+  [26.171, 39.464],
+  [27.28, 40.42],
+  [28.82, 40.46],
+  [29.24, 41.22],
+  [31.146, 41.088],
+  [32.348, 41.736],
+  [33.513, 42.019],
+  [35.168, 42.04],
+  [36.913, 41.335],
 ];
 const RING_THRACE: [number, number][] = [
-  [27.192, 40.691], [26.358, 40.152], [26.043, 40.618], [26.057, 40.824], [26.295, 40.936],
-  [26.604, 41.562], [26.117, 41.827], [27.136, 42.141], [27.997, 42.007], [28.116, 41.623],
-  [28.988, 41.3], [28.806, 41.055], [27.619, 41.0], [27.192, 40.691],
+  [27.192, 40.691],
+  [26.358, 40.152],
+  [26.043, 40.618],
+  [26.057, 40.824],
+  [26.295, 40.936],
+  [26.604, 41.562],
+  [26.117, 41.827],
+  [27.136, 42.141],
+  [27.997, 42.007],
+  [28.116, 41.623],
+  [28.988, 41.3],
+  [28.806, 41.055],
+  [27.619, 41.0],
+  [27.192, 40.691],
 ];
 
 /** Real city coordinates [lon, lat] (coastal ones nudged just inland). */
@@ -49,7 +102,10 @@ const CITY_GEO: Record<string, [number, number]> = {
 };
 
 /** Label placement per city to avoid collisions. */
-const LABELS: Record<string, { anchor: 'start' | 'middle' | 'end'; dx: number; dy: number }> = {
+const LABELS: Record<
+  string,
+  { anchor: 'start' | 'middle' | 'end'; dx: number; dy: number }
+> = {
   istanbul: { anchor: 'middle', dx: 0, dy: -14 },
   ankara: { anchor: 'middle', dx: 0, dy: -14 },
   izmir: { anchor: 'end', dx: -12, dy: 4 },
@@ -128,7 +184,10 @@ export function TurkeyMap({ cities }: { cities: ServiceCity[] }) {
   // Auto-cycle the active city (map node + card) to draw the eye.
   useEffect(() => {
     if (reduced || paused || placed.length < 2) return;
-    const id = window.setInterval(() => setIndex((i) => (i + 1) % placed.length), CYCLE_MS);
+    const id = window.setInterval(
+      () => setIndex((i) => (i + 1) % placed.length),
+      CYCLE_MS,
+    );
     return () => window.clearInterval(id);
   }, [reduced, paused, placed.length]);
 
@@ -155,7 +214,10 @@ export function TurkeyMap({ cities }: { cities: ServiceCity[] }) {
           </figcaption>
           <div className="cd-grain relative overflow-hidden rounded-card-lg border border-cherie-lace bg-gradient-to-br from-cherie-ivory via-cherie-paper to-cherie-mist p-4 shadow-card sm:p-8">
             {/* floating love-hearts */}
-            <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 overflow-hidden"
+            >
               {HEARTS.map((h, i) => (
                 <span
                   key={i}
@@ -205,7 +267,11 @@ export function TurkeyMap({ cities }: { cities: ServiceCity[] }) {
               {/* city nodes — focusable, keyboard + pointer operable */}
               {placed.map((c) => {
                 const [x, y] = project(...CITY_GEO[c.city_slug]!);
-                const label = LABELS[c.city_slug] ?? { anchor: 'middle' as const, dx: 0, dy: -14 };
+                const label = LABELS[c.city_slug] ?? {
+                  anchor: 'middle' as const,
+                  dx: 0,
+                  dy: -14,
+                };
                 const selected = c.city_slug === active.city_slug;
                 return (
                   <g
@@ -226,8 +292,23 @@ export function TurkeyMap({ cities }: { cities: ServiceCity[] }) {
                     <circle cx={x} cy={y} r="22" fill="transparent" />
                     {selected && (
                       <>
-                        <circle className="cd-node-ping" cx={x} cy={y} r="6" fill="none" stroke="#8f1d2c" strokeWidth="2" />
-                        <circle className="cd-node-halo" cx={x} cy={y} r="8" fill="#8f1d2c" opacity="0.45" />
+                        <circle
+                          className="cd-node-ping"
+                          cx={x}
+                          cy={y}
+                          r="6"
+                          fill="none"
+                          stroke="#8f1d2c"
+                          strokeWidth="2"
+                        />
+                        <circle
+                          className="cd-node-halo"
+                          cx={x}
+                          cy={y}
+                          r="8"
+                          fill="#8f1d2c"
+                          opacity="0.45"
+                        />
                       </>
                     )}
                     <circle
@@ -239,7 +320,7 @@ export function TurkeyMap({ cities }: { cities: ServiceCity[] }) {
                       strokeWidth="1.8"
                     />
                     <circle
-                      className="ring pointer-events-none opacity-0"
+                      className="pointer-events-none opacity-0 ring"
                       cx={x}
                       cy={y}
                       r="12"
@@ -294,8 +375,12 @@ export function TurkeyMap({ cities }: { cities: ServiceCity[] }) {
             <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.22em] text-cherie-brass">
               <MapPin className="h-3.5 w-3.5" aria-hidden /> Hizmet Bölgesi
             </span>
-            <h3 className="mt-4 font-display text-4xl text-cherie-ink">{active.city_name}</h3>
-            <p className="mt-3 text-base leading-7 text-cherie-soft-ink">{active.notes_tr}</p>
+            <h3 className="mt-4 font-display text-4xl text-cherie-ink">
+              {active.city_name}
+            </h3>
+            <p className="mt-3 text-base leading-7 text-cherie-soft-ink">
+              {active.notes_tr}
+            </p>
 
             <dl className="mt-6 border-t border-cherie-lace pt-5 text-sm">
               <div className="flex items-center justify-between gap-4">
@@ -311,13 +396,19 @@ export function TurkeyMap({ cities }: { cities: ServiceCity[] }) {
               className="group mt-7 inline-flex min-h-11 items-center gap-2 rounded-control bg-cherie-burgundy px-6 text-sm font-medium text-cherie-ivory transition-colors duration-control ease-cherie hover:bg-cherie-cherry"
             >
               {active.city_name} Hizmetleri
-              <ArrowUpRight className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+              <ArrowUpRight
+                className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                aria-hidden
+              />
             </Link>
           </motion.div>
 
           <p className="mt-5 text-sm leading-6 text-cherie-soft-ink">
             Şehriniz listede yok mu?{' '}
-            <Link href={ROUTES.iletisim} className="cta-brass font-medium text-cherie-burgundy">
+            <Link
+              href={ROUTES.iletisim}
+              className="cta-brass inline-flex min-h-11 items-center font-medium text-cherie-burgundy"
+            >
               Bize yazın
             </Link>
             , yol haritanızı birlikte çıkaralım.
@@ -337,7 +428,10 @@ export function TurkeyMap({ cities }: { cities: ServiceCity[] }) {
             <span className="relative grid h-16 w-16 place-items-center rounded-full bg-cherie-burgundy text-cherie-ivory shadow-lift">
               <Truck className="cd-truck h-8 w-8" strokeWidth={1.5} aria-hidden />
             </span>
-            <span aria-hidden className="cd-road h-[3px] w-9 text-cherie-brass/70 sm:w-14" />
+            <span
+              aria-hidden
+              className="cd-road h-[3px] w-9 text-cherie-brass/70 sm:w-14"
+            />
             <MapPin className="cd-pin-pop h-6 w-6 text-cherie-cherry" aria-hidden />
           </div>
 
@@ -348,15 +442,19 @@ export function TurkeyMap({ cities }: { cities: ServiceCity[] }) {
             </p>
             <p className="mt-2 text-sm leading-6 text-cherie-soft-ink">
               Davetiye, hediyelik ve tüm ürünlerimiz{' '}
-              <span className="font-medium text-cherie-ink">her ile</span> ulaşır. Bu harita
-              yalnızca{' '}
-              <span className="font-medium text-cherie-ink">yerinde kurulum ve organizasyon</span>{' '}
+              <span className="font-medium text-cherie-ink">her ile</span> ulaşır. Bu
+              harita yalnızca{' '}
+              <span className="font-medium text-cherie-ink">
+                yerinde kurulum ve organizasyon
+              </span>{' '}
               hizmetlerimizin verildiği şehirleri gösterir.
             </p>
           </div>
 
           <span className="hidden shrink-0 flex-col items-center rounded-card border border-cherie-brass/40 bg-cherie-ivory px-5 py-3 text-center shadow-card lg:flex">
-            <span className="font-display text-3xl leading-none text-cherie-burgundy">81</span>
+            <span className="font-display text-3xl leading-none text-cherie-burgundy">
+              81
+            </span>
             <span className="mt-1 text-[11px] font-medium uppercase tracking-[0.18em] text-cherie-brass">
               İl
             </span>
