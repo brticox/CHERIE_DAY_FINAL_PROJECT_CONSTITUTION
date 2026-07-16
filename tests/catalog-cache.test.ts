@@ -5,12 +5,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // next/cache is not available in the node test runtime; hoist stable spies so we
 // can assert exactly how the catalog cache layer tags reads and invalidates.
-const { revalidateTag, unstableCache } = vi.hoisted(() => ({
+const { revalidateTag, revalidatePath, unstableCache } = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
+  revalidatePath: vi.fn(),
   unstableCache: vi.fn((...args: unknown[]) => args[0]),
 }));
 vi.mock('next/cache', () => ({
   revalidateTag,
+  revalidatePath,
   unstable_cache: unstableCache,
 }));
 
@@ -26,10 +28,17 @@ describe('public catalog cache tag layer', () => {
     expect(CATALOG_TAG).toBe('catalog');
   });
 
-  it('revalidateCatalog invalidates exactly the catalog tag, once', () => {
+  it('revalidateCatalog invalidates the catalog tag and clears cached-404 route patterns', () => {
     revalidateCatalog();
     expect(revalidateTag).toHaveBeenCalledTimes(1);
     expect(revalidateTag).toHaveBeenCalledWith('catalog');
+    // The dynamic storefront patterns (PDP, department, collection, event) must
+    // be path-revalidated so a full-route-cached notFound() cannot survive.
+    const paths = revalidatePath.mock.calls.map((c) => c[0]);
+    expect(paths).toContain('/magaza/[department]/[product-slug]');
+    expect(paths).toContain('/magaza/[department]');
+    expect(paths).toContain('/koleksiyonlar/[slug]');
+    for (const call of revalidatePath.mock.calls) expect(call[1]).toBe('page');
   });
 
   it('cachedCatalogRead tags the read with the catalog tag and namespaces the key', async () => {

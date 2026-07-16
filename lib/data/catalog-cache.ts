@@ -1,4 +1,4 @@
-import { revalidateTag, unstable_cache } from 'next/cache';
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 
 /**
  * Single source of truth for public-storefront catalog caching.
@@ -40,5 +40,28 @@ export function cachedCatalogRead<A extends unknown[], R>(
  * mutation from a Server Action or Route Handler.
  */
 export function revalidateCatalog(): void {
+  // Busts the tagged Data Cache and every route that rendered a tagged read
+  // (listings, homepage sections, search, sitemap, and successfully-rendered
+  // PDPs).
   revalidateTag(CATALOG_TAG);
+  // A full-route-cached `notFound()` (a product URL visited before it was
+  // published, or after an unpublish/slug change) is NOT tag-associated, so the
+  // tag alone leaves a stale 404. Clear the storefront's dynamic route patterns
+  // by path — targeted to the catalog surfaces only, never a full-site purge.
+  for (const route of PUBLIC_CATALOG_ROUTE_PATTERNS) {
+    revalidatePath(route, 'page');
+  }
 }
+
+/**
+ * Dynamic storefront route patterns whose full-route cache (including cached
+ * `notFound()` 404s) must be dropped on a catalog change. Kept in one place so
+ * the set stays complete and auditable rather than scattered across actions.
+ */
+const PUBLIC_CATALOG_ROUTE_PATTERNS = [
+  '/magaza/[department]',
+  '/magaza/[department]/[product-slug]',
+  '/magaza/koleksiyon/[collection-slug]',
+  '/magaza/etkinlik/[event-slug]',
+  '/koleksiyonlar/[slug]',
+] as const;
