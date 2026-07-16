@@ -1,5 +1,3 @@
-import * as Sentry from '@sentry/nextjs';
-
 import {
   scrubSentryBreadcrumb,
   scrubSentryEvent,
@@ -7,19 +5,45 @@ import {
 } from '@/lib/observability/sentry';
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
-const staging = process.env.NEXT_PUBLIC_SITE_URL === 'https://staging.cherieday.eu';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
+const publicEnvironment =
+  process.env.NEXT_PUBLIC_APP_ENV ??
+  (siteUrl.includes('staging.')
+    ? 'staging'
+    : /^https:\/\/(www\.)?cherieday\.eu/.test(siteUrl)
+      ? 'production'
+      : 'development');
+const enabled = ['staging', 'production'].includes(publicEnvironment) && Boolean(dsn);
 
-Sentry.init({
-  dsn,
-  enabled: staging && Boolean(dsn),
-  environment: staging ? 'staging' : 'development',
-  release: sentryRelease,
-  sendDefaultPii: false,
-  tracesSampleRate: 0.05,
-  replaysSessionSampleRate: 0,
-  replaysOnErrorSampleRate: 0,
-  beforeBreadcrumb: scrubSentryBreadcrumb,
-  beforeSend: scrubSentryEvent,
-});
+type SentryModule = typeof import('@sentry/nextjs');
+let client: Promise<SentryModule> | null = null;
 
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+function loadSentry() {
+  if (!enabled) return null;
+  if (!client) {
+    client = import('@sentry/nextjs').then((Sentry) => {
+      Sentry.init({
+        dsn,
+        enabled: true,
+        environment: publicEnvironment,
+        release: sentryRelease,
+        sendDefaultPii: false,
+        tracesSampleRate: 0.05,
+        replaysSessionSampleRate: 0,
+        replaysOnErrorSampleRate: 0,
+        beforeBreadcrumb: scrubSentryBreadcrumb,
+        beforeSend: scrubSentryEvent,
+      });
+      return Sentry;
+    });
+  }
+  return client;
+}
+
+void loadSentry();
+
+export function onRouterTransitionStart(
+  ...args: Parameters<SentryModule['captureRouterTransitionStart']>
+) {
+  void loadSentry()?.then((Sentry) => Sentry.captureRouterTransitionStart(...args));
+}

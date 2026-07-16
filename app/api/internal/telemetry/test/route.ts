@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   if (process.env.APP_ENV !== 'staging') return new NextResponse(null, { status: 404 });
-  if (!authorizeInternalRequest(request.headers.get('authorization'))) {
+  if (!authorizeInternalRequest(request.headers.get('authorization'), 'telemetry')) {
     return NextResponse.json({ ok: false, code: 'unauthorized' }, { status: 401 });
   }
 

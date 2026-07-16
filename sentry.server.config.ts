@@ -11,7 +11,7 @@ const dsn = process.env.SENTRY_DSN;
 
 Sentry.init({
   dsn,
-  enabled: sentryEnvironment === 'staging' && Boolean(dsn),
+  enabled: ['staging', 'production'].includes(sentryEnvironment) && Boolean(dsn),
   environment: sentryEnvironment,
   release: sentryRelease,
   sendDefaultPii: false,

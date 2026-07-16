@@ -15,11 +15,16 @@ type Entry = MetadataRoute.Sitemap[number];
  * every public data-driven route: departments, products, collections (editorial
  * + shop), experiences (editorial + shop), services, cities, articles and help
  * topics. Private/noindex surfaces (hesap, ödeme, arama) are intentionally
- * excluded. Reads flow through the seed→DB fallback, so this never throws.
+ * excluded. Hosted builds use the canonical database and fail the deployment
+ * if that source is unavailable; local development may use seed fixtures.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const entry = (path: string, priority = 0.6, changeFrequency: Entry['changeFrequency'] = 'weekly'): Entry => ({
+  const entry = (
+    path: string,
+    priority = 0.6,
+    changeFrequency: Entry['changeFrequency'] = 'weekly',
+  ): Entry => ({
     url: `${siteUrl}${path}`,
     lastModified: now,
     changeFrequency,
@@ -70,7 +75,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       getArticles(),
     ]);
 
-  const departmentEntries = departments.map((d) => entry(`${ROUTES.magaza}/${d.slug}`, 0.7));
+  const departmentEntries = departments.map((d) =>
+    entry(`${ROUTES.magaza}/${d.slug}`, 0.7),
+  );
   const productEntries = products.map((p) =>
     entry(`${ROUTES.magaza}/${p.department_slug}/${p.slug}`, 0.6),
   );
@@ -83,9 +90,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry(`${ROUTES.magaza}/etkinlik/${e.slug}`, 0.6),
   ]);
   const serviceEntries = services.map((s) => entry(`${ROUTES.hizmetler}/${s.slug}`, 0.7));
-  const cityEntries = cities.map((c) => entry(`${ROUTES.hizmetlerSehir}/${c.city_slug}`, 0.6));
+  const cityEntries = cities.map((c) =>
+    entry(`${ROUTES.hizmetlerSehir}/${c.city_slug}`, 0.6),
+  );
   const articleEntries = articles.map((a) => entry(`${ROUTES.rehber}/${a.slug}`, 0.5));
-  const helpEntries = getHelpTopics().map((t) => entry(`${ROUTES.yardim}/${t.slug}`, 0.4));
+  const helpEntries = getHelpTopics().map((t) =>
+    entry(`${ROUTES.yardim}/${t.slug}`, 0.4),
+  );
 
   return [
     ...staticPaths,
