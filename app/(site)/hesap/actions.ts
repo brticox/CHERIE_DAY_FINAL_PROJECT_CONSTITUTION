@@ -56,7 +56,7 @@ export async function loginAction(
     };
   }
 
-  const identityRpc = supabase.rpc as unknown as (
+  const identityRpc = supabase.rpc.bind(supabase) as unknown as (
     name: string,
     args?: Record<string, unknown>,
   ) => Promise<{ data: { status: string } | null; error: { code: string } | null }>;
