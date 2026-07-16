@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 
-export type InternalRequestScope = 'notification' | 'payment' | 'telemetry';
+export type InternalRequestScope = 'notification' | 'payment' | 'telemetry' | 'catalog';
 
 export function authorizeInternalRequest(
   header: string | null,
@@ -13,7 +13,9 @@ export function authorizeInternalRequest(
       ? process.env.NOTIFICATION_WORKER_SECRET
       : scope === 'payment'
         ? process.env.PAYMENT_WORKER_SECRET
-        : undefined;
+        : scope === 'catalog'
+          ? process.env.CATALOG_WORKER_SECRET
+          : undefined;
   const candidates = [
     scopedSecret,
     process.env.INTERNAL_CRON_SECRET,

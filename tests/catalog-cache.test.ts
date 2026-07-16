@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // can assert exactly how the catalog cache layer tags reads and invalidates.
 const { revalidateTag, unstableCache } = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
-  unstableCache: vi.fn((fn: unknown) => fn),
+  unstableCache: vi.fn((...args: unknown[]) => args[0]),
 }));
 vi.mock('next/cache', () => ({
   revalidateTag,
@@ -37,7 +37,7 @@ describe('public catalog cache tag layer', () => {
     const wrapped = cachedCatalogRead(['products'], impl);
 
     expect(unstableCache).toHaveBeenCalledTimes(1);
-    const [passedFn, keyParts, opts] = unstableCache.mock.calls[0] as [
+    const [passedFn, keyParts, opts] = unstableCache.mock.calls[0] as unknown as [
       unknown,
       string[],
       { tags: string[] },
