@@ -6,7 +6,7 @@ import type { AdminCapability } from '@/lib/admin/permissions';
 const CAPS: Record<string, AdminCapability> = {
   'abandoned-carts': 'crm.read',
   analytics: 'finance.read',
-  coupons: 'content.read',
+  coupons: 'catalog.read',
   'digital-products': 'catalog.read',
   inventory: 'catalog.read',
 };
@@ -70,10 +70,12 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ module: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }) {
   const { module } = await params;
+  const query = await searchParams;
   if (module === 'refunds') redirect('/admin/finance/refunds');
+  if (module === 'coupons') redirect('/admin/marketing/coupons');
   const config = configs[module as keyof typeof configs];
   if (!config) notFound();
   return (
@@ -84,7 +86,8 @@ export default async function Page({
         description: 'Durum değişikliği sunmadan gerçek operasyon kayıtlarının görünümü.',
         ...config,
       }}
-      query={(await searchParams).q}
+      query={query.q}
+      page={Number(query.page ?? 1)}
     />
   );
 }
