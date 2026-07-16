@@ -28,6 +28,7 @@ const capabilities: AdminCapability[] = [
   'system.read',
   'staff.manage',
   'audit.read',
+  'notifications.manage',
 ];
 const capabilityLabels: Record<AdminCapability, string> = {
   'dashboard.read': 'Genel bakışı görüntüleme',
@@ -50,6 +51,7 @@ const capabilityLabels: Record<AdminCapability, string> = {
   'system.read': 'Sistemi görüntüleme',
   'staff.manage': 'Personel yönetimi',
   'audit.read': 'Denetim günlüğünü görüntüleme',
+  'notifications.manage': 'Bildirim teslimatını yönetme',
 };
 export default async function Page() {
   await requireCapability('system.read', '/admin/roles');

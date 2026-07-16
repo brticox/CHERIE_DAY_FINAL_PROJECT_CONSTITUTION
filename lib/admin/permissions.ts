@@ -35,7 +35,8 @@ export type AdminCapability =
   | 'legal.publish'
   | 'system.read'
   | 'staff.manage'
-  | 'audit.read';
+  | 'audit.read'
+  | 'notifications.manage';
 
 const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
   superadmin: [
@@ -59,6 +60,7 @@ const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
     'system.read',
     'staff.manage',
     'audit.read',
+    'notifications.manage',
   ],
   admin: [
     'dashboard.read',
@@ -80,6 +82,7 @@ const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
     'legal.publish',
     'system.read',
     'audit.read',
+    'notifications.manage',
   ],
   commerce_manager: [
     'dashboard.read',
@@ -90,6 +93,7 @@ const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
     'orders.transition',
     'services.read',
     'finance.read',
+    'notifications.manage',
   ],
   product_editor: ['dashboard.read', 'catalog.read', 'catalog.write'],
   order_operations: [
@@ -97,11 +101,12 @@ const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
     'orders.read',
     'orders.transition',
     'proofs.write',
+    'notifications.manage',
   ],
-  service_operations: ['dashboard.read', 'services.read', 'services.write'],
+  service_operations: ['dashboard.read', 'services.read', 'services.write', 'notifications.manage'],
   proof_designer: ['dashboard.read', 'orders.read', 'proofs.write'],
-  support_agent: ['dashboard.read', 'orders.read', 'crm.read'],
-  finance_viewer: ['dashboard.read', 'finance.read', 'audit.read'],
+  support_agent: ['dashboard.read', 'orders.read', 'crm.read', 'notifications.manage'],
+  finance_viewer: ['dashboard.read', 'finance.read', 'audit.read', 'notifications.manage'],
   content_editor: [
     'dashboard.read',
     'catalog.read',
@@ -127,6 +132,7 @@ const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
     'services.read',
     'services.write',
     'system.read',
+    'notifications.manage',
   ],
 };
 
