@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { DataWorkspace } from '@/components/admin/data-workspace';
+import { ReviewWorkspace } from '@/components/admin/review-workspace';
 import type { AdminCapability } from '@/lib/admin/permissions';
 
 // Read-side capability per module (fail-closed to the most restrictive).
@@ -48,9 +49,13 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ module: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; page?: string; deleted?: string }>;
 }) {
   const { module } = await params;
+  const query = await searchParams;
+  if (module === 'reviews' || module === 'queue') {
+    return <ReviewWorkspace query={query} queueOnly={module === 'queue'} />;
+  }
   const config = configs[module as keyof typeof configs];
   if (!config) notFound();
   return (
@@ -61,7 +66,8 @@ export default async function Page({
         description: 'İnceleme gerektiren gerçek içerik kayıtları.',
         ...config,
       }}
-      query={(await searchParams).q}
+      query={query.q}
+      page={Number(query.page ?? 1)}
     />
   );
 }
