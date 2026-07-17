@@ -28,7 +28,11 @@ export async function generateMetadata({
   const { department, 'product-slug': slug } = await params;
   const product = await getProductBySlug(department, slug);
   if (!product) return {};
-  const collection = product.collection_slug ? ` | ${product.collection_slug}` : '';
+  // Use the collection's display name (e.g. "Maison Rouge"), never its raw slug.
+  const collectionName = product.collection_slug
+    ? ((await getCollectionBySlug(product.collection_slug))?.name ?? null)
+    : null;
+  const collection = collectionName ? ` | ${collectionName}` : '';
   return buildMetadata({
     title: `${product.name}${collection} | CHERIE DAY Ürün Evi`,
     description: product.description ?? product.name,

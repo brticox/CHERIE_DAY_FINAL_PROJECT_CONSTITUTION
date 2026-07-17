@@ -187,17 +187,21 @@ export const getProducts = cachedCatalogRead(
   },
 );
 
-export const getProductBySlug = cachedCatalogRead(
-  ['product-by-slug'],
-  async function getProductBySlug(
-    department: string,
-    slug: string,
-  ): Promise<Product | null> {
-    const list = await getProducts({ department });
-    const product = list.find((p) => p.slug === slug) ?? null;
-    return product ? loadProductCommerceDetails(product) : null;
-  },
-);
+// Intentionally NOT wrapped in its own cache layer. `getProducts` (which it
+// reads) is already cache-tagged, and the PDP's full-route cache holds the
+// rendered page. Giving this its own `unstable_cache` created a nested cache
+// whose stale `null` (a slug requested before its product was published)
+// survived `revalidateTag`, so an exact-path revalidation regenerated the route
+// but still resolved to notFound(). Reading the shared `getProducts` cache
+// directly keeps this consistent with the listing on every regeneration.
+export async function getProductBySlug(
+  department: string,
+  slug: string,
+): Promise<Product | null> {
+  const list = await getProducts({ department });
+  const product = list.find((p) => p.slug === slug) ?? null;
+  return product ? loadProductCommerceDetails(product) : null;
+}
 
 async function loadProductCommerceDetails(product: Product): Promise<Product> {
   const supabase = getPublicClient();

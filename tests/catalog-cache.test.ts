@@ -87,17 +87,24 @@ describe('public catalog cache tag layer', () => {
 });
 
 describe('every public catalog read is cache-tagged', () => {
-  it('wraps departments, categories, collections, products and PDP detail', () => {
+  it('wraps departments, categories, collections and products', () => {
     const src = repoFile('lib/data/catalog.ts');
     for (const key of [
       "['departments']",
       "['categories']",
       "['collections']",
       "['products']",
-      "['product-by-slug']",
     ]) {
       expect(src).toContain(`cachedCatalogRead(\n  ${key},`);
     }
+  });
+
+  it('does NOT give getProductBySlug its own nested cache layer', () => {
+    // A nested unstable_cache here caches a stale null that revalidateTag cannot
+    // clear; it must read the shared getProducts cache directly instead.
+    const src = repoFile('lib/data/catalog.ts');
+    expect(src).toContain('export async function getProductBySlug');
+    expect(src).not.toContain("cachedCatalogRead(\n  ['product-by-slug'],");
   });
 });
 
