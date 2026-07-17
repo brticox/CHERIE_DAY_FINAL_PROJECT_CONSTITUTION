@@ -1121,10 +1121,14 @@
   mix-blend-mode: screen;
   animation: cd-shine-sweep 5s ease-in-out infinite;
 }
-/* the card is a transparent cutout — clip its gloss to the artwork's shape */
+/* the card is a transparent cutout — clip its gloss to the artwork's shape.
+   mask-image samples the alpha channel only (no mask-type override below),
+   so this points at an RGB-flattened, alpha-identical copy of CARD.png —
+   same rendered mask shape, ~93% smaller (the visible card thumbnail in
+   ProductWorlds still renders from the original CARD.png via next/image). */
 .cd-cardshine::after {
-  -webkit-mask-image: url('/home/hero/cutouts/CARD.png');
-  mask-image: url('/home/hero/cutouts/CARD.png');
+  -webkit-mask-image: url('/home/hero/cutouts/CARD-mask.png');
+  mask-image: url('/home/hero/cutouts/CARD-mask.png');
   -webkit-mask-size: contain;
   mask-size: contain;
   -webkit-mask-repeat: no-repeat;

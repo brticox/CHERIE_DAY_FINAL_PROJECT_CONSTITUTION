@@ -68,7 +68,27 @@ export function HeroVideoScrub() {
       videoReady = true;
     };
     video.addEventListener('canplay', onReady, { once: true });
-    video.load(); // begin buffering immediately
+
+    // ── Gate the buffer start, not just the opacity ──────────────────
+    // The wrap stays opacity:0 forever when gatesPass() is false (mobile /
+    // coarse pointer / reduced-motion), so this layer can never be seen
+    // there — yet `preload="auto"` was unconditionally fetching the full
+    // ~2.1 MB file on every pageview regardless of viewport. Buffering now
+    // only starts once the gates are actually satisfied, and re-checks on
+    // gate changes (e.g. resizing across the 1024px breakpoint) so a
+    // qualifying visitor still gets the exact same eager, zero-delay
+    // buffering as before — nothing changes for desktop.
+    let loadStarted = false;
+    const startLoadIfNeeded = () => {
+      if (loadStarted || !gatesPass()) return;
+      loadStarted = true;
+      video.preload = 'auto';
+      video.load(); // begin buffering immediately
+    };
+    startLoadIfNeeded();
+    mqFine.addEventListener('change', startLoadIfNeeded);
+    mqWide.addEventListener('change', startLoadIfNeeded);
+    mqMotion.addEventListener('change', startLoadIfNeeded);
 
     // ── rAF tick ──────────────────────────────────────────────────────
     const tick = () => {
@@ -131,6 +151,9 @@ export function HeroVideoScrub() {
       io.disconnect();
       stopRaf();
       video.removeEventListener('canplay', onReady);
+      mqFine.removeEventListener('change', startLoadIfNeeded);
+      mqWide.removeEventListener('change', startLoadIfNeeded);
+      mqMotion.removeEventListener('change', startLoadIfNeeded);
     };
   }, []);
 
@@ -143,8 +166,9 @@ export function HeroVideoScrub() {
     >
       <video
         ref={videoRef}
-        src="/home/hero/hero-video.mp4"
-        preload="auto"
+        src="/home/hero/hero-video-optimized.mp4"
+        poster="/home/hero/hero-video-poster.jpg"
+        preload="none"
         muted
         playsInline
         autoPlay={false}

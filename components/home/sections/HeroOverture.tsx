@@ -49,6 +49,16 @@ const HERO_DESKTOP = '/home/hero/posters/hero-source.png';
 const HERO_MOBILE = '/home/hero/posters/hero-mobile-source.png';
 
 /**
+ * Next-gen format variants of the same artwork, pixel-identical crop/dimensions
+ * to HERO_DESKTOP / HERO_MOBILE. <source type> negotiation picks the smallest
+ * format the browser supports; the original PNGs remain the universal fallback.
+ */
+const HERO_DESKTOP_AVIF = '/home/hero/posters/hero-source.avif';
+const HERO_DESKTOP_WEBP = '/home/hero/posters/hero-source.webp';
+const HERO_MOBILE_AVIF = '/home/hero/posters/hero-mobile-source.avif';
+const HERO_MOBILE_WEBP = '/home/hero/posters/hero-mobile-source.webp';
+
+/**
  * Overture text choreography vars — written by HeroStage onto the runway.
  * Defaults keep text fully visible when the stage isn't running.
  */
@@ -124,9 +134,29 @@ export function HeroOverture() {
               {/* base image */}
               <picture>
                 <source
+                  type="image/avif"
+                  media="(min-width: 1024px)"
+                  srcSet={HERO_DESKTOP_AVIF}
+                />
+                <source
+                  type="image/webp"
+                  media="(min-width: 1024px)"
+                  srcSet={HERO_DESKTOP_WEBP}
+                />
+                <source
                   type="image/png"
                   media="(min-width: 1024px)"
                   srcSet={HERO_DESKTOP}
+                />
+                <source
+                  type="image/avif"
+                  media="(max-width: 1023px)"
+                  srcSet={HERO_MOBILE_AVIF}
+                />
+                <source
+                  type="image/webp"
+                  media="(max-width: 1023px)"
+                  srcSet={HERO_MOBILE_WEBP}
                 />
                 <source
                   type="image/png"
@@ -149,22 +179,29 @@ export function HeroOverture() {
 
               {/* ── 4. Ribbon / fabric depth plate (2.5D) ── */}
               {HERO_CINEMATIC_ENABLED && (
-                // The duplicated source is a deliberately masked depth plate;
-                // next/image cannot express this cached compositing layer.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={HERO_DESKTOP}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 hidden h-full w-full object-cover object-center lg:block"
-                  style={{
-                    WebkitMaskImage: RIBBON_DEPTH_MASK,
-                    maskImage: RIBBON_DEPTH_MASK,
-                    transform:
-                      'translate3d(calc(var(--hero-pointer-x,0)*-13px),calc(var(--hero-pointer-y,0)*-9px),0) scale(var(--hero-para-s,1))',
-                  }}
-                />
+                // Same desktop artwork as the base image above, masked to the
+                // ribbon shape. Routed through the identical <picture> source
+                // list so the browser reuses the already-cached AVIF/WebP
+                // response instead of an extra fetch of the original PNG.
+                <picture>
+                  <source type="image/avif" srcSet={HERO_DESKTOP_AVIF} />
+                  <source type="image/webp" srcSet={HERO_DESKTOP_WEBP} />
+                  <source type="image/png" srcSet={HERO_DESKTOP} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={HERO_DESKTOP}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 hidden h-full w-full object-cover object-center lg:block"
+                    style={{
+                      WebkitMaskImage: RIBBON_DEPTH_MASK,
+                      maskImage: RIBBON_DEPTH_MASK,
+                      transform:
+                        'translate3d(calc(var(--hero-pointer-x,0)*-13px),calc(var(--hero-pointer-y,0)*-9px),0) scale(var(--hero-para-s,1))',
+                    }}
+                  />
+                </picture>
               )}
             </div>
           </div>
