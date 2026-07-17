@@ -197,8 +197,12 @@ export const getProducts = cachedCatalogRead(
 // always reflects the current database; the PDP's own full-route cache still
 // holds the rendered page, and admin mutations revalidate it by exact path.
 // Wrapped in React cache() so the PDP's generateMetadata and page component
-// share ONE resolution per request instead of each running the full product +
-// commerce-detail query set (~11 queries each). This is request-scoped
+// share ONE resolution per request. Note this is defence-in-depth, not a
+// measured win: Next already dedupes the identical PostgREST fetch GETs across
+// a single render pass, so a PDP request costs 11 queries with or without this
+// wrapper (measured on staging via pg_stat_statements, edb2596 vs 1ac801b).
+// It makes the single-resolution guarantee explicit at this call site rather
+// than resting on that implicit fetch-level behaviour. Request-scoped
 // memoization only — it never persists across requests, so force-dynamic
 // freshness is preserved.
 export const getProductBySlug = cache(async function getProductBySlug(

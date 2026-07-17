@@ -42,8 +42,12 @@ export function cachedCatalogRead<A extends unknown[], R>(
 export function revalidateCatalog(): void {
   // Busts the tagged Data Cache and every route that rendered a tagged read:
   // the static homepage/listings, search results, the sitemap, and any PDP that
-  // was previously served as 200 (all tag-associated). The dynamic department
-  // listings render per-request and are always fresh.
+  // was previously served as 200 (all tag-associated). The department listing
+  // route renders per-request, but it reads the tag-cached getProducts(), so
+  // its *data* is only as fresh as the last revalidation — a catalog change
+  // that skips this function stays invisible there (verified on staging: a
+  // product inserted by direct SQL never appeared in the listing, while its
+  // force-dynamic PDP resolved immediately).
   revalidateTag(CATALOG_TAG);
 }
 
