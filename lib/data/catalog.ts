@@ -187,20 +187,104 @@ export const getProducts = cachedCatalogRead(
   },
 );
 
-// Intentionally NOT wrapped in its own cache layer. `getProducts` (which it
-// reads) is already cache-tagged, and the PDP's full-route cache holds the
-// rendered page. Giving this its own `unstable_cache` created a nested cache
-// whose stale `null` (a slug requested before its product was published)
-// survived `revalidateTag`, so an exact-path revalidation regenerated the route
-// but still resolved to notFound(). Reading the shared `getProducts` cache
-// directly keeps this consistent with the listing on every regeneration.
+// Resolve a single PDP by direct query, NOT by scanning a cached list. Deriving
+// the product from `getProducts(...)` tied the PDP to that list's cache entry,
+// which could be stale (a different args-keyed entry than the listing's) even
+// after `revalidateTag` — so a freshly published/renamed product's on-demand
+// PDP render still resolved to notFound(). A direct `products_public` lookup
+// always reflects the current database; the PDP's own full-route cache still
+// holds the rendered page, and admin mutations revalidate it by exact path.
 export async function getProductBySlug(
   department: string,
   slug: string,
 ): Promise<Product | null> {
-  const list = await getProducts({ department });
-  const product = list.find((p) => p.slug === slug) ?? null;
-  return product ? loadProductCommerceDetails(product) : null;
+  const supabase = getPublicClient();
+  if (!supabase) {
+    // Local/dev: resolve from the seed projection.
+    const seeded = (await getProducts({ department })).find((p) => p.slug === slug);
+    return seeded ? loadProductCommerceDetails(seeded) : null;
+  }
+
+  const productResult = await supabase
+    .from('products_public')
+    .select('*')
+    .eq('slug', slug)
+    .limit(1);
+  if (productResult.error)
+    return failPublicData('product-by-slug', 'query_failed', productResult.error);
+  const r = (productResult.data?.[0] ?? null) as Record<string, unknown> | null;
+  if (!r) return null;
+
+  const [categoryResult, mediaResult] = await Promise.all([
+    supabase
+      .from('categories_public')
+      .select('id, department_id, slug, name')
+      .eq('id', r.category_id as string)
+      .maybeSingle(),
+    supabase
+      .from('product_media_public')
+      .select('*')
+      .eq('product_id', r.id as string)
+      .order('sort_order'),
+  ]);
+  if (categoryResult.error)
+    return failPublicData('product-by-slug', 'query_failed', categoryResult.error);
+  if (mediaResult.error)
+    return failPublicData('product-by-slug', 'query_failed', mediaResult.error);
+  const category = (categoryResult.data ?? null) as Record<string, unknown> | null;
+
+  let departmentSlug = '';
+  if (category?.department_id) {
+    const departmentResult = await supabase
+      .from('departments_public')
+      .select('slug')
+      .eq('id', category.department_id as string)
+      .maybeSingle();
+    if (departmentResult.error)
+      return failPublicData('product-by-slug', 'query_failed', departmentResult.error);
+    departmentSlug = ((departmentResult.data?.slug as string) ?? '') || '';
+  }
+  // The URL's department segment must match the product's real department.
+  if (departmentSlug !== department) return null;
+
+  let collectionSlug: string | null = null;
+  if (r.collection_id) {
+    const collectionResult = await supabase
+      .from('collections_public')
+      .select('slug')
+      .eq('id', r.collection_id as string)
+      .maybeSingle();
+    if (collectionResult.error)
+      return failPublicData('product-by-slug', 'query_failed', collectionResult.error);
+    collectionSlug = (collectionResult.data?.slug as string) ?? null;
+  }
+
+  const product: Product = {
+    id: String(r.id),
+    name: String(r.name),
+    slug: String(r.slug),
+    department_slug: departmentSlug,
+    collection_slug: collectionSlug,
+    description: (r.description as string) ?? null,
+    category_slug: (category?.slug as string) ?? undefined,
+    category_name: (category?.name as string) ?? undefined,
+    material_story: (r.material_story as string) ?? null,
+    behavior_type: r.behavior_type as Product['behavior_type'],
+    base_price: (r.base_price as number) ?? null,
+    currency: (r.currency as string) ?? 'TRY',
+    stock_mode: (r.stock_mode as Product['stock_mode']) ?? 'made_to_order',
+    production_time_days: (r.production_time_days as number) ?? null,
+    price_band: (r.price_band as Product['price_band']) ?? null,
+    proof_required: Boolean(r.proof_required),
+    is_personalizable: Boolean(r.is_personalizable),
+    return_note: (r.return_note as string) ?? null,
+    delivery_note: (r.delivery_note as string) ?? null,
+    media_ids: (r.media_ids as string[]) ?? [],
+    sku: (r.sku as string) ?? null,
+    gift_wrapping_available: Boolean(r.gift_wrapping_available),
+    media: (mediaResult.data ?? []) as unknown as ProductMedia[],
+  };
+  return loadProductCommerceDetails(product);
 }
 
 async function loadProductCommerceDetails(product: Product): Promise<Product> {
