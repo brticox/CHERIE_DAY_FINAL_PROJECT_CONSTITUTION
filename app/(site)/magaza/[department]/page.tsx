@@ -15,6 +15,10 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ProductGrid } from '@/components/commerce/product-grid';
 import { CatalogToolbar } from '@/components/commerce/catalog-toolbar';
 
+// Render products/collections created after the last build on-demand (then ISR-cache),
+// so a newly published or renamed item resolves without a redeploy.
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const departments = await getDepartments();
   return departments.map((d) => ({ department: d.slug }));

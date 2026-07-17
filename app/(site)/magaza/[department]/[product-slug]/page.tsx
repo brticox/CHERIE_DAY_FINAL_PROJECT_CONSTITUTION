@@ -15,6 +15,10 @@ import { JsonLd } from '@/components/layout/json-ld';
 import { ProductDetail } from '@/components/commerce/product-detail';
 import { ProductGrid } from '@/components/commerce/product-grid';
 
+// Render products/collections created after the last build on-demand (then ISR-cache),
+// so a newly published or renamed item resolves without a redeploy.
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const products = await getProducts();
   return products.map((p) => ({ department: p.department_slug, 'product-slug': p.slug }));

@@ -30,6 +30,10 @@ const OCCASION_DEPARTMENTS: Record<string, string[]> = {
   'ozel-davetler': ['davetiye', 'hediyelik', 'mum', 'kutu-paketleme'],
 };
 
+// Render products/collections created after the last build on-demand (then ISR-cache),
+// so a newly published or renamed item resolves without a redeploy.
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const experiences = await getExperiences();
   return experiences.map((e) => ({ 'event-slug': e.slug }));

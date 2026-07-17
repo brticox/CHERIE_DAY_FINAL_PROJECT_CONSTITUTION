@@ -15,6 +15,10 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ProductGrid } from '@/components/commerce/product-grid';
 import { SortBar } from '@/components/commerce/sort-bar';
 
+// Render products/collections created after the last build on-demand (then ISR-cache),
+// so a newly published or renamed item resolves without a redeploy.
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const collections = await getCollections();
   return collections.map((c) => ({ 'collection-slug': c.slug }));
