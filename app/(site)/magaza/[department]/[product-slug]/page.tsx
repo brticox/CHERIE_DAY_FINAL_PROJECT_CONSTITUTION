@@ -5,7 +5,6 @@ import {
   getCollectionBySlug,
   getDepartmentBySlug,
   getProductBySlug,
-  getProducts,
   getRelatedProducts,
 } from '@/lib/data/catalog';
 import { buildMetadata, productLd } from '@/lib/data/seo';
@@ -15,14 +14,13 @@ import { JsonLd } from '@/components/layout/json-ld';
 import { ProductDetail } from '@/components/commerce/product-detail';
 import { ProductGrid } from '@/components/commerce/product-grid';
 
-// Render products/collections created after the last build on-demand (then ISR-cache),
-// so a newly published or renamed item resolves without a redeploy.
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map((p) => ({ department: p.department_slug, 'product-slug': p.slug }));
-}
+// Server-render each PDP per request (like the department listing, which reads
+// searchParams). generateStaticParams + dynamicParams left new/renamed products
+// resolving to a prerendered static 404 on Vercel, because the page component
+// never ran on-demand for a param absent at build time. force-dynamic guarantees
+// the product is resolved from the live database on every request, so a newly
+// published or renamed product's PDP is correct with no redeploy.
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
