@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import {
   departments as seedDepartments,
   collections as seedCollections,
@@ -194,7 +196,12 @@ export const getProducts = cachedCatalogRead(
 // PDP render still resolved to notFound(). A direct `products_public` lookup
 // always reflects the current database; the PDP's own full-route cache still
 // holds the rendered page, and admin mutations revalidate it by exact path.
-export async function getProductBySlug(
+// Wrapped in React cache() so the PDP's generateMetadata and page component
+// share ONE resolution per request instead of each running the full product +
+// commerce-detail query set (~11 queries each). This is request-scoped
+// memoization only — it never persists across requests, so force-dynamic
+// freshness is preserved.
+export const getProductBySlug = cache(async function getProductBySlug(
   department: string,
   slug: string,
 ): Promise<Product | null> {
@@ -285,7 +292,7 @@ export async function getProductBySlug(
     media: (mediaResult.data ?? []) as unknown as ProductMedia[],
   };
   return loadProductCommerceDetails(product);
-}
+});
 
 async function loadProductCommerceDetails(product: Product): Promise<Product> {
   const supabase = getPublicClient();

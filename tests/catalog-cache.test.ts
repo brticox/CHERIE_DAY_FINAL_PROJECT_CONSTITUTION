@@ -99,11 +99,14 @@ describe('every public catalog read is cache-tagged', () => {
     }
   });
 
-  it('does NOT give getProductBySlug its own nested cache layer', () => {
-    // A nested unstable_cache here caches a stale null that revalidateTag cannot
-    // clear; it must read the shared getProducts cache directly instead.
+  it('resolves getProductBySlug per-request, never via a cross-request cache', () => {
     const src = repoFile('lib/data/catalog.ts');
-    expect(src).toContain('export async function getProductBySlug');
+    // React cache() = request-scoped memoization only: it dedupes the PDP's
+    // generateMetadata + page calls without ever serving a stale product.
+    expect(src).toContain("import { cache } from 'react'");
+    expect(src).toContain('export const getProductBySlug = cache(');
+    // It must NOT sit behind unstable_cache (a stale null there survived
+    // revalidateTag and made new products resolve to notFound()).
     expect(src).not.toContain("cachedCatalogRead(\n  ['product-by-slug'],");
   });
 });
