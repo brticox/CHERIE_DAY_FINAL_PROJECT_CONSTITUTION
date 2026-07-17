@@ -1,70 +1,56 @@
-# P1 Fix — Admin catalog edits now revalidate the public storefront
+# P1 CLOSED — Admin catalog changes now reach the public storefront
 
-**Date:** 2026-07-16 · Branch `integration/reconciled-canonical-20260716`
-Closes the P1 from `03_api_verification_and_cache_finding.md`. No secrets here.
+**Date:** 2026-07-17 · Branch `integration/reconciled-canonical-20260716`
+**Served:** `staging.cherieday.eu` → `5feb7a8` (Preview `dpl_GZSEtRXYMRFiSkujpmWAvp6TkGHc`, region **fra1**)
+No secrets in this document. Production untouched · PR #5 not merged · Apple=false · Live PayTR=false.
 
-## Root cause (recap)
-Storefront PDP + homepage are ISR/full-route cached; admin product actions
-revalidated only `/admin/**`. So published/edited/unpublished products did not
-reach the public PDP/homepage without a redeploy. A second, deeper cause:
-a slug requested before its product exists caches a `notFound()` as a
-prerendered 404 that the broad cache tag cannot evict.
+## The three real root causes (found by live diagnosis, not assumption)
 
-## Design (centralized, typed — no scattered revalidatePath)
-`lib/data/catalog-cache.ts`:
-- **`CATALOG_TAG`** + **`cachedCatalogRead()`** — every public catalog read
-  (departments, categories, collections, products, PDP commerce detail) is
-  wrapped with `unstable_cache` under one tag. Search, sitemap and homepage
-  sections inherit it. Thrown `PublicDataSourceError`s propagate, never cached.
-- **`revalidateCatalog()`** — `revalidateTag(CATALOG_TAG)`: busts the Data Cache
-  and every tag-associated route (static listings, homepage, search, sitemap,
-  and any PDP previously served as 200).
-- **`revalidateStorefrontPaths()` / `revalidateProductPaths(dept, slugs)`** —
-  exact-path `revalidatePath` for a product's PDP, the only mechanism that
-  evicts an on-demand-cached `notFound()` (new or renamed product; both new and
-  previous slug).
+1. **Admin revalidated only `/admin/**`.** Product actions called `revalidatePath(productPath(id))` where `productPath = /admin/commerce/products/${id}` — the public `/magaza/**` was never invalidated.
+2. **The PDP never rendered post-build products.** `generateStaticParams` + no `dynamicParams` made Vercel serve a **prerendered static 404** for any slug absent at build time (`x-nextjs-prerender: 1` on a cache MISS). The page component never ran, so *no data-layer fix could ever surface a new product*. Setting `dynamicParams = true` did **not** change it.
+3. **The PDP derived its product from a cached list.** `getProductBySlug` scanned `getProducts({department})`, whose `unstable_cache` entry is keyed separately from the listing's `getProducts(filters)` — so it could serve a stale `null` even while the listing showed the product.
 
-Wired into **every** catalog mutation (`revalidateCatalog()` + exact PDP path
-where a specific product is known): product save / publish / archive / restore /
-duplicate / SEO / variant / addon / personalization / price-tier add+delete /
-taxonomy / media set, media metadata / archive, and inventory adjustment.
+## The fix
+- **`lib/data/catalog-cache.ts`** — one typed `CATALOG_TAG`; `cachedCatalogRead()` wraps every public catalog read (departments, categories, collections, products → search/sitemap/homepage inherit it); `revalidateCatalog()` = `revalidateTag`; `revalidateStorefrontPaths()` / `revalidateProductPaths(dept, slugs)` for exact-path eviction.
+- **Every catalog mutation** calls `revalidateCatalog()` + the exact product path (save/publish/archive/restore/duplicate/SEO/variant/addon/personalization/tier/taxonomy/media, media metadata/archive, inventory). `saveProduct` passes the **previous slug** on rename so both URLs are evicted.
+- **PDP is `force-dynamic`** (like the department listing, which works because it reads `searchParams`) and resolves via a **direct `products_public` query by slug** — never a cached list.
+- **`POST /api/internal/catalog/revalidate`** (bearer, `CATALOG_WORKER_SECRET`, optional `{paths}`) for out-of-band eviction (e.g. a future Supabase catalog webhook).
+- **Perf:** `getProductBySlug` wrapped in React `cache()` (request-scoped dedupe — `generateMetadata` + page shared one resolution); **functions pinned to `fra1`**, co-located with Supabase `eu-central-1`.
 
-`POST /api/internal/catalog/revalidate` (bearer, `CATALOG_WORKER_SECRET`) also
-accepts `{ paths: string[] }` so an operator or a future Supabase catalog
-webhook can evict exact routes out-of-band.
+## Live proof on staging.cherieday.eu (fresh fixture, created AFTER deploy)
+| # | Step | Result |
+|---|---|---|
+| 1 | New published product, **never-requested slug**, first-ever GET — no redeploy, no revalidation | **200** ✓ |
+| 2 | Title | `[TEST] Canlı Kanıt Ürünü — SİLİNECEK \| **Cherry Seal** \| CHERIE DAY Ürün Evi` ✓ |
+| 3 | Collection **display name** (P3 fix — was the raw slug `cherry-seal`) | **Cherry Seal** ✓ |
+| 4 | Variant / add-on / personalization | all rendered ✓ |
+| 5 | Price tier | `{"min_qty":12,"unit_price":1090}` in payload → applied by `product-options.tsx` ✓ |
+| 6 | Media | rendered via next/image against the Supabase host (confirms the P0 `remotePatterns` fix at runtime) ✓ |
+| 7 | **Slug change** → new slug | **200** instantly ✓ |
+| 8 | Slug change → old slug | **404** ✓ |
+| 9 | **Unpublish** | PDP **404** + removed from listing ✓ |
+| 10 | **Republish** | **200**, no stale 404 ✓ |
+| 11 | **Delete** + `revalidateCatalog` | PDP 404; listing + homepage cleared ✓ |
+| 12 | Cleanup | **0 TEST rows · 48 published products · 0 media · 0 variants** ✓ |
 
-## Verification
-**Gates (local):** typecheck ✓ · lint 0 ✓ · **233 unit tests** ✓ (new
-`tests/catalog-cache.test.ts`: tag contract, exact-path helpers, and a mutation
-coverage guard) · build ✓ · **Playwright commerce E2E ✓** (real product image →
-pricing → customization → cart 201 → checkout 200 — no regression).
-
-**Live on `staging.cherieday.eu` (temporary fixture, created + deleted):**
-| Behaviour | Result |
+## Performance assessment (the regression was found AND fixed)
+| Stage | Warm avg TTFB |
 |---|---|
-| No regression (home/listing/PDP/login) | 200 ✓ |
-| Internal revalidate route auth | 401 (no/bad bearer) / 200 ✓ |
-| `revalidateTag` busts Data Cache (fixture appears in dynamic dept listing) | ✓ |
-| New product PDP on fresh build (cold cache) | 200 ✓ |
-| Unpublish → revalidate → PDP | 404, removed from listing ✓ |
-| Re-publish previously-served path → stale 404 → revalidate → PDP | 200 (title/variant/addon/personalization rendered) ✓ |
-| Slug change → old path revalidated | old → 404 ✓ |
-| Fixture deleted → revalidate → PDP | 404 ✓ (storefront healthy) |
+| force-dynamic, `iad1` functions, duplicate resolution | **1.548 s** |
+| + React `cache()` dedupe (~22 → ~11 queries) | 1.417 s |
+| + **`fra1` co-location** (final) | **0.588 s** |
+| Reference: `/magaza` static/CDN page | 0.577 s |
+| Reference: `/magaza/[department]` dynamic listing | 0.296 s |
 
-**Unit-tested + Next-documented, live demo pending a deploy:** exact-path
-eviction of a slug that was **only ever a 404** (never served 200) — the
-`revalidateProductPaths` path the admin create/publish/rename actions call. The
-mechanism is Next.js's documented exact-path `revalidatePath`; the admin actions
-are unit-verified to call it with the correct `/magaza/[dept]/[slug]` paths.
+- **Queries/PDP request:** ~11 (5 product/category/department/collection/media + 6 commerce detail). Was ~22 — `generateMetadata` and the page each resolved independently; React `cache()` now shares one resolution per request.
+- **Root cost was network, not queries:** functions ran `iad1` while Supabase is `eu-central-1` (`x-vercel-id: fra1::iad1::…`). Now `fra1::fra1::…`.
+- **Cache-Control:** `private, no-cache, no-store` → **no CDN caching** of PDPs; every view hits the origin. Acceptable now that warm TTFB (0.588 s) matches the CDN-cached homepage (0.577 s).
+- **Scale risk:** ~11 uncached queries per PDP view. Fine at launch volume; if PDP traffic grows, revisit ISR or collapse the resolution into one RPC. **No serious regression at current scale.**
 
-## Deploy status (honest)
-Commits `e0a5645` (fix), `4089eeb` (revalidate endpoint), `2dabad3` (404
-patterns), `a7b0b90` (exact-path + admin wiring), `5a03ea2` (.vercelignore) are
-pushed. **`staging.cherieday.eu` currently serves `2dabad3`** (tag + pattern
-version — the broad fix is live). The final exact-path build (`a7b0b90`/`5a03ea2`)
-did **not** deploy: the Vercel plan's **daily deployment limit** was reached
-today (git-integration builds stopped being created; CLI `vercel deploy` times
-out / hit the 100 MB upload cap before `.vercelignore` was fixed). This is an
-infrastructure limit, not a code issue — a single deploy once the limit resets
-(or by the owner) promotes the exact-path build. Production untouched; PR #5 not
-merged.
+## Email chain — proven up to the Resend boundary
+`business event → outbox → cron → worker` is **VERIFIED live**: inserting a consultation fired the DB trigger → outbox row (`appointment_requested`, `template_key: appointment-requested`, `status: queued`, idempotency key) → worker `claimed:1, sent:1` → **repeat `claimed:0, sent:0` (no double-send)**. pg_cron dispatch is live (6× HTTP 200 in 30 min) using the Vault bearer.
+
+**BLOCKED — real Resend delivery + `delivered` webhook:** the outbox row recorded `provider: "capture"` (no-op transport) because the canonical branch has **no `RESEND_API_KEY`** (Vercel write-only var, scoped only to `codex/…` and `phase-3-5/…`) and `NOTIFICATION_SEND_ENABLED=false`. Owner action: add `RESEND_API_KEY` to `integration/reconciled-canonical-20260716` and set `NOTIFICATION_SEND_ENABLED=true`, then the same chain completes through Resend → signed webhook → `email_delivery_events`.
+
+## Verdict
+**P1 CLOSED** — live-proven end to end, with the performance regression measured and resolved (0.588 s ≈ the static page). **P3 CLOSED** (collection display name in PDP title).
