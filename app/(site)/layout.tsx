@@ -2,12 +2,14 @@ import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { CookieConsent } from '@/components/layout/cookie-consent';
 import { CommerceAssurance } from '@/components/layout/commerce-assurance';
+import { FavoritesProvider } from '@/components/commerce/favorites-provider';
 
 /** Shared chrome for all public (non-admin) surfaces. */
 export default function SiteLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
+    <FavoritesProvider>
     <div className="flex min-h-dvh flex-col">
       <a
         href="#main"
@@ -23,5 +25,6 @@ export default function SiteLayout({
       <SiteFooter />
       <CookieConsent />
     </div>
+    </FavoritesProvider>
   );
 }

@@ -6,6 +6,7 @@ import { formatTRY, productBehaviorBadge, productionTimeLabel } from '@/lib/form
 import { Badge } from '@/components/ui/badge';
 import { ProductGallery } from './product-gallery';
 import { ProductOptions } from './product-options';
+import { FavoriteButton } from './favorite-button';
 import { BadgeCheck, Clock3, ShieldCheck } from 'lucide-react';
 
 /**
@@ -101,6 +102,16 @@ export function ProductDetail({
           baseParams={intakeParams.toString()}
           primaryLabel={primaryLabel}
         />
+
+        {/* Save to Seçtiklerim — subordinate to the primary action above. */}
+        <div className="mt-3">
+          <FavoriteButton
+            productId={product.id}
+            productName={product.name}
+            variant="pdp"
+            className="w-full sm:w-auto"
+          />
+        </div>
 
         {/* Information sections */}
         <dl className="mt-8 space-y-5 rounded-card-lg border border-cherie-lace bg-cherie-ivory/70 p-5 text-sm">

@@ -302,7 +302,7 @@ function ContextualAccess({
       show: counts.digitalProjects > 0,
     },
     {
-      title: 'Favorilerim',
+      title: 'Seçtiklerim',
       description: `${counts.favorites} kayıtlı parça`,
       href: '/hesap/favoriler',
       icon: Heart,
