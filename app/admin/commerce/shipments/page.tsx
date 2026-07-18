@@ -4,23 +4,28 @@ import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
 import { createShipment, recordShipmentException, transitionShipment } from './actions';
+import { AdminPagination } from '@/components/admin/pagination';
 type Shipment = Database['public']['Tables']['shipments']['Row'] & {
   orders: { order_number: string } | null;
 };
 export const dynamic = 'force-dynamic';
-export default async function Page() {
+const PAGE_SIZE = 50;
+export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   await requireCapability('orders.read', '/admin/commerce/shipments');
+  const { page: rawPage } = await searchParams;
+  const page = Math.max(1, Number.parseInt(rawPage ?? '1', 10) || 1);
   let rows: Shipment[] = [];
+  let total = 0;
   let orders: { id: string; order_number: string }[] = [];
   let unavailable = true;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     const db = createAdminClient();
-    const [{ data, error }, orderRows] = await Promise.all([
+    const [{ data, count, error }, orderRows] = await Promise.all([
       db
         .from('shipments')
-        .select('*,orders(order_number)')
+        .select('*,orders(order_number)', { count: 'exact' })
         .order('created_at', { ascending: false })
-        .limit(100),
+        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1),
       db
         .from('orders')
         .select('id,order_number')
@@ -28,6 +33,7 @@ export default async function Page() {
         .order('created_at', { ascending: false }),
     ]);
     rows = (data ?? []) as Shipment[];
+    total = count ?? 0;
     unavailable = Boolean(error);
     orders = orderRows.data ?? [];
   }
@@ -157,6 +163,15 @@ export default async function Page() {
           },
         ]}
       />
+      <div className="px-4 pb-6 md:px-8">
+        <AdminPagination
+          path="/admin/commerce/shipments"
+          page={page}
+          pageSize={PAGE_SIZE}
+          total={total}
+          label="Gönderi sayfalama"
+        />
+      </div>
     </div>
   );
 }

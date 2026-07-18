@@ -8,6 +8,7 @@ import {
   transitionProduction,
   updateProductionJob,
 } from './actions';
+import { AdminPagination } from '@/components/admin/pagination';
 type Job = Database['public']['Tables']['production_jobs']['Row'] & {
   orders: { order_number: string } | null;
   order_items: {
@@ -15,28 +16,34 @@ type Job = Database['public']['Tables']['production_jobs']['Row'] & {
   } | null;
 };
 export const dynamic = 'force-dynamic';
-export default async function Page() {
+const PAGE_SIZE = 50;
+export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   await requireCapability('orders.read', '/admin/commerce/production');
+  const { page: rawPage } = await searchParams;
+  const page = Math.max(1, Number.parseInt(rawPage ?? '1', 10) || 1);
   let rows: Job[] = [];
+  let total = 0;
   let staffRows: { id: string; name: string }[] = [];
   let unavailable = true;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     const db = createAdminClient();
-    const [{ data, error }, staff] = await Promise.all([
+    const [{ data, count, error }, staff] = await Promise.all([
       db
         .from('production_jobs')
-        .select('*,orders(order_number),order_items(product_snapshot)')
+        .select('*,orders(order_number),order_items(product_snapshot)', { count: 'exact' })
         .order('priority', { ascending: false })
         .order('created_at')
-        .limit(100),
+        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1),
       db.from('staff_users').select('id,name').eq('is_active', true).order('name'),
     ]);
     rows = (data ?? []) as Job[];
+    total = count ?? 0;
     unavailable = Boolean(error);
     staffRows = staff.data ?? [];
   }
   return (
-    <OperationList
+    <div>
+      <OperationList
       eyebrow="Atölye operasyonu"
       title="Üretim & Kalite"
       description="Onaylanan tasarımların üretim kuyruğu, öncelik ve teslim hedefleri."
@@ -167,7 +174,17 @@ export default async function Page() {
           ),
         },
       ]}
-    />
+      />
+      <div className="px-4 pb-6 md:px-8">
+        <AdminPagination
+          path="/admin/commerce/production"
+          page={page}
+          pageSize={PAGE_SIZE}
+          total={total}
+          label="Üretim işi sayfalama"
+        />
+      </div>
+    </div>
   );
 }
 const nextState: Record<string, string | undefined> = {

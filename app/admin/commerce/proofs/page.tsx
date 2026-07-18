@@ -6,25 +6,30 @@ import type { Database } from '@/lib/supabase/database.types';
 import { ProofUploader } from '@/components/admin/proof-uploader';
 import { jsonText } from '@/lib/orders/customer';
 import { updateProofAssignment } from './actions';
+import { AdminPagination } from '@/components/admin/pagination';
 
 type Proof = Database['public']['Tables']['product_proofs']['Row'] & {
   orders: { order_number: string } | null;
 };
 export const dynamic = 'force-dynamic';
-export default async function Page() {
+const PAGE_SIZE = 50;
+export default async function Page({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   await requireCapability('orders.read', '/admin/commerce/proofs');
+  const { page: rawPage } = await searchParams;
+  const page = Math.max(1, Number.parseInt(rawPage ?? '1', 10) || 1);
   let rows: Proof[] = [];
+  let total = 0;
   let proofItems: { id: string; label: string }[] = [];
   let staffRows: { id: string; name: string }[] = [];
   let unavailable = true;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     const db = createAdminClient();
-    const [{ data, error }, items, staff] = await Promise.all([
+    const [{ data, count, error }, items, staff] = await Promise.all([
       db
         .from('product_proofs')
-        .select('*,orders(order_number)')
+        .select('*,orders(order_number)', { count: 'exact' })
         .order('created_at', { ascending: false })
-        .limit(100),
+        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1),
       db
         .from('order_items')
         .select('id,product_snapshot,orders!inner(order_number,status)')
@@ -34,6 +39,7 @@ export default async function Page() {
       db.from('staff_users').select('id,name').eq('is_active', true).order('name'),
     ]);
     rows = (data ?? []) as Proof[];
+    total = count ?? 0;
     proofItems = (items.data ?? []).map((item) => ({
       id: item.id,
       label: `${item.orders.order_number} · ${jsonText(item.product_snapshot, 'name', 'Ürün')}`,
@@ -129,6 +135,15 @@ export default async function Page() {
           },
         ]}
       />
+      <div className="px-4 pb-6 md:px-8">
+        <AdminPagination
+          path="/admin/commerce/proofs"
+          page={page}
+          pageSize={PAGE_SIZE}
+          total={total}
+          label="Tasarım onayı sayfalama"
+        />
+      </div>
     </div>
   );
 }
