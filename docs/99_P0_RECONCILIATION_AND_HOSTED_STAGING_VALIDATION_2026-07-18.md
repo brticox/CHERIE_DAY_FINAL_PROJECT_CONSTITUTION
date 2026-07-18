@@ -252,3 +252,13 @@ service-role key as `SUPABASE_SERVICE_ROLE_KEY` scoped to **Preview only** in
 `brticoxs-projects/cherie-day-web`, then repeat the non-disclosing binding
 check. Production must remain excluded. No Preview deployment was created
 while this condition was unmet.
+
+### Follow-up verification after release-owner update
+
+The variable name is now listed by the Vercel Preview inventory, but a fresh
+Preview environment download reports that its stored value has length zero.
+It is therefore an empty placeholder, not a valid Staging service-role key.
+The check cannot authenticate it against Staging and no deployment was
+created. The release owner must save the non-empty Staging key to that exact
+Preview-scoped variable; the value must never be sent through this report or
+chat.
