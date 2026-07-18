@@ -35,7 +35,9 @@ test('real product image, pricing, customization, cart, and checkout stay cohere
   await page.getByLabel('Çift isimleri').fill('Ada & Deniz');
   await expect(page.getByText('₺2.900', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: /Seçimlerim’e Ekle/ }).click();
-  await expect(page.getByRole('status')).toContainText('Seçiminiz güvenle kaydedildi.');
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Seçiminiz güvenle kaydedildi.' }),
+  ).toBeVisible();
   await Promise.all([
     page.waitForURL(/\/secilimlerim$/, { timeout: 30_000 }),
     page.getByRole('link', { name: 'Seçimlerimi aç' }).click(),
@@ -65,7 +67,9 @@ test('real product image, pricing, customization, cart, and checkout stay cohere
   await page.getByLabel(/Ön Bilgilendirme Formu/).check();
   await page.getByLabel(/Mesafeli Satış Sözleşmesi/).check();
   await page.getByRole('button', { name: /Sipariş Özetini Hazırla/ }).click();
-  await expect(page.getByRole('status')).toContainText('Sipariş özetiniz güvenle hazırlandı.');
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Sipariş özetiniz güvenle hazırlandı.' }),
+  ).toBeVisible();
 
   const customer = await db.from('customers').select('id').eq('email', E2E.email).single();
   expect(customer.error).toBeNull();
