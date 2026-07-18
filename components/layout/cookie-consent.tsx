@@ -5,8 +5,15 @@ import Link from 'next/link';
 
 import { ROUTES } from '@/lib/data/routes';
 import { Button } from '@/components/ui/button';
+import {
+  CONSENT_STORAGE_KEY,
+  CONSENT_VERSION,
+  createConsentPreference,
+  persistConsentPreference,
+  readConsentPreference,
+  type ConsentAction,
+} from '@/lib/consent/preferences';
 
-const STORAGE_KEY = 'cherie-cookie-consent';
 const ELEMENT_ID = 'cherie-cookie-consent';
 
 // Visibility depends on localStorage, which SSR can't see, so the banner used to stay
@@ -21,31 +28,38 @@ const ELEMENT_ID = 'cherie-cookie-consent';
 // Warning tells React not to fight the script's own DOM mutation on that one element.
 const RESOLVE_SCRIPT = `try{var e=document.getElementById(${JSON.stringify(
   ELEMENT_ID,
-)});if(e&&!localStorage.getItem(${JSON.stringify(STORAGE_KEY)}))e.hidden=false;}catch(e){}`;
+)}),v=localStorage.getItem(${JSON.stringify(CONSENT_STORAGE_KEY)}),p=v?JSON.parse(v):null;if(e&&(!p||p.version!==${JSON.stringify(CONSENT_VERSION)}||!p.categories||p.categories.necessary!==true))e.hidden=false;}catch(x){var e=document.getElementById(${JSON.stringify(ELEMENT_ID)});if(e)e.hidden=false;}`;
 
 /**
- * Cookie consent banner — PLACEHOLDER (docs/44 §7, docs/24 §Cookie Lock).
- * Shows the required three choices on first visit. Phase 1 only records the
- * choice locally so the banner can be dismissed; it does NOT yet gate analytics/
- * marketing scripts or write consent evidence — that lands with the consent
- * pipeline in a later phase. No optional scripts run before a choice is made.
+ * Consent is versioned, category-specific, locally enforceable before optional
+ * code runs, and mirrored to the append-only consent evidence endpoint.
  */
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
+  const [configuring, setConfiguring] = useState(false);
+  const [analytics, setAnalytics] = useState(false);
+  const [marketing, setMarketing] = useState(false);
 
   useEffect(() => {
-    try {
-      if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
-    } catch {
-      // storage unavailable — fail safe by not showing (no scripts fire anyway)
+    const current = readConsentPreference();
+    if (!current) setVisible(true);
+    else {
+      setAnalytics(current.categories.analytics);
+      setMarketing(current.categories.marketing);
     }
   }, []);
 
-  function choose(choice: 'accept_all' | 'reject_optional' | 'configure') {
+  async function choose(
+    action: ConsentAction,
+    categories: { analytics: boolean; marketing: boolean },
+  ) {
+    const current = readConsentPreference();
     try {
-      localStorage.setItem(STORAGE_KEY, choice);
+      await persistConsentPreference(
+        createConsentPreference(action, categories, current?.sessionRef),
+      );
     } catch {
-      /* ignore */
+      // Optional code remains blocked when storage is unavailable.
     }
     setVisible(false);
   }
@@ -61,8 +75,9 @@ export function CookieConsent() {
         suppressHydrationWarning
         className="fixed inset-x-0 bottom-0 z-50 border-t border-cherie-lace bg-cherie-ivory/95 backdrop-blur-[12px]"
       >
-        <div className="cherie-container flex flex-col gap-4 py-5 md:flex-row md:items-center md:justify-between">
-          <p className="max-w-2xl text-sm text-cherie-soft-ink">
+        <div className="cherie-container py-4 sm:py-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <p className="max-w-2xl text-sm text-cherie-soft-ink">
             Deneyiminizi iyileştirmek için çerezler kullanıyoruz. Ayrıntılar için{' '}
             <Link
               href={`${ROUTES.kurumsal}/cerez-politikasi`}
@@ -71,32 +86,90 @@ export function CookieConsent() {
               Çerez Politikası
             </Link>
             .
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button className="min-h-11" size="sm" onClick={() => choose('accept_all')}>
+            </p>
+            <div className="flex flex-wrap gap-2">
+            <Button
+              className="min-h-11"
+              size="sm"
+              onClick={() => choose('accept_all', { analytics: true, marketing: true })}
+            >
               Tümünü Kabul Et
             </Button>
             <Button
               className="min-h-11"
               size="sm"
               variant="secondary"
-              onClick={() => choose('reject_optional')}
+              onClick={() =>
+                choose('reject_optional', { analytics: false, marketing: false })
+              }
             >
               Yalnızca Gerekli
             </Button>
-            <Button className="min-h-11" size="sm" variant="ghost" asChild>
-              <Link
-                href={`${ROUTES.kurumsal}/cerez-tercihleri`}
-                onClick={() => choose('configure')}
-              >
-                Tercihleri Yönet
-              </Link>
+            <Button
+              className="min-h-11"
+              size="sm"
+              variant="ghost"
+              aria-expanded={configuring}
+              onClick={() => setConfiguring((value) => !value)}
+            >
+              Tercihleri Yönet
             </Button>
+            </div>
           </div>
+          {configuring && (
+            <div className="mt-4 grid gap-3 border-t border-cherie-lace pt-4 sm:grid-cols-2">
+              <CategoryChoice
+                label="Analitik"
+                checked={analytics}
+                onChange={setAnalytics}
+              />
+              <CategoryChoice
+                label="Pazarlama"
+                checked={marketing}
+                onChange={setMarketing}
+              />
+              <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+                <Button
+                  size="sm"
+                  onClick={() => choose('configure', { analytics, marketing })}
+                >
+                  Seçimi Kaydet
+                </Button>
+                <Link
+                  href={`${ROUTES.kurumsal}/cerez-tercihleri`}
+                  className="inline-flex min-h-11 items-center text-sm text-cherie-burgundy underline"
+                >
+                  Ayrıntılı tercih sayfası
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       {/* eslint-disable-next-line react/no-danger -- static, non-user-derived resolver script */}
       <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: RESOLVE_SCRIPT }} />
     </>
+  );
+}
+
+function CategoryChoice({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex min-h-11 items-center gap-3 rounded-control border border-cherie-lace px-3 text-sm text-cherie-ink">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="cherie-check"
+      />
+      {label}
+    </label>
   );
 }

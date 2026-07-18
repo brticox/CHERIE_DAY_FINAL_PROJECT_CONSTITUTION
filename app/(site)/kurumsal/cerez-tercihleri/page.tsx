@@ -1,25 +1,32 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-
-import { getLegalDocumentBySlug } from '@/lib/data/legal';
 import { buildMetadata } from '@/lib/data/seo';
 import { ROUTES } from '@/lib/data/routes';
-import { LegalLayout } from '@/components/content/legal-layout';
+import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import { CookiePreferences } from '@/components/legal/cookie-preferences';
 
 const SLUG = 'cerez-tercihleri';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const doc = await getLegalDocumentBySlug(SLUG);
-  if (!doc) return {};
-  return buildMetadata({
-    title: `${doc.title_tr} | CHERIE DAY`,
-    description: doc.title_tr,
+export const metadata: Metadata = buildMetadata({
+    title: 'Çerez Tercihleri',
+    description: 'CHERIE DAY teknik çerez tercihlerinizi yönetin.',
     path: `${ROUTES.kurumsal}/${SLUG}`,
   });
-}
 
-export default async function Page() {
-  const doc = await getLegalDocumentBySlug(SLUG);
-  if (!doc) notFound();
-  return <LegalLayout document={doc} />;
+export default function Page() {
+  return (
+    <article className="cherie-container max-w-3xl py-16">
+      <Breadcrumbs
+        items={[
+          { name: 'Ana Sayfa', path: ROUTES.home },
+          { name: 'Kurumsal', path: ROUTES.kurumsal },
+          { name: 'Çerez Tercihleri', path: `${ROUTES.kurumsal}/${SLUG}` },
+        ]}
+      />
+      <h1 className="text-h2 text-cherie-ink">Çerez Tercihleri</h1>
+      <p className="mt-4 text-cherie-soft-ink">
+        İsteğe bağlı teknik kategorileri dilediğiniz zaman açabilir veya kapatabilirsiniz.
+      </p>
+      <CookiePreferences />
+    </article>
+  );
 }

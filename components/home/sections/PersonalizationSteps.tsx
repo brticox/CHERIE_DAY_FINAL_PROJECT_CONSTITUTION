@@ -53,17 +53,12 @@ export function PersonalizationSteps() {
       lede="Kişiye özel her üründe tek bir söz geçerlidir: siz onaylamadan üretim başlamaz."
       className="bg-cherie-paper/40"
     >
-      <ol className="relative grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-6">
-        {/* rail behind the badges (desktop) */}
-        <div
-          aria-hidden
-          className="absolute left-[8%] right-[8%] top-7 hidden h-px bg-gradient-to-r from-cherie-lace via-cherie-brass/50 to-cherie-lace lg:block"
-        />
+      <ol className="relative grid gap-x-4 gap-y-8 before:absolute before:left-[8%] before:right-[8%] before:top-7 before:hidden before:h-px before:bg-gradient-to-r before:from-cherie-lace before:via-cherie-brass/50 before:to-cherie-lace before:content-[''] sm:grid-cols-2 lg:grid-cols-6 lg:before:block">
         {STEPS.map((step, i) => {
           const Icon = step.icon;
           return (
-            <Reveal key={step.title} delay={i * 0.08}>
-              <li className="relative flex flex-col items-center text-center">
+            <li key={step.title} className="relative text-center">
+              <Reveal delay={i * 0.08} className="flex flex-col items-center">
                 <span
                   className={`relative z-10 grid h-14 w-14 place-items-center rounded-full border shadow-card transition-transform duration-card ease-cherie ${
                     step.anchor
@@ -82,8 +77,8 @@ export function PersonalizationSteps() {
                 <p className="mt-1.5 max-w-[15rem] text-sm leading-6 text-cherie-soft-ink">
                   {step.description}
                 </p>
-              </li>
-            </Reveal>
+              </Reveal>
+            </li>
           );
         })}
       </ol>

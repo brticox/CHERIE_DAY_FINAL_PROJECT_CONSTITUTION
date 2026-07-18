@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * SectionShell — the editorial rhythm every homepage section shares:
- * brass eyebrow → display heading → optional lede → hairline rule.
+ * burgundy eyebrow → display heading → optional lede → brass hairline rule.
  * Keeps the awe→understanding→desire→trust→action arc typographically
  * consistent (pre-production lock §3: editorial, asymmetric, restrained).
  */
@@ -33,7 +33,7 @@ export function SectionShell({
             headerClassName,
           )}
         >
-          <p className="text-xs font-medium uppercase tracking-[0.22em] text-cherie-brass">
+          <p className="text-xs font-medium uppercase tracking-[0.22em] text-cherie-burgundy">
             {eyebrow}
           </p>
           <h2 className="mt-4 text-h2 text-cherie-ink">{title}</h2>

@@ -9,6 +9,24 @@ async function setConsent(page: Page, value: string) {
   await page.addInitScript((v) => window.localStorage.setItem('cherie-cookie-consent', v), value);
 }
 
+const validConsent = (action: 'accept_all' | 'reject_optional' = 'accept_all') =>
+  JSON.stringify({
+    version: '2026-07-18',
+    sessionRef: '123e4567-e89b-42d3-a456-426614174000',
+    action,
+    categories: {
+      necessary: true,
+      analytics: action === 'accept_all',
+      marketing: action === 'accept_all',
+    },
+    updatedAt: '2026-07-18T10:00:00.000Z',
+  });
+
+async function storedConsent(page: Page) {
+  const value = await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY);
+  return value ? JSON.parse(value) : null;
+}
+
 test.describe('cookie consent banner', () => {
   test('no stored consent: banner shows with all three choices', async ({ page }) => {
     await page.goto('/');
@@ -18,14 +36,17 @@ test.describe('cookie consent banner', () => {
     await expect(banner.getByRole('link', { name: 'Çerez Politikası' })).toBeVisible();
     await expect(banner.getByRole('button', { name: 'Tümünü Kabul Et' })).toBeVisible();
     await expect(banner.getByRole('button', { name: 'Yalnızca Gerekli' })).toBeVisible();
-    await expect(banner.getByRole('link', { name: 'Tercihleri Yönet' })).toBeVisible();
+    await expect(banner.getByRole('button', { name: 'Tercihleri Yönet' })).toBeVisible();
   });
 
   test('accept all: hides banner, persists choice, stays hidden on reload', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Tümünü Kabul Et' }).click();
     await expect(page.getByRole('dialog', { name: BANNER })).toBeHidden();
-    expect(await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY)).toBe('accept_all');
+    expect(await storedConsent(page)).toMatchObject({
+      action: 'accept_all',
+      categories: { necessary: true, analytics: true, marketing: true },
+    });
 
     await page.reload();
     await expect(page.getByRole('dialog', { name: BANNER })).toBeHidden();
@@ -35,27 +56,38 @@ test.describe('cookie consent banner', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Yalnızca Gerekli' }).click();
     await expect(page.getByRole('dialog', { name: BANNER })).toBeHidden();
-    expect(await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY)).toBe('reject_optional');
+    expect(await storedConsent(page)).toMatchObject({
+      action: 'reject_optional',
+      categories: { necessary: true, analytics: false, marketing: false },
+    });
 
     await page.reload();
     await expect(page.getByRole('dialog', { name: BANNER })).toBeHidden();
   });
 
-  test('manage preferences: persists choice and navigates to preferences page', async ({ page }) => {
+  test('manage preferences: stores granular categories and links to the preference page', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('link', { name: 'Tercihleri Yönet' }).click();
+    await page.getByRole('button', { name: 'Tercihleri Yönet' }).click();
+    await page.getByLabel('Analitik').check();
+    await page.getByRole('button', { name: 'Seçimi Kaydet' }).click();
+    expect(await storedConsent(page)).toMatchObject({
+      action: 'configure',
+      categories: { necessary: true, analytics: true, marketing: false },
+    });
+    await page.goto('/kurumsal/cerez-tercihleri');
     await expect(page).toHaveURL(/\/kurumsal\/cerez-tercihleri$/);
-    expect(await page.evaluate((k) => localStorage.getItem(k), STORAGE_KEY)).toBe('configure');
+    await expect(page.getByLabel('Analitik')).toBeChecked();
+    await expect(page.getByLabel('Pazarlama')).not.toBeChecked();
   });
 
-  test('malformed or legacy stored value: treated as already decided, banner stays hidden', async ({ page }) => {
+  test('malformed or legacy stored value: reopens consent instead of treating it as permission', async ({ page }) => {
     await setConsent(page, 'legacy_unknown_value_v1');
     await page.goto('/');
-    await expect(page.getByRole('dialog', { name: BANNER })).toBeHidden();
+    await expect(page.getByRole('dialog', { name: BANNER })).toBeVisible();
   });
 
   test('already-consented state has no flash of the banner on load', async ({ page }) => {
-    await setConsent(page, 'accept_all');
+    await setConsent(page, validConsent());
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('dialog', { name: BANNER })).toBeHidden();
