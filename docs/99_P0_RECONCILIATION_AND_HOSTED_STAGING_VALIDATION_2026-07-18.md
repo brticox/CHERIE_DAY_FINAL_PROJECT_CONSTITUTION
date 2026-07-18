@@ -354,3 +354,84 @@ rendering, accessibility, and cleanup have evidence. The deployed Preview
 cannot accept PayTR callbacks because its required test merchant credentials
 are absent, and the complete authenticated customer/payment-return journey is
 therefore unproven. Production was not accessed, changed, deployed, or merged.
+
+## Resumed Preview credential and acceptance verification — 2026-07-19
+
+The release owner re-saved the approved Staging service-role credential in
+Preview. This continuation re-deployed the current reconciliation branch to
+**Preview only**, then repeated the credential binding, cleanup, acceptance,
+and parity checks. No production project, URL, credential, API, database,
+deployment, or merge operation was used.
+
+### New Preview artifact
+
+| Item | Evidence | Result |
+| --- | --- | --- |
+| Deployment | `dpl_FYSuQsadXoPuifdjqa5J2JBq9C4i`, target `preview`, status `Ready` | Pass |
+| URL | `https://cherie-day-3dfxxkho8-brticoxs-projects.vercel.app` | Pass |
+| Source | `integration/p0-reconciliation-20260718`, commit `8867770f4c8202b87c6bde6cbe0ed433e94edbd8` | Pass |
+| Build | Vercel completed the production Next.js build, type checking, and route generation | Pass |
+| Runtime selector | Vercel reports `22.x` / `nodejs22.x`; no patch-level runtime is exposed by deployment metadata | Pass for configured Node 22 line |
+
+### Service-role and Preview isolation result
+
+Vercel's Preview inventory lists `SUPABASE_SERVICE_ROLE_KEY` as a sensitive
+Preview variable. `vercel env pull` intentionally redacts sensitive values, so
+its zero-length export remains non-evidence either way and no secret was
+printed.
+
+The deployed consent endpoint returned `201` and the analytics endpoint
+returned `202`. The consent route returns `503` whenever the service-role
+variable is empty; therefore this is direct runtime evidence that the stored
+Preview value has a length greater than zero. The two resulting fixture rows
+were found in **Staging** `hdafztkhkyhqziqayerz` (one consent record and one
+analytics event), then deleted by exact key. The post-cleanup query returned
+zero remaining rows.
+
+The non-sensitive Preview controls remain unchanged: its public Supabase URL
+is the Staging host; `APP_ENV` is non-production; PayTR test mode is enabled;
+Apple sign-in is disabled; and no Preview value contains the production
+reference or known production host. This runtime Staging write proves the
+credential authenticates against Staging. No request was made to the
+production reference `rkvubnuwfuocoevayhcd`; a production authentication
+attempt is prohibited by this gate. Combined with the Staging-only binding and
+absence of production markers, there is no evidence that the Preview
+credential references Production.
+
+### Repeated hosted acceptance
+
+| Gate | Result |
+| --- | --- |
+| Inventory reservation integrity, Staging transaction | Pass; rollback fixture |
+| Payment state-machine integrity, Staging transaction | Pass; rollback fixture |
+| RLS/RPC verification, Staging transaction | Pass; rollback fixture |
+| Admin/finance aggregate verification, Staging transaction | Pass; rollback fixture |
+| Fixture residue | `0` RLS fixture users, `0` fixture orders, `0` fixture variants |
+| Legal, login, checkout, and consent-preferences routes | Hosted HTTP `200` |
+| Resilience | consent CSRF `403`; invalid consent `400`; analytics without receipt `403`; unauthenticated inventory cleanup `401` |
+| Desktop browser | Meaningful content, `main`, `nav`, no framework error overlay |
+| iPhone 14 emulation | CSS width `390`, meaningful content, `main`, `nav`, no framework error overlay |
+| axe WCAG 2 A/AA | `0` violations on both desktop and mobile home page |
+| Migration parity | Local `54`, Staging `54`; all six reconciled P0 migration names present |
+
+### Blocking result
+
+The PayTR callback was deliberately sent an empty malformed form request.
+It still returned `503`. This proves the Preview route fails closed at
+`providerConfigured()` before parsing, because its required test merchant ID,
+key, and salt are still not configured. The service-role repair does not
+provide those independent payment-provider credentials.
+
+The remaining required action is operational, not a code change: provision
+the approved **test-only** PayTR merchant credentials in Preview, then run a
+signed test callback and the temporary non-privileged customer's complete
+checkout/payment-return/auth-continuity journey. Do not configure Production
+or reuse live payment credentials.
+
+## Resumed gate verdict
+
+**NOT SAFE TO MERGE INTO CANONICAL**
+
+Preview-to-Staging service-role binding is now proven and all non-payment
+acceptance checks are green. The actual Preview payment callback remains
+unavailable (`503`), so the financial checkout return path cannot be accepted.
