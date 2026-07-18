@@ -24,6 +24,7 @@
     "test:e2e:auth-email": "sh scripts/run-auth-email-e2e.sh",
     "test:notifications:db": "supabase test db supabase/tests/notification_event_coverage.sql",
     "test:phase3:burst": "sh scripts/test-payment-callback-burst.sh",
+    "test:inventory:reservation-burst": "sh scripts/test-inventory-reservation-burst.sh",
     "test:phase3:replay": "sh scripts/replay-phase3-test-db.sh",
     "email:preview": "vite-node scripts/generate-email-previews.ts",
     "payment:simulate": "vite-node scripts/run-paytr-simulator.ts",
