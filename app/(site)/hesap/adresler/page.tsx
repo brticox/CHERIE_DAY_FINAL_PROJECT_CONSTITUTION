@@ -1,24 +1,37 @@
 import type { Metadata } from 'next';
 
 import { requireUser } from '@/lib/auth/guards';
+import { listAddresses } from '@/lib/addresses/server';
+import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import { PageHeader } from '@/components/layout/page-header';
 import { ROUTES } from '@/lib/data/routes';
-import { AccountStaged } from '@/components/content/account-staged';
+import { AddressBook } from '@/components/account/address-book';
 
-export const metadata: Metadata = { title: 'Adreslerim' };
+export const metadata: Metadata = {
+  title: 'Adres Defterim',
+  robots: { index: false, follow: false },
+};
 
 export default async function Page() {
   await requireUser('/hesap/adresler');
+  const addresses = await listAddresses();
   return (
-    <AccountStaged
-      title="Adreslerim"
-      lead="Teslimat ve fatura adreslerinizi bir kez kaydedin, her siparişte tekrar yazmayın."
-      value={[
-        'Teslimat ve fatura adreslerinizi tek yerde saklama',
-        'Sipariş sırasında kayıtlı bir adresi hızlıca seçme',
-        'Adres bilgilerini istediğiniz zaman güncelleme',
-      ]}
-      statusNote="Adres defteriniz hesabınıza bağlandığında burada görünecek. O zamana kadar adreslerinizi ödeme adımında güvenle girebilirsiniz."
-      actions={[{ label: 'Mağazaya göz at', href: ROUTES.magaza }]}
-    />
+    <div className="cherie-container py-14">
+      <Breadcrumbs
+        items={[
+          { name: 'Ana Sayfa', path: ROUTES.home },
+          { name: 'Hesabım', path: ROUTES.hesap },
+          { name: 'Adres Defterim', path: '/hesap/adresler' },
+        ]}
+      />
+      <PageHeader
+        eyebrow="Hesabım"
+        title="Adres Defterim"
+        lead="Teslimat ve fatura adreslerinizi bir kez kaydedin; her siparişte yeniden yazmayın."
+      />
+      <div className="mt-10">
+        <AddressBook addresses={addresses} />
+      </div>
+    </div>
   );
 }

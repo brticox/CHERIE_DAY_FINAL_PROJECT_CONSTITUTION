@@ -21,6 +21,18 @@ import type { ProviderReadiness } from '@/lib/payments';
 
 type Shipping = { id: string; name: string; base_price: number; type: string };
 type Summary = { count: number; total: number; proofRequired: boolean };
+type SavedAddress = {
+  id: string;
+  label: string | null;
+  fullName: string;
+  phone: string | null;
+  city: string | null;
+  district: string | null;
+  neighborhood: string | null;
+  addressLine: string | null;
+  postalCode: string | null;
+  isDefaultShipping: boolean;
+};
 const CHECKOUT_STEPS: { label: string; Icon: LucideIcon }[] = [
   { label: 'Teslimat', Icon: Truck },
   { label: 'Fatura', Icon: ReceiptText },
@@ -31,10 +43,12 @@ const CHECKOUT_STEPS: { label: string; Icon: LucideIcon }[] = [
 export function CheckoutForm({
   shippingMethods,
   paymentProviders,
+  savedAddresses = [],
   summary,
 }: {
   shippingMethods: Shipping[];
   paymentProviders: ProviderReadiness[];
+  savedAddresses?: SavedAddress[];
   summary: Summary;
 }) {
   const [state, action, pending] = useActionState(
@@ -42,6 +56,18 @@ export function CheckoutForm({
     INITIAL_CHECKOUT_STATE,
   );
   const [invoiceType, setInvoiceType] = useState<'bireysel' | 'kurumsal'>('bireysel');
+  // Signed-in customers can pre-fill the delivery fields from a saved address.
+  // The fields stay uncontrolled (the order still snapshots whatever is
+  // submitted), so editing after selecting — or a one-time manual entry — works
+  // exactly as before; picking an address just reseeds the defaults.
+  const defaultAddressId =
+    savedAddresses.find((address) => address.isDefaultShipping)?.id ?? '';
+  const [selectedAddressId, setSelectedAddressId] = useState(defaultAddressId);
+  const selectedAddress = savedAddresses.find(
+    (address) => address.id === selectedAddressId,
+  );
+  const fieldValue = (key: keyof SavedAddress) =>
+    (selectedAddress?.[key] as string | null | undefined) ?? '';
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
       <form action={action} className="space-y-8">
@@ -68,10 +94,36 @@ export function CheckoutForm({
           title="Teslimat bilgileri"
           lead="Türkiye içindeki teslimat adresinizi girin."
         >
-          <div className="grid gap-5 sm:grid-cols-2">
+          {savedAddresses.length > 0 && (
+            <div className="mb-5">
+              <label
+                htmlFor="saved-address"
+                className="mb-2 block text-sm font-medium text-cherie-ink"
+              >
+                Kayıtlı adreslerimden seç
+              </label>
+              <select
+                id="saved-address"
+                value={selectedAddressId}
+                onChange={(event) => setSelectedAddressId(event.target.value)}
+                className="cherie-field"
+              >
+                <option value="">Yeni adres gir</option>
+                {savedAddresses.map((address) => (
+                  <option key={address.id} value={address.id}>
+                    {(address.label?.trim() || address.fullName) +
+                      (address.district ? ` — ${address.district}` : '')}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {/* Keyed so choosing a saved address reseeds these uncontrolled fields. */}
+          <div key={selectedAddressId || 'manual'} className="grid gap-5 sm:grid-cols-2">
             <Field
               name="fullName"
               label="Ad Soyad"
+              defaultValue={fieldValue('fullName')}
               error={state.fieldErrors?.fullName}
               autoComplete="name"
             />
@@ -79,25 +131,34 @@ export function CheckoutForm({
               name="phone"
               label="Telefon"
               type="tel"
+              defaultValue={fieldValue('phone')}
               error={state.fieldErrors?.phone}
               autoComplete="tel"
             />
             <Field
               name="city"
               label="İl"
+              defaultValue={fieldValue('city')}
               error={state.fieldErrors?.city}
               autoComplete="address-level1"
             />
             <Field
               name="district"
               label="İlçe"
+              defaultValue={fieldValue('district')}
               error={state.fieldErrors?.district}
               autoComplete="address-level2"
             />
-            <Field name="neighborhood" label="Mahalle" autoComplete="address-level3" />
+            <Field
+              name="neighborhood"
+              label="Mahalle"
+              defaultValue={fieldValue('neighborhood')}
+              autoComplete="address-level3"
+            />
             <Field
               name="postalCode"
               label="Posta Kodu"
+              defaultValue={fieldValue('postalCode')}
               inputMode="numeric"
               error={state.fieldErrors?.postalCode}
               autoComplete="postal-code"
@@ -105,6 +166,7 @@ export function CheckoutForm({
             <Field
               name="addressLine"
               label="Açık Adres"
+              defaultValue={fieldValue('addressLine')}
               error={state.fieldErrors?.addressLine}
               autoComplete="street-address"
               className="sm:col-span-2"

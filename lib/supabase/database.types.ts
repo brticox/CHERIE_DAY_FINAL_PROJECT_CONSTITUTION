@@ -7,31 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       abandoned_carts: {
@@ -1276,11 +1251,16 @@ export type Database = {
           country: string
           created_at: string
           customer_id: string
+          deleted_at: string | null
           district: string | null
           full_name: string
           id: string
           is_default: boolean
+          is_default_billing: boolean
+          is_default_shipping: boolean
+          label: string | null
           neighborhood: string | null
+          notes: string | null
           phone: string | null
           postal_code: string | null
           type: string
@@ -1292,11 +1272,16 @@ export type Database = {
           country?: string
           created_at?: string
           customer_id: string
+          deleted_at?: string | null
           district?: string | null
           full_name: string
           id?: string
           is_default?: boolean
+          is_default_billing?: boolean
+          is_default_shipping?: boolean
+          label?: string | null
           neighborhood?: string | null
+          notes?: string | null
           phone?: string | null
           postal_code?: string | null
           type?: string
@@ -1308,11 +1293,16 @@ export type Database = {
           country?: string
           created_at?: string
           customer_id?: string
+          deleted_at?: string | null
           district?: string | null
           full_name?: string
           id?: string
           is_default?: boolean
+          is_default_billing?: boolean
+          is_default_shipping?: boolean
+          label?: string | null
           neighborhood?: string | null
+          notes?: string | null
           phone?: string | null
           postal_code?: string | null
           type?: string
@@ -8624,8 +8614,16 @@ export type Database = {
         Args: { p_action: string; p_comment?: string; p_proof_id: string }
         Returns: Database["public"]["Enums"]["proof_status"]
       }
+      set_default_address: {
+        Args: { p_address_id: string; p_kind: string }
+        Returns: undefined
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      soft_delete_address: {
+        Args: { p_address_id: string }
+        Returns: undefined
+      }
       submit_public_intake: {
         Args: {
           p_budget_band?: string
@@ -9091,9 +9089,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       addon_type: ["gift_wrap", "rush", "extra_revision", "upgrade", "other"],

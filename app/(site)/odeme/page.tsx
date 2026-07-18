@@ -6,6 +6,7 @@ import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { PageHeader } from '@/components/layout/page-header';
 import { requireUser } from '@/lib/auth/guards';
 import { cartConfigured, getCart } from '@/lib/cart/server';
+import { listAddresses } from '@/lib/addresses/server';
 import { ROUTES } from '@/lib/data/routes';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPaymentProviderReadiness } from '@/lib/payments';
@@ -34,6 +35,7 @@ export default async function Page() {
     type: string;
     base_price: number;
   }[];
+  const savedAddresses = await listAddresses();
   return (
     <div className="cherie-container py-14">
       <Breadcrumbs
@@ -52,6 +54,18 @@ export default async function Page() {
         <CheckoutForm
           shippingMethods={methods}
           paymentProviders={getPaymentProviderReadiness()}
+          savedAddresses={savedAddresses.map((address) => ({
+            id: address.id,
+            label: address.label,
+            fullName: address.fullName,
+            phone: address.phone,
+            city: address.city,
+            district: address.district,
+            neighborhood: address.neighborhood,
+            addressLine: address.addressLine,
+            postalCode: address.postalCode,
+            isDefaultShipping: address.isDefaultShipping,
+          }))}
           summary={{
             count: cart.count,
             total: cart.total,
