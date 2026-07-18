@@ -7,326 +7,280 @@ import { ParallaxLayer } from '@/components/home/primitives/ParallaxLayer';
 import { StageFrame } from '@/components/home/primitives/StageFrame';
 import { HeroWebGL } from '@/components/home/hero/HeroWebGL';
 import { HeroLightField } from '@/components/home/hero/HeroLightField.client';
+import { HeroVideoScrub } from '@/components/home/hero/HeroVideoScrub.client';
+import { HeroStoreIcon } from '@/components/home/hero/HeroStoreIcon.client';
 import lightStyles from '@/components/home/hero/HeroLightField.module.css';
 
 /**
- * HeroOverture — Phase 3: SSR poster/fallback shell + pinned WebGL runway.
+ * HeroOverture — Phase 3: SSR poster shell + pinned runway + scroll-scrubbed video.
  *
- * The Phase 2A composition below is unchanged and REMAINS the poster: it
- * is the LCP, the no-JS render, and the fallback for mobile, reduced
- * motion, weak devices, and WebGL crashes. The only Phase 3 additions are
- * (a) the 300vh runway + sticky frame that pin the stage while scroll
- * scrubs the promise scene, and (b) the <HeroWebGL /> island — a client-
- * only, aria-hidden, pointer-events-none background stage that mounts
- * over the poster art and under the real HTML overture when WebGLGuard
- * approves. Text never enters the canvas.
+ * Layer stack (back → front):
+ *   1. Warm umber underlay          — instant first paint, image-failure safe
+ *   2. Parallax atmosphere blurs    — CSS var depth planes
+ *   3. hero-source.png              — camera breath + pointer parallax (LCP)
+ *   4. Ribbon depth plate           — same image masked to the flowing ribbon
+ *                                     at upper-left, 3 px more parallax → 2.5D
+ *   5. HeroVideoScrub               — scroll-scrubbed video (opacity 0→1→0)
+ *   6. HeroWebGL                    — (kill-switched; reserved R3F slot)
+ *   7. Legibility scrims            — dark radial + mobile bottom gradient
+ *   8. HeroLightField               — CSS-only candles / glow / dust / grain
+ *   9. Overture HTML                — heading, subtitle, CTAs (always on top)
  */
 
-/** Phase 3 runway length — tune after visual review (lab uses 400). */
-const HERO_RUNWAY_VH = 300;
+/** Runway length — scroll travel for the pinned stage. */
+const HERO_RUNWAY_VH = 450;
 
 /**
- * Phase 5B poster image kill-switch — flip to `false` to fall back to the
- * Phase 2A CSS/SVG poster instantly (the image is never requested).
- */
-const HERO_POSTER_IMAGE_ENABLED = true;
-
-/**
- * Cinematic scene kill-switch ("the breathing photograph"). Flip to
- * `false` to restore the plain approved still + base motion layer: no
- * camera breath/push-in, no depth plate, no candle/sheen/glint/grade
- * layers, no scroll timeline.
+ * Cinematic kill-switch — flip to false to disable candle flicker,
+ * silk sheen, glints and scroll grade while keeping base glow + dust.
  */
 const HERO_CINEMATIC_ENABLED = true;
 
 /**
- * Veil depth plate mask — a wide-feathered ellipse over the veil/lace
- * mass at frame-left. The plate is the full C1 image again (offsets can
- * never open holes); the feather lands in the dark field and busy lace
- * texture, and its pointer delta vs the base poster stays ≤3px, so no
- * ghosting on the hands.
+ * Ribbon/fabric depth plate mask.
+ * Covers the flowing burgundy ribbon at the upper-left of the new artwork.
+ * Same full image is used (browser cache hit, never opens a hole).
  */
-const VEIL_PLATE_MASK =
-  'radial-gradient(42% 78% at 10% 56%, #000 45%, transparent 78%)';
+const RIBBON_DEPTH_MASK =
+  'radial-gradient(44% 60% at 20% 26%, #000 40%, transparent 74%)';
+
+/** New hero artwork paths. */
+const HERO_DESKTOP = '/home/hero/posters/hero-source.png';
+const HERO_MOBILE = '/home/hero/posters/hero-mobile-source.png';
 
 /**
- * Hands-only hero poster set (hero art-direction reset). Desktop = C1
- * creation-near-touch (16:9, candlelit hands, touch point at ~48%/45%);
- * mobile = dark 9:16 crop of the SAME C1 master (band x600–1248: ring at
- * left third, touch bead at ~63%/46%, ring-safe under 19.5:9 cover-crop)
- * so both breakpoints live in one candlelit world. The full bride/groom
- * F1 frame and the ivory G2 mobile plate are retired from the visible
- * hero (their poster files remain archived in the same directory).
- * The 1024px breakpoint matches the WebGL guard's viewport gate.
+ * Next-gen format variants of the same artwork, pixel-identical crop/dimensions
+ * to HERO_DESKTOP / HERO_MOBILE. <source type> negotiation picks the smallest
+ * format the browser supports; the original PNGs remain the universal fallback.
  */
-const POSTER = {
-  base: '/home/hero/posters',
-  desktopWidths: [2560, 1920, 1280, 960],
-  mobileWidths: [1080, 750],
-  srcset(variant: 'desktop' | 'mobile', ext: 'avif' | 'webp' | 'jpg'): string {
-    const widths = variant === 'desktop' ? this.desktopWidths : this.mobileWidths;
-    const name = variant === 'desktop' ? 'poster-hands-desktop' : 'poster-hands-mobile-dark';
-    return widths.map((w) => `${this.base}/${name}-${w}.${ext} ${w}w`).join(', ');
-  },
-};
+const HERO_DESKTOP_AVIF = '/home/hero/posters/hero-source.avif';
+const HERO_DESKTOP_WEBP = '/home/hero/posters/hero-source.webp';
+const HERO_MOBILE_AVIF = '/home/hero/posters/hero-mobile-source.avif';
+const HERO_MOBILE_WEBP = '/home/hero/posters/hero-mobile-source.webp';
 
 /**
- * Overture text choreography: driven by HeroStage via CSS vars written on
- * the runway host (fade windows are constants in HeroStage.client.tsx).
- * Defaults keep the text fully visible whenever the stage isn't running.
+ * Overture text choreography vars — written by HeroStage onto the runway.
+ * Defaults keep text fully visible when the stage isn't running.
  */
-const overtureTextStyle: CSSProperties = {
+const textStyle: CSSProperties = {
   opacity: 'var(--hero-text-opacity, 1)',
   pointerEvents: 'var(--hero-text-events, auto)' as CSSProperties['pointerEvents'],
 };
 
 export function HeroOverture() {
   return (
-    /* the runway: scroll travel for the pinned stage; collapses to one
-       viewport under reduced motion (stylesheet !important beats the
-       inline height, and the guard never mounts the canvas there) */
     <section
       data-hero-runway
       className="relative motion-reduce:!h-[100svh]"
       style={{ height: `${HERO_RUNWAY_VH}vh` }}
     >
-      <StageFrame stage="hero" className="sticky top-0 h-[100svh] bg-cherie-ivory">
-        {/* ── Background: sky + warm key light + drifting light strata ── */}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-b from-cherie-ivory via-cherie-mist to-cherie-paper"
-        />
+      <StageFrame stage="hero" className="sticky top-0 h-[100svh] bg-[#1a0f09]">
+        {/* ── 1. Warm umber underlay (instant paint + image-failure fallback) ── */}
         <div
           aria-hidden
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(58% 52% at 26% 16%, rgba(176,138,87,0.14) 0%, rgba(176,138,87,0) 60%)',
+              'radial-gradient(120% 90% at 50% 42%, #2e1c11 0%, #1a0f09 55%, #0e0906 100%)',
           }}
         />
+
+        {/* ── 2. Atmosphere key light ── */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(62% 56% at 50% 38%, rgba(210,158,72,0.18) 0%, transparent 65%)',
+          }}
+        />
+
+        {/* ── Parallax blurs (CSS var depth planes) ── */}
         <ParallaxLayer
           aria-hidden
           depth={-3}
-          className="absolute -left-24 top-[12%] h-56 w-[42rem] rounded-full bg-cherie-lace/50 blur-3xl"
+          className="absolute -left-24 top-[8%] h-56 w-[42rem] rounded-full bg-amber-950/25 blur-3xl"
         />
         <ParallaxLayer
           aria-hidden
           depth={-6}
-          className="absolute -right-32 top-[28%] h-64 w-[46rem] rounded-full bg-cherie-mist/80 blur-3xl"
+          className="absolute -right-32 top-[22%] h-64 w-[46rem] rounded-full bg-amber-950/30 blur-3xl"
         />
         <ParallaxLayer
           aria-hidden
           depth={-8}
-          className="absolute left-[16%] bottom-[14%] h-48 w-[36rem] rounded-full bg-cherie-lace/40 blur-3xl"
+          className="absolute bottom-[14%] left-[16%] h-48 w-[36rem] rounded-full bg-amber-900/15 blur-3xl"
         />
-
-        {/* ── The promise, suggested: ribbon curving to a ring/light at center ── */}
-        <ParallaxLayer aria-hidden depth={6} className="absolute inset-x-0 top-1/2 -translate-y-1/2">
-          <svg
-            viewBox="0 0 1200 360"
-            fill="none"
-            className="mx-auto w-full max-w-6xl"
-            preserveAspectRatio="xMidYMid meet"
-          >
-            <defs>
-              <radialGradient id="heroTouchGlow" cx="0.5" cy="0.5" r="0.5">
-                <stop offset="0" stopColor="#B08A57" stopOpacity="0.5" />
-                <stop offset="0.4" stopColor="#B08A57" stopOpacity="0.16" />
-                <stop offset="1" stopColor="#B08A57" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-            {/* red ribbon — the connector, arcing toward the center */}
-            <path
-              d="M70 120 C 280 120, 360 250, 600 250 C 840 250, 920 120, 1130 120"
-              stroke="#8F1D2C"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            {/* the light of the promise, dead center */}
-            <circle cx="600" cy="250" r="66" fill="url(#heroTouchGlow)" />
-            {/* the ring hint */}
-            <circle cx="600" cy="250" r="8.5" stroke="#B08A57" strokeWidth="2.5" />
-            <circle cx="600" cy="250" r="2" fill="#B08A57" />
-          </svg>
-        </ParallaxLayer>
-
-        {/* ── Foreground foliage blurs (nearest planes, strongest drift) ── */}
         <ParallaxLayer
           aria-hidden
           depth={12}
-          className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cherie-velvet/10 blur-2xl"
+          className="bg-cherie-velvet/12 absolute -bottom-20 -left-20 h-72 w-72 rounded-full blur-2xl"
         />
         <ParallaxLayer
           aria-hidden
           depth={10}
-          className="absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-cherie-burgundy/10 blur-2xl"
+          className="bg-cherie-burgundy/12 absolute -bottom-24 -right-16 h-80 w-80 rounded-full blur-2xl"
         />
 
-        {/* ── Dark underlay (all breakpoints): both hero plates are dark
-            candlelit C1 crops and the overture text is ivory, so the
-            image-failure/no-image state must also be dark. Umber tones
-            sampled from C1's field. ── */}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(120% 90% at 50% 42%, #2b1e18 0%, #17100c 55%, #0e0a08 100%)',
-          }}
-        />
+        {/* ── 3. Hero poster: the new artwork with camera breath + parallax ── */}
+        <div aria-hidden className="absolute inset-0 overflow-hidden">
+          {/* scroll push-in wrapper */}
+          <div
+            className="absolute inset-0"
+            style={{ transform: 'scale(calc(1 + var(--hero-rich, 0) * 0.028))' }}
+          >
+            {/* camera breath wrapper */}
+            <div className={`absolute inset-0 ${lightStyles.cameraBreath}`}>
+              {/* base image */}
+              <picture>
+                <source
+                  type="image/avif"
+                  media="(min-width: 1024px)"
+                  srcSet={HERO_DESKTOP_AVIF}
+                />
+                <source
+                  type="image/webp"
+                  media="(min-width: 1024px)"
+                  srcSet={HERO_DESKTOP_WEBP}
+                />
+                <source
+                  type="image/png"
+                  media="(min-width: 1024px)"
+                  srcSet={HERO_DESKTOP}
+                />
+                <source
+                  type="image/avif"
+                  media="(max-width: 1023px)"
+                  srcSet={HERO_MOBILE_AVIF}
+                />
+                <source
+                  type="image/webp"
+                  media="(max-width: 1023px)"
+                  srcSet={HERO_MOBILE_WEBP}
+                />
+                <source
+                  type="image/png"
+                  media="(max-width: 1023px)"
+                  srcSet={HERO_MOBILE}
+                />
+                <img
+                  src={HERO_DESKTOP}
+                  alt=""
+                  fetchPriority="high"
+                  loading="eager"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                  style={{
+                    transform:
+                      'translate3d(calc(var(--hero-pointer-x,0)*-10px),calc(var(--hero-pointer-y,0)*-7px),0) scale(var(--hero-para-s,1))',
+                  }}
+                />
+              </picture>
 
-        {/* ── Hands-only poster image: C1 (desktop) / G2 (mobile) over the
-            CSS poster layers, under the canvas and text. The CSS/SVG layers
-            stay beneath as instant first paint and image-failure fallback.
-            Wrapper stack: overflow clip → scroll push-in (var transform) →
-            camera breath (keyframe transform) — separate elements so the
-            two transform sources never fight, all composite-only. ── */}
-        {HERO_POSTER_IMAGE_ENABLED ? (
-          <div aria-hidden className="absolute inset-0 overflow-hidden">
-            <div
-              className="absolute inset-0"
-              style={{ transform: 'scale(calc(1 + var(--hero-rich, 0) * 0.028))' }}
-            >
-              <div className={`absolute inset-0 ${lightStyles.cameraBreath}`}>
+              {/* ── 4. Ribbon / fabric depth plate (2.5D) ── */}
+              {HERO_CINEMATIC_ENABLED && (
+                // Same desktop artwork as the base image above, masked to the
+                // ribbon shape. Routed through the identical <picture> source
+                // list so the browser reuses the already-cached AVIF/WebP
+                // response instead of an extra fetch of the original PNG.
                 <picture>
-            <source
-              type="image/avif"
-              media="(min-width: 1024px)"
-              srcSet={POSTER.srcset('desktop', 'avif')}
-              sizes="100vw"
-            />
-            <source
-              type="image/webp"
-              media="(min-width: 1024px)"
-              srcSet={POSTER.srcset('desktop', 'webp')}
-              sizes="100vw"
-            />
-            <source
-              type="image/avif"
-              media="(max-width: 1023px)"
-              srcSet={POSTER.srcset('mobile', 'avif')}
-              sizes="100vw"
-            />
-            <source
-              type="image/webp"
-              media="(max-width: 1023px)"
-              srcSet={POSTER.srcset('mobile', 'webp')}
-              sizes="100vw"
-            />
-            <img
-              src={`${POSTER.base}/poster-hands-desktop-1920.jpg`}
-              srcSet={`${POSTER.srcset('desktop', 'jpg')}, ${POSTER.srcset('mobile', 'jpg')}`}
-              sizes="100vw"
-              alt=""
-              fetchPriority="high"
-              loading="eager"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-cover object-center"
-              /* vars are written by useHeroPointer only on fine-pointer
-                 desktop without reduced motion; everywhere else the
-                 defaults keep this an identity transform (approved
-                 framing, zero layout shift) */
-              style={{
-                transform:
-                  'translate3d(calc(var(--hero-pointer-x, 0) * -10px), calc(var(--hero-pointer-y, 0) * -7px), 0) scale(var(--hero-para-s, 1))',
-              }}
-            />
+                  <source type="image/avif" srcSet={HERO_DESKTOP_AVIF} />
+                  <source type="image/webp" srcSet={HERO_DESKTOP_WEBP} />
+                  <source type="image/png" srcSet={HERO_DESKTOP} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={HERO_DESKTOP}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 hidden h-full w-full object-cover object-center lg:block"
+                    style={{
+                      WebkitMaskImage: RIBBON_DEPTH_MASK,
+                      maskImage: RIBBON_DEPTH_MASK,
+                      transform:
+                        'translate3d(calc(var(--hero-pointer-x,0)*-13px),calc(var(--hero-pointer-y,0)*-9px),0) scale(var(--hero-para-s,1))',
+                    }}
+                  />
                 </picture>
-
-                {/* ── Veil depth plate: the full image again, feather-masked
-                    to the veil mass and moving 3px more than the base — a
-                    2.5D read with zero cut-edge risk. Same srcset as the
-                    poster (browser cache hit), lazy, desktop-only. ── */}
-                {HERO_CINEMATIC_ENABLED ? (
-                  <picture>
-                    <source
-                      type="image/avif"
-                      media="(min-width: 1024px)"
-                      srcSet={POSTER.srcset('desktop', 'avif')}
-                      sizes="100vw"
-                    />
-                    <img
-                      src={`${POSTER.base}/poster-hands-desktop-1920.jpg`}
-                      srcSet={POSTER.srcset('desktop', 'jpg')}
-                      sizes="100vw"
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="absolute inset-0 hidden h-full w-full object-cover object-center lg:block"
-                      style={{
-                        WebkitMaskImage: VEIL_PLATE_MASK,
-                        maskImage: VEIL_PLATE_MASK,
-                        transform:
-                          'translate3d(calc(var(--hero-pointer-x, 0) * -13px), calc(var(--hero-pointer-y, 0) * -9px), 0) scale(var(--hero-para-s, 1))',
-                      }}
-                    />
-                  </picture>
-                ) : null}
-              </div>
+              )}
             </div>
           </div>
-        ) : null}
+        </div>
 
-        {/* ── The WebGL stage (Phase 3): client-only island, mounts over the
-            poster art and under the overture text when the guard approves ── */}
+        {/* ── 5. Scroll-scrubbed cinematic video ── */}
+        <HeroVideoScrub />
+
+        {/* ── 6. WebGL stage (kill-switched, reserved) ── */}
         <HeroWebGL />
 
-        {/* ── Legibility scrim: both plates are dark candlelit C1 crops and
-            the text is ivory, so one quiet dark radial deepens the field
-            behind the overture (no ivory fog over the painting). Rides the
-            choreography var. ── */}
+        {/* ── 7a. Centre legibility scrim (rides choreography var) ── */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             opacity: 'var(--hero-text-opacity, 1)',
             background:
-              'radial-gradient(58% 55% at 50% 52%, rgba(12,8,6,0.48) 0%, rgba(12,8,6,0.26) 45%, rgba(12,8,6,0) 72%)',
+              'radial-gradient(58% 55% at 50% 52%, rgba(10,6,4,0.50) 0%, rgba(10,6,4,0.26) 45%, rgba(10,6,4,0) 72%)',
           }}
         />
 
-        {/* ── Motion layer: pointer-reactive candlelight, load bloom, gold
-            dust, film grain — and, when cinematic, candle flicker, silk
-            sheen, ring glints, and the scroll-driven grade. CSS-only,
-            pointer-events-none, desktop-only; sits over poster + scrims,
-            under the overture text. ── */}
+        {/* ── 7b. Mobile bottom gradient ── */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 lg:hidden"
+          style={{
+            background:
+              'linear-gradient(to top, rgba(10,6,4,0.80) 0%, rgba(10,6,4,0.46) 26%, rgba(10,6,4,0) 52%)',
+          }}
+        />
+
+        {/* ── 8. HeroLightField — candles / glow / dust / grain ── */}
         <HeroLightField cinematic={HERO_CINEMATIC_ENABLED} />
 
-        {/* ── Overture — real HTML, above the stage, choreographed via vars ── */}
+        {/* ── 9. Overture text ── */}
         <div
-          className="cherie-container relative z-10 flex h-full flex-col items-center justify-center py-24 text-center"
-          style={overtureTextStyle}
+          className="cherie-container relative z-10 flex h-full flex-col items-center justify-end pb-12 text-center lg:justify-center lg:py-24"
+          style={textStyle}
         >
-          <p className="text-xs font-medium uppercase tracking-[0.3em] text-cherie-brass">
-            CHERIE DAY · Maison
-          </p>
-          <h1 className="mt-6 max-w-4xl text-display-xl text-cherie-ivory">
-            Her şey bir dokunuşla başlar.
-          </h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-cherie-ivory/80 md:text-lg md:leading-8">
-            Sözünüzün ilk anından son hatırasına; davetiyeden organizasyona,
-            hediyeden albüme — bütün bir gün, tek bir imzayla.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-col items-center delay-300 duration-1000 animate-in fade-in slide-in-from-bottom-8 fill-mode-both">
+
+            <h1 className="lg:text-display-xl mt-4 max-w-4xl font-display text-[2.75rem] leading-[1.05] text-cherie-ivory drop-shadow-lg lg:mt-6">
+              <span className="hidden sm:inline">Bir dokunuşunuz yeter;</span>
+              <span className="sm:hidden">Dokunuşunuz yeter;</span> <br />
+              gerisi bize emanet.
+            </h1>
+            <p className="mt-4 max-w-xl px-2 text-sm leading-relaxed text-cherie-ivory/90 drop-shadow-md md:text-lg md:leading-8 lg:mt-6">
+              İlk ‘evet’in heyecanı, son dansın ışığı sizin; davetiyeden albüme, her
+              ince detay bizim.
+            </p>
+          </div>
+
+          <div className="delay-500 mt-8 flex w-full flex-col items-center justify-center gap-3 px-6 duration-1000 animate-in fade-in slide-in-from-bottom-8 fill-mode-both sm:w-auto sm:flex-row lg:mt-10">
             <Link
               href={PRIMARY_CTA.href}
-              className="inline-flex h-12 items-center justify-center rounded-control bg-cherie-burgundy px-8 text-base font-medium text-cherie-ivory transition-colors duration-control ease-cherie hover:bg-cherie-cherry"
+              className="flex h-12 w-full items-center justify-center rounded-control bg-cherie-burgundy px-8 text-sm font-medium text-cherie-ivory shadow-[0_4px_20px_rgba(58,16,24,0.4)] transition-all duration-control ease-cherie hover:bg-cherie-cherry hover:shadow-[0_4px_25px_rgba(58,16,24,0.6)] sm:w-auto"
             >
               {PRIMARY_CTA.label}
             </Link>
             <Link
               href={ROUTES.maison}
-              className="inline-flex h-12 items-center justify-center rounded-control border border-cherie-ivory/50 bg-cherie-ivory/10 px-8 text-base font-medium text-cherie-ivory backdrop-blur-sm transition-colors duration-control ease-cherie hover:bg-cherie-ivory/20"
+              className="flex h-12 w-full items-center justify-center rounded-control border border-cherie-ivory/30 bg-cherie-ivory/10 px-8 text-sm font-medium text-cherie-ivory shadow-[0_4px_20px_rgba(0,0,0,0.15)] backdrop-blur-md transition-all duration-control ease-cherie hover:bg-cherie-ivory/20 sm:w-auto"
             >
               Maison&rsquo;u Keşfet
             </Link>
           </div>
 
-          {/* scroll cue */}
-          <div aria-hidden className="absolute bottom-10 left-1/2 -translate-x-1/2">
+          {/* scroll cue — desktop only */}
+          <div
+            aria-hidden
+            className="absolute bottom-10 left-1/2 hidden -translate-x-1/2 lg:block"
+          >
             <div className="h-14 w-px animate-pulse bg-gradient-to-b from-transparent via-cherie-brass to-transparent" />
           </div>
         </div>
+
+        {/* ── 10. Floating Store Icon (Desktop Only) ── */}
+        <HeroStoreIcon />
       </StageFrame>
     </section>
   );

@@ -65,6 +65,9 @@ export const serviceCities: ServiceCity[] = [
   { id: 'city-izmir', city_name: 'İzmir', city_slug: 'izmir', travel_fee_model: 'fixed', notes_tr: 'Sabit ulaşım katkısıyla.' },
   { id: 'city-bursa', city_name: 'Bursa', city_slug: 'bursa', travel_fee_model: 'quote', notes_tr: 'Ulaşım teklife göre belirlenir.' },
   { id: 'city-antalya', city_name: 'Antalya', city_slug: 'antalya', travel_fee_model: 'quote', notes_tr: 'Ulaşım teklife göre belirlenir.' },
+  { id: 'city-adana', city_name: 'Adana', city_slug: 'adana', travel_fee_model: 'quote', notes_tr: 'Ulaşım teklife göre belirlenir.' },
+  { id: 'city-mersin', city_name: 'Mersin', city_slug: 'mersin', travel_fee_model: 'quote', notes_tr: 'Ulaşım teklife göre belirlenir.' },
+  { id: 'city-bodrum', city_name: 'Bodrum', city_slug: 'bodrum', travel_fee_model: 'quote', notes_tr: 'Sezon dışında öncelikli planlama.' },
 ];
 
 /** Which package slugs are available in which city (seed availability). */
@@ -74,4 +77,7 @@ export const cityAvailability: Record<string, string[]> = {
   izmir: ['dugun-organizasyonu', 'nisan-soz-organizasyonu', 'dogum-gunu-konsepti', 'foto-video'],
   bursa: ['nisan-soz-organizasyonu', 'dekor-konsept'],
   antalya: ['dugun-organizasyonu', 'dekor-konsept', 'foto-video'],
+  adana: ['dugun-organizasyonu', 'nisan-soz-organizasyonu', 'foto-video'],
+  mersin: ['dugun-organizasyonu', 'dekor-konsept', 'foto-video'],
+  bodrum: ['dugun-organizasyonu', 'dekor-konsept', 'foto-video'],
 };

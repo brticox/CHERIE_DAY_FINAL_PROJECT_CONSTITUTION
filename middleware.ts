@@ -50,41 +50,31 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll: () => request.cookies.getAll(),
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+        setAll(
+          cookiesToSet: { name: string; value: string; options: CookieOptions }[],
+          headers: Record<string, string>,
+        ) {
           for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
           response = NextResponse.next({ request });
           for (const { name, value, options } of cookiesToSet) {
             response.cookies.set(name, value, options);
+          }
+          for (const [name, value] of Object.entries(headers)) {
+            response.headers.set(name, value);
           }
         },
       },
     },
   );
 
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
+  const { data } = await supabase.auth.getClaims();
+  const hasSession = Boolean(data?.claims?.sub);
 
-  if ((isAdmin || (isAccount && !isPublicAccount)) && !user) {
+  if ((isAdmin || (isAccount && !isPublicAccount)) && !hasSession) {
     return loginRedirect(request, response, 'session');
   }
 
-  if (isAdmin && user) {
-    const { data: staff } = await supabase
-      .from('staff_users')
-      .select('role, is_active')
-      .eq('auth_user_id', user.id)
-      .eq('is_active', true)
-      .maybeSingle();
-
-    if (!staff) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/hesap';
-      url.search = '?error=staff_required';
-      return copyCookies(response, NextResponse.redirect(url));
-    }
-  }
-
-  if (isPublicAccount && user && path !== '/hesap/sifreyi-yenile') {
+  if (isPublicAccount && hasSession && path !== '/hesap/sifreyi-yenile') {
     const next = request.nextUrl.searchParams.get('next');
     const url = request.nextUrl.clone();
     url.pathname = next?.startsWith('/') && !next.startsWith('//') ? next : '/hesap';
@@ -96,6 +86,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|mp4|webm)$).*)'],
+  // Refresh sessions only where identity is consumed. Authorization remains in
+  // server guards/layouts, so the public storefront never pays an auth round-trip.
+  matcher: ['/admin/:path*', '/hesap/:path*', '/odeme'],
 };
-

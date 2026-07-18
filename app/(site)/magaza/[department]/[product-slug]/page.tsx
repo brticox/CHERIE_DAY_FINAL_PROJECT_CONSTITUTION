@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import {
+  getCollectionBySlug,
   getDepartmentBySlug,
   getProductBySlug,
-  getProducts,
   getRelatedProducts,
 } from '@/lib/data/catalog';
 import { buildMetadata, productLd } from '@/lib/data/seo';
@@ -14,10 +14,13 @@ import { JsonLd } from '@/components/layout/json-ld';
 import { ProductDetail } from '@/components/commerce/product-detail';
 import { ProductGrid } from '@/components/commerce/product-grid';
 
-export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map((p) => ({ department: p.department_slug, 'product-slug': p.slug }));
-}
+// Server-render each PDP per request (like the department listing, which reads
+// searchParams). generateStaticParams + dynamicParams left new/renamed products
+// resolving to a prerendered static 404 on Vercel, because the page component
+// never ran on-demand for a param absent at build time. force-dynamic guarantees
+// the product is resolved from the live database on every request, so a newly
+// published or renamed product's PDP is correct with no redeploy.
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
@@ -27,7 +30,11 @@ export async function generateMetadata({
   const { department, 'product-slug': slug } = await params;
   const product = await getProductBySlug(department, slug);
   if (!product) return {};
-  const collection = product.collection_slug ? ` | ${product.collection_slug}` : '';
+  // Use the collection's display name (e.g. "Maison Rouge"), never its raw slug.
+  const collectionName = product.collection_slug
+    ? ((await getCollectionBySlug(product.collection_slug))?.name ?? null)
+    : null;
+  const collection = collectionName ? ` | ${collectionName}` : '';
   return buildMetadata({
     title: `${product.name}${collection} | CHERIE DAY Ürün Evi`,
     description: product.description ?? product.name,
@@ -47,7 +54,12 @@ export default async function ProductPage({
   ]);
   if (!product) notFound();
 
-  const related = await getRelatedProducts(product);
+  const [related, collection] = await Promise.all([
+    getRelatedProducts(product),
+    product.collection_slug
+      ? getCollectionBySlug(product.collection_slug)
+      : Promise.resolve(null),
+  ]);
   const path = `${ROUTES.magaza}/${department}/${slug}`;
 
   return (
@@ -62,7 +74,7 @@ export default async function ProductPage({
         ]}
       />
 
-      <ProductDetail product={product} department={dep} />
+      <ProductDetail product={product} department={dep} collection={collection} />
 
       {related.length > 0 && (
         <section className="mt-24 border-t border-cherie-lace pt-16">

@@ -9,10 +9,12 @@ const email = z
 
 const password = z
   .string()
-  .min(8, 'Şifreniz en az 8 karakter olmalı.')
+  .min(12, 'Şifreniz en az 12 karakter olmalı.')
   .max(72, 'Şifreniz en fazla 72 karakter olabilir.')
-  .regex(/[a-zA-ZÇĞİÖŞÜçğıöşü]/, 'Şifreniz en az bir harf içermeli.')
-  .regex(/[0-9]/, 'Şifreniz en az bir rakam içermeli.');
+  .regex(/[a-zçğıöşü]/, 'Şifreniz en az bir küçük harf içermeli.')
+  .regex(/[A-ZÇĞİÖŞÜ]/, 'Şifreniz en az bir büyük harf içermeli.')
+  .regex(/[0-9]/, 'Şifreniz en az bir rakam içermeli.')
+  .regex(/[^a-zA-ZÇĞİÖŞÜçğıöşü0-9]/, 'Şifreniz en az bir özel karakter içermeli.');
 
 export const loginSchema = z.object({
   email,
@@ -63,9 +65,18 @@ export type AuthActionState = {
 export const INITIAL_AUTH_STATE: AuthActionState = { status: 'idle' };
 
 export function safeNextPath(value: string | null | undefined, fallback = '/hesap') {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/api/')) {
+  if (
+    !value ||
+    value.length > 500 ||
+    !value.startsWith('/') ||
+    value.startsWith('//') ||
+    value.startsWith('/\\') ||
+    value.includes('\\') ||
+    /[\u0000-\u001f\u007f]/.test(value) ||
+    value.startsWith('/api/') ||
+    value.startsWith('/auth/')
+  ) {
     return fallback;
   }
   return value;
 }
-

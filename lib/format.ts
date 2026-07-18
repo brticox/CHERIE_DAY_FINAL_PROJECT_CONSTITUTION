@@ -1,4 +1,9 @@
-import type { PriceBand, ProductBehavior, ServiceBehavior, ServicePackage } from '@/lib/data/types';
+import type {
+  PriceBand,
+  ProductBehavior,
+  ServiceBehavior,
+  ServicePackage,
+} from '@/lib/data/types';
 
 const TRY = new Intl.NumberFormat('tr-TR', {
   style: 'currency',
@@ -6,52 +11,88 @@ const TRY = new Intl.NumberFormat('tr-TR', {
   maximumFractionDigits: 0,
 });
 
+const TRY_MINOR = new Intl.NumberFormat('tr-TR', {
+  style: 'currency',
+  currency: 'TRY',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 export function formatTRY(amount: number | null | undefined): string | null {
   if (amount === null || amount === undefined) return null;
   return TRY.format(amount);
 }
 
+export function formatTRYMinor(
+  amountMinor: number | bigint | null | undefined,
+): string | null {
+  if (amountMinor === null || amountMinor === undefined) return null;
+  return TRY_MINOR.format(Number(amountMinor) / 100);
+}
+
 /** Turkish behavior badge for products (docs/26, docs/44). */
 export function productBehaviorBadge(behavior: ProductBehavior): string {
   switch (behavior) {
-    case 'cart_enabled': return 'İncele';
-    case 'proof_required_cart': return 'Tasarım Onaylı';
-    case 'digital_checkout': return 'Dijital';
-    case 'quote_required': return 'Teklif ile';
-    case 'reservation_request': return 'Rezervasyonla';
-    case 'city_dependent_service': return 'Şehre Bağlı';
-    case 'inquiry_only': return 'Randevu ile';
+    case 'cart_enabled':
+      return 'İncele';
+    case 'proof_required_cart':
+      return 'Tasarım Onaylı';
+    case 'digital_checkout':
+      return 'Dijital';
+    case 'quote_required':
+      return 'Teklif ile';
+    case 'reservation_request':
+      return 'Rezervasyonla';
+    case 'city_dependent_service':
+      return 'Şehre Bağlı';
+    case 'inquiry_only':
+      return 'Randevu ile';
   }
 }
 
 /** Primary CTA label per behavior (docs/39 §5). Placeholder — no cart yet. */
 export function productPrimaryCta(behavior: ProductBehavior): string {
   switch (behavior) {
-    case 'cart_enabled': return 'Sepete Ekle';
-    case 'proof_required_cart': return 'Tasarımı Başlat';
-    case 'digital_checkout': return 'Dijital Davetiye Oluştur';
-    case 'quote_required': return 'Teklif Al';
-    case 'reservation_request': return 'Rezervasyon Başlat';
-    case 'city_dependent_service': return 'Şehrimde Hizmet Var mı?';
-    case 'inquiry_only': return 'Tasarım İçin Görüşelim';
+    case 'cart_enabled':
+      return 'Sepete Ekle';
+    case 'proof_required_cart':
+      return 'Tasarımı Başlat';
+    case 'digital_checkout':
+      return 'Dijital Davetiye Oluştur';
+    case 'quote_required':
+      return 'Teklif Al';
+    case 'reservation_request':
+      return 'Rezervasyon Başlat';
+    case 'city_dependent_service':
+      return 'Şehrimde Hizmet Var mı?';
+    case 'inquiry_only':
+      return 'Tasarım İçin Görüşelim';
   }
 }
 
 export function serviceBehaviorBadge(behavior: ServiceBehavior): string {
   switch (behavior) {
-    case 'quote_required': return 'Teklif ile';
-    case 'reservation_request': return 'Rezervasyonla';
-    case 'city_dependent_service': return 'Şehre Bağlı';
-    case 'inquiry_only': return 'Danışmanlıkla';
+    case 'quote_required':
+      return 'Teklif ile';
+    case 'reservation_request':
+      return 'Rezervasyonla';
+    case 'city_dependent_service':
+      return 'Şehre Bağlı';
+    case 'inquiry_only':
+      return 'Danışmanlıkla';
   }
 }
 
 export function servicePrimaryCta(behavior: ServiceBehavior): string {
   switch (behavior) {
-    case 'reservation_request': return 'Randevu İste';
-    case 'quote_required': return 'Teklif Al';
-    case 'city_dependent_service': return 'Şehrimde Hizmet Var mı?';
-    case 'inquiry_only': return 'Bu Konsepti Konuşalım';
+    case 'reservation_request':
+      return 'Randevu İste';
+    case 'quote_required':
+      return 'Teklif Al';
+    case 'city_dependent_service':
+      return 'Şehrimde Hizmet Var mı?';
+    case 'inquiry_only':
+      return 'Bu Konsepti Konuşalım';
   }
 }
 

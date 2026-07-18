@@ -1,67 +1,98 @@
 import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
 
 import type { OccasionTile } from '@/lib/home/home-data';
-import { ParallaxLayer } from '@/components/home/primitives/ParallaxLayer';
 import { Reveal } from '@/components/home/primitives/Reveal';
 import { SectionShell } from '@/components/home/primitives/SectionShell';
 
-/** Per-occasion diorama tint (token palette only — no new colors). */
-const TINTS = [
-  'from-cherie-lace/70 to-cherie-paper',
-  'from-cherie-mist/80 to-cherie-paper',
-  'from-cherie-paper to-cherie-lace/60',
-  'from-cherie-lace/50 to-cherie-mist/70',
-] as const;
+/** Per-occasion tonal scene (token palette only). */
+const SCENES: Record<string, string> = {
+  isteme: 'from-cherie-lace/80 via-cherie-paper to-cherie-mist',
+  'nisan-soz': 'from-cherie-mist via-cherie-paper to-cherie-lace/70',
+  nikah: 'from-cherie-paper via-cherie-ivory to-cherie-lace/60',
+  dugun: 'from-cherie-burgundy via-cherie-velvet to-cherie-velvet',
+};
 
 /**
- * OccasionDioramas — "Hangi gününüz için buradasınız?"
- * Four ceremony windows (İsteme → Söz/Nişan → Nikah → Düğün), each a small
- * 2-layer diorama: tinted scene + floating object placeholder that drifts on
- * hover and with the cursor field. The ribbon marks each doorway's threshold.
+ * OccasionDioramas — the ceremony arc. Three quiet lead-up rites (İsteme →
+ * Söz/Nişan → Nikah) build across the top; the Düğün flagship anchors the
+ * bottom at full width. Deliberately asymmetric — no equal four-card row.
  */
 export function OccasionDioramas({ occasions }: { occasions: OccasionTile[] }) {
+  if (!occasions.length) return null;
+  const flagship = occasions[occasions.length - 1]!;
+  const lead = occasions.slice(0, -1);
+
   return (
     <SectionShell
       eyebrow="Deneyimler"
       title="Hangi gününüz için buradasınız?"
-      lede="İstemeden düğüne — her törenin kendi dünyası, kendi detayları, kendi zarafeti var."
+      lede="İlk istemeden düğün gecesine — her tören kendi dünyasını, kendi zarafetini taşır."
       className="bg-cherie-ivory"
     >
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {occasions.map((occasion, i) => (
-          <Reveal key={occasion.slug} delay={i * 0.1}>
+      {/* lead-up rites */}
+      <div className="grid gap-5 sm:grid-cols-3">
+        {lead.map((o, i) => (
+          <Reveal key={o.slug} delay={i * 0.1}>
             <Link
-              href={occasion.href}
-              className="group relative block overflow-hidden rounded-card border border-cherie-lace shadow-card transition-transform duration-card ease-cherie hover:-translate-y-1"
+              href={o.href}
+              className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-card-lg border border-cherie-lace shadow-card transition-transform duration-card ease-cherie hover:-translate-y-1.5"
             >
-              {/* diorama scene layer */}
               <div
-                className={`relative aspect-[4/5] bg-gradient-to-b ${TINTS[i % TINTS.length]}`}
+                className={`cd-grain absolute inset-0 bg-gradient-to-b ${SCENES[o.slug] ?? SCENES.isteme}`}
+              />
+              {/* threshold hairline */}
+              <div
+                aria-hidden
+                className="absolute inset-x-6 top-[42%] h-px bg-cherie-cherry/40 transition-colors duration-card ease-cherie group-hover:bg-cherie-cherry"
+              />
+              <span
+                aria-hidden
+                className="absolute left-6 top-6 font-display text-sm tracking-[0.3em] text-cherie-brass"
               >
-                {/* floating ceremony-object placeholder (final art in Phase 5) */}
-                <ParallaxLayer
-                  aria-hidden
-                  depth={6 + i * 2}
-                  className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2"
-                >
-                  <div className="h-20 w-20 rounded-full border border-cherie-brass/50 bg-cherie-ivory/70 shadow-card transition-transform duration-card ease-cherie group-hover:scale-105" />
-                </ParallaxLayer>
-                {/* ribbon threshold: thin cherry knot line at the doorway */}
-                <div
-                  aria-hidden
-                  className="absolute inset-x-6 bottom-[26%] h-px bg-cherie-cherry/50 transition-colors duration-card ease-cherie group-hover:bg-cherie-cherry"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-cherie-ivory via-cherie-ivory/90 to-transparent p-5 pt-10">
-                  <h3 className="font-display text-xl text-cherie-ink">{occasion.name}</h3>
-                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-cherie-soft-ink">
-                    {occasion.summary}
-                  </p>
-                </div>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div className="relative bg-gradient-to-t from-cherie-ivory via-cherie-ivory/92 to-transparent p-6 pt-14">
+                <h3 className="font-display text-2xl text-cherie-ink">{o.name}</h3>
+                <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-cherie-soft-ink">
+                  {o.summary}
+                </p>
               </div>
             </Link>
           </Reveal>
         ))}
       </div>
+
+      {/* Düğün flagship */}
+      <Reveal delay={0.15} className="mt-5">
+        <Link
+          href={flagship.href}
+          className="group relative flex min-h-[18rem] flex-col justify-end overflow-hidden rounded-card-lg border border-cherie-lace text-cherie-ivory shadow-card transition-transform duration-card ease-cherie hover:-translate-y-1"
+        >
+          <div
+            className={`cd-grain absolute inset-0 bg-gradient-to-br ${SCENES[flagship.slug] ?? SCENES.dugun}`}
+          />
+          <div aria-hidden className="absolute inset-0">
+            <div className="cd-sheen" />
+            <div className="m-vignette" />
+          </div>
+          <div className="relative max-w-2xl p-8 sm:p-12">
+            <span className="text-xs font-medium uppercase tracking-[0.24em] text-cherie-brass">
+              Büyük Gün
+            </span>
+            <h3 className="mt-3 font-display text-4xl leading-tight text-cherie-ivory sm:text-5xl">
+              {flagship.name}
+            </h3>
+            <p className="mt-3 max-w-lg text-base leading-7 text-cherie-lace/90">
+              {flagship.summary}
+            </p>
+            <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium underline-offset-4 group-hover:underline">
+              Düğün Dünyasına Gir
+              <ArrowUpRight className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+            </span>
+          </div>
+        </Link>
+      </Reveal>
     </SectionShell>
   );
 }

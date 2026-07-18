@@ -21,7 +21,7 @@ export const checkoutSchema = z
       .optional()
       .or(z.literal('')),
     shippingMethodId: z.string().uuid('Teslimat yöntemini seçin.'),
-    paymentProvider: z.union([z.enum(['paytr', 'iyzico']), z.literal('')]).optional(),
+    paymentProvider: z.union([z.literal('paytr'), z.literal('')]).optional(),
     invoiceType: z.enum(['bireysel', 'kurumsal']),
     invoiceName: requiredText('Fatura adı', 160),
     identityNumber: z

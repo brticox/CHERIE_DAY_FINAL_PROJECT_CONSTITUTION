@@ -5,6 +5,13 @@ import { cookies } from 'next/headers';
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import {
+  addMinor,
+  minorToTryDecimal,
+  multiplyMinor,
+  percentageOfMinor,
+  tryToMinor,
+} from '@/lib/payments/money';
 import type { Database, Json } from '@/lib/supabase/database.types';
 import type { AddCartItemInput } from '@/lib/validation/cart';
 
@@ -108,7 +115,7 @@ async function findOrCreateCart(create = false) {
 
 export async function getCart() {
   const context = await findOrCreateCart(false);
-  if (!context.cart) return { id: null, items: [], total: 0, count: 0 };
+  if (!context.cart) return { id: null, items: [], total: 0, totalMinor: 0, count: 0 };
   const { data, error } = await context.admin
     .from('cart_items')
     .select('*')
@@ -117,11 +124,20 @@ export async function getCart() {
   if (error) throw new CartError('cart_read_failed', 'Seçimleriniz okunamadı.', 502);
   const items = (data ?? []) as CartItemRow[];
   const active = items.filter((item) => !item.removed_at);
+  const totalMinor = active.reduce(
+    (sum, item) =>
+      addMinor(
+        sum,
+        tryToMinor(String(item.total_price_snapshot ?? 0), { allowZero: true }),
+      ),
+    0,
+  );
   return {
     id: context.cart.id,
     items,
     count: active.reduce((sum, item) => sum + Number(item.quantity), 0),
-    total: active.reduce((sum, item) => sum + Number(item.total_price_snapshot ?? 0), 0),
+    total: Number(minorToTryDecimal(totalMinor)),
+    totalMinor,
   };
 }
 
@@ -238,23 +254,34 @@ export async function addCartItem(input: AddCartItemInput) {
   const tier = (tierRows ?? []).find(
     (row) => !row.variant_id || row.variant_id === input.variantId,
   );
-  const unitPrice = Number(tier?.unit_price ?? variant?.price ?? product.base_price);
-  if (!Number.isFinite(unitPrice) || unitPrice < 0)
+  let unitPriceMinor: number;
+  try {
+    unitPriceMinor = tryToMinor(
+      String(tier?.unit_price ?? variant?.price ?? product.base_price),
+    );
+  } catch {
     throw new CartError(
       'price_unavailable',
       'Bu ürün için geçerli fiyat bulunamadı.',
       409,
     );
-  const baseTotal = unitPrice * input.quantity;
-  const addonTotal = addons.reduce(
+  }
+  const baseTotalMinor = multiplyMinor(unitPriceMinor, input.quantity);
+  const addonTotalMinor = addons.reduce(
     (sum, addon) =>
-      sum +
-      (addon.price_type === 'percentage'
-        ? baseTotal * (Number(addon.price) / 100)
-        : Number(addon.price)),
+      addMinor(
+        sum,
+        addon.price_type === 'percentage'
+          ? percentageOfMinor(baseTotalMinor, String(addon.price))
+          : tryToMinor(String(addon.price), { allowZero: true }),
+      ),
     0,
   );
-  const total = Math.round((baseTotal + addonTotal) * 100) / 100;
+  const totalMinor = addMinor(baseTotalMinor, addonTotalMinor);
+  const unitPrice = Number(minorToTryDecimal(unitPriceMinor));
+  const baseTotal = Number(minorToTryDecimal(baseTotalMinor));
+  const addonTotal = Number(minorToTryDecimal(addonTotalMinor));
+  const total = Number(minorToTryDecimal(totalMinor));
 
   if (input.uploadIds.length) {
     const { data: uploads } = await admin
@@ -373,43 +400,20 @@ export async function mergeGuestCartForCurrentUser() {
   if (!cartConfigured()) return;
   const context = await owner(false);
   if (!context.customerId || !context.tokenHash) return;
-  const { data: guest } = await context.admin
-    .from('carts')
-    .select('id')
-    .eq('anonymous_token_hash', context.tokenHash)
-    .eq('status', 'active')
-    .maybeSingle();
-  if (!guest) return;
-  const { data: customerCart } = await context.admin
-    .from('carts')
-    .select('id')
-    .eq('customer_id', context.customerId)
-    .eq('status', 'active')
-    .maybeSingle();
-  if (customerCart) {
-    await context.admin
-      .from('cart_items')
-      .update({ cart_id: customerCart.id })
-      .eq('cart_id', guest.id);
-    await context.admin
-      .from('customer_uploads')
-      .update({
-        cart_id: customerCart.id,
-        customer_id: context.customerId,
-        anonymous_token_hash: null,
-      })
-      .eq('cart_id', guest.id);
-    await context.admin.from('carts').update({ status: 'abandoned' }).eq('id', guest.id);
-  } else {
-    await context.admin
-      .from('carts')
-      .update({ customer_id: context.customerId, anonymous_token_hash: null })
-      .eq('id', guest.id);
-    await context.admin
-      .from('customer_uploads')
-      .update({ customer_id: context.customerId, anonymous_token_hash: null })
-      .eq('cart_id', guest.id);
-  }
+  const userClient = await createClient();
+  const mergeRpc = userClient.rpc.bind(userClient) as unknown as (
+    name: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ error: { code: string } | null }>;
+  const { error } = await mergeRpc('merge_guest_cart_for_current_user', {
+    p_token_hash: context.tokenHash,
+  });
+  if (error)
+    throw new CartError(
+      'cart_merge_failed',
+      'Seçimleriniz hesabınıza aktarılamadı.',
+      409,
+    );
   const cookieStore = await cookies();
   cookieStore.delete(CART_COOKIE);
 }

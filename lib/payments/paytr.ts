@@ -1,12 +1,18 @@
 import 'server-only';
 
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { minorToTryDecimal } from './money';
+import {
+  createPaytrToken,
+  encodePaytrBasket,
+  verifyPaytrCallbackHash,
+} from './paytr-crypto';
 
-type PaytrItem = { name: string; price: number; quantity: number };
+type PaytrItem = { name: string; unitPriceMinor: number; quantity: number };
 
 export type PaytrInitializeInput = {
   orderNumber: string;
-  amount: number;
+  merchantOrderId: string;
+  amountMinor: number;
   email: string;
   fullName: string;
   phone: string;
@@ -21,7 +27,7 @@ export type PaytrInitializeResult = {
   paymentUrl: string;
 };
 
-function credentials() {
+export function paytrCredentials() {
   const merchantId = process.env.PAYTR_MERCHANT_ID;
   const merchantKey = process.env.PAYTR_MERCHANT_KEY;
   const merchantSalt = process.env.PAYTR_MERCHANT_SALT;
@@ -34,32 +40,37 @@ function credentials() {
 export async function initializePaytr(
   input: PaytrInitializeInput,
 ): Promise<PaytrInitializeResult> {
-  const { merchantId, merchantKey, merchantSalt } = credentials();
-  const merchantOrderId = input.orderNumber.replace(/[^a-zA-Z0-9]/g, '');
-  const paymentAmount = String(Math.round(input.amount * 100));
+  const paytrCredentialsValue = paytrCredentials();
+  const { merchantId } = paytrCredentialsValue;
+  const merchantOrderId = input.merchantOrderId;
+  if (!/^[a-zA-Z0-9]{1,64}$/.test(merchantOrderId)) {
+    throw new Error('PAYTR_MERCHANT_ORDER_ID_INVALID');
+  }
+  const paymentAmountMinor = input.amountMinor;
+  minorToTryDecimal(paymentAmountMinor);
+  const paymentAmount = String(paymentAmountMinor);
   const currency = 'TL';
   const testMode = process.env.PAYTR_TEST_MODE === '0' ? '0' : '1';
   const noInstallment = '0';
   const maxInstallment = process.env.PAYTR_MAX_INSTALLMENT ?? '0';
-  const basket = Buffer.from(
-    JSON.stringify(
-      input.items.map((item) => [item.name, item.price.toFixed(2), item.quantity]),
-    ),
-  ).toString('base64');
-  const hashSource =
-    merchantId +
-    input.userIp +
-    merchantOrderId +
-    input.email +
-    paymentAmount +
-    basket +
-    noInstallment +
-    maxInstallment +
-    currency +
-    testMode;
-  const paytrToken = createHmac('sha256', merchantKey)
-    .update(hashSource + merchantSalt)
-    .digest('base64');
+  const basket = encodePaytrBasket(
+    input.items.map((item) => ({
+      name: item.name,
+      unitPriceDecimal: minorToTryDecimal(item.unitPriceMinor),
+      quantity: item.quantity,
+    })),
+  );
+  const paytrToken = createPaytrToken(paytrCredentialsValue, {
+    userIp: input.userIp,
+    merchantOrderId,
+    email: input.email,
+    paymentAmountMinor,
+    basketBase64: basket,
+    noInstallment,
+    maxInstallment,
+    currency,
+    testMode,
+  });
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(
     /\/$/,
     '',
@@ -115,14 +126,5 @@ export function verifyPaytrCallback(input: {
   totalAmount: string;
   hash: string;
 }) {
-  const { merchantKey, merchantSalt } = credentials();
-  const expected = createHmac('sha256', merchantKey)
-    .update(input.merchantOrderId + merchantSalt + input.status + input.totalAmount)
-    .digest('base64');
-  const actualBuffer = Buffer.from(input.hash);
-  const expectedBuffer = Buffer.from(expected);
-  return (
-    actualBuffer.length === expectedBuffer.length &&
-    timingSafeEqual(actualBuffer, expectedBuffer)
-  );
+  return verifyPaytrCallbackHash(paytrCredentials(), input);
 }

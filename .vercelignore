@@ -1,0 +1,13 @@
+.git
+.github
+.next
+node_modules
+.eslintcache
+tsconfig.tsbuildinfo
+/docs
+/supabase
+/tests
+/_assets
+
+artifacts
+test-results

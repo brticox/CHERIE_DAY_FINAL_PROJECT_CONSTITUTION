@@ -5,11 +5,18 @@ declare
   function_definition text;
   vulnerable_clause constant text := 'where p.idempotency_key = p_idempotency_key';
   fixed_clause constant text :=
-    'where p.idempotency_key = create_payment_attempt.p_idempotency_key';
+    'idempotency_key = create_payment_attempt.p_idempotency_key';
 begin
   select pg_get_functiondef(
     'public.create_payment_attempt(uuid,uuid,public.payment_provider,text)'::regprocedure
   ) into function_definition;
+
+  -- Fresh databases may already contain the corrected definition when the
+  -- baseline migration has been consolidated. Keep this repair migration
+  -- replay-safe while still failing closed for an unknown function body.
+  if position(fixed_clause in function_definition) > 0 then
+    return;
+  end if;
 
   if position(vulnerable_clause in function_definition) = 0 then
     raise exception 'Expected payment idempotency clause was not found';

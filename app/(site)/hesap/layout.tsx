@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { AccountNav } from "@/components/account/account-nav";
+
 export const metadata: Metadata = {
   robots: {
     index: false,
@@ -8,5 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function AccountLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return children;
+  return (
+    <>
+      <AccountNav />
+      {children}
+    </>
+  );
 }

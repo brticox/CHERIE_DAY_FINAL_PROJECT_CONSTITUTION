@@ -2,30 +2,33 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
 import { ROUTES } from '@/lib/data/routes';
-import { PRIMARY_CTA } from '@/lib/data/navigation';
 
 const CHERIE_EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
- * QuoteCta — the narrative close: the red ribbon returns, draws itself
- * across the velvet panel and ties the final knot around the promise.
- * Phase 4 upgrades the knot to the light R3F ribbon+seal stage; this SVG
- * composition remains its poster fallback.
+ * QuoteCta — the narrative close on velvet. The red ribbon returns, draws
+ * itself across the panel and ties the final knot around the promise. Three
+ * clearly-ranked next actions: request a tailored offer (primary), book an
+ * appointment (secondary), enter the store (tertiary text link).
  */
 export function QuoteCta() {
   const reduced = useReducedMotion();
 
   return (
-    <section data-stage="cta-ribbon" className="relative overflow-hidden bg-cherie-velvet py-24 md:py-32">
+    <section
+      data-stage="cta-ribbon"
+      className="relative overflow-hidden bg-cherie-velvet py-24 md:py-32"
+    >
       {/* warm depth glows */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -left-24 top-1/4 h-72 w-72 rounded-full bg-cherie-burgundy/40 blur-3xl" />
         <div className="absolute -right-16 bottom-1/4 h-64 w-64 rounded-full bg-cherie-cherry/25 blur-3xl" />
       </div>
 
-      {/* — the returning ribbon: draws in, ties the knot at center — */}
+      {/* returning ribbon: draws in, ties the knot at center */}
       <div aria-hidden className="absolute inset-x-0 top-10">
         <svg
           viewBox="0 0 1200 120"
@@ -43,7 +46,6 @@ export function QuoteCta() {
             viewport={{ once: true, margin: '0px 0px -20% 0px' }}
             transition={{ duration: reduced ? 0 : 2.2, ease: CHERIE_EASE }}
           />
-          {/* the knot */}
           <motion.circle
             cx="600"
             cy="60"
@@ -61,25 +63,42 @@ export function QuoteCta() {
         <p className="text-xs font-medium uppercase tracking-[0.3em] text-cherie-brass">
           Concierge
         </p>
-        <h2 className="mx-auto mt-6 max-w-3xl font-display text-4xl leading-tight text-cherie-ivory md:text-5xl">
-          Hayalinizi birlikte tasarlayalım.
+        <h2 className="mx-auto mt-6 max-w-3xl font-display text-4xl leading-tight text-cherie-ivory md:text-[3.25rem] md:leading-[1.1]">
+          Bir fikirle gelin; gerisini birlikte tasarlayalım.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-cherie-lace md:text-lg md:leading-8">
-          Bir fikirle gelin; davetiyeden organizasyona bütün günü, sizin
-          hikâyenize göre biz kuralım.
+          Davetiyeden organizasyona bütün günü, sizin hikâyenize göre kuralım. Size özel
+          teklifiniz 48 saat içinde elinizde.
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+
+        {/* tiered actions */}
+        <div className="mt-10 flex flex-col items-center gap-5">
+          <div className="flex flex-col items-center gap-4 sm:flex-row">
+            {/* primary */}
+            <Link
+              href={ROUTES.teklif}
+              className="group inline-flex h-12 items-center justify-center gap-2 rounded-control bg-cherie-ivory px-8 text-base font-medium text-cherie-burgundy shadow-lift transition-all duration-control ease-cherie hover:-translate-y-0.5 hover:bg-cherie-lace"
+            >
+              Size Özel Teklif Alın
+              <ArrowRight
+                className="h-4 w-4 transition-transform duration-control ease-cherie group-hover:translate-x-1"
+                aria-hidden
+              />
+            </Link>
+            {/* secondary */}
+            <Link
+              href={ROUTES.randevu}
+              className="inline-flex h-12 items-center justify-center rounded-control border border-cherie-ivory/40 px-7 text-base font-medium text-cherie-ivory transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-brass"
+            >
+              Randevu Al
+            </Link>
+          </div>
+          {/* tertiary */}
           <Link
-            href={PRIMARY_CTA.href}
-            className="inline-flex h-12 items-center justify-center rounded-control bg-cherie-ivory px-8 text-base font-medium text-cherie-burgundy transition-colors duration-control ease-cherie hover:bg-cherie-lace"
+            href={ROUTES.magaza}
+            className="cta-brass inline-flex min-h-11 items-center text-sm font-medium text-cherie-lace hover:text-cherie-ivory"
           >
-            {PRIMARY_CTA.label}
-          </Link>
-          <Link
-            href={ROUTES.randevu}
-            className="inline-flex h-12 items-center justify-center rounded-control border border-cherie-ivory/40 px-8 text-base font-medium text-cherie-ivory transition-colors duration-control ease-cherie hover:border-cherie-brass hover:text-cherie-brass"
-          >
-            Randevu Al
+            Ya da önce mağazayı gezin
           </Link>
         </div>
       </div>

@@ -1,0 +1,49 @@
+name: Cross-phase Integration Integrity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cherie_phase3
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/cherie_phase3
+      APP_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Unit, presentation, and security tests
+        run: npm test
+      - name: Replay every migration
+        run: npm run test:phase3:replay
+      - name: Phase 1, Phase 2, RLS, and Phase 3 SQL suites
+        run: npm run test:integration:db
+      - name: Identity and email-services SQL suite
+        run: npm run test:identity:db
+      - name: Concurrent callback replay suite
+        run: npm run test:phase3:burst
+      - name: Production dependency audit
+        run: npm run security:audit

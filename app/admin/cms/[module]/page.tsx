@@ -1,0 +1,154 @@
+import { notFound } from 'next/navigation';
+import { DataWorkspace } from '@/components/admin/data-workspace';
+import type { AdminCapability } from '@/lib/admin/permissions';
+
+// Read-side capability per module (fail-closed to the most restrictive).
+const CAPS: Record<string, AdminCapability> = {
+  articles: 'content.read',
+  digital: 'content.read',
+  experiences: 'content.read',
+  faqs: 'content.read',
+  galleries: 'content.read',
+  memory: 'content.read',
+  portfolio: 'content.read',
+  seo: 'content.read',
+  settings: 'system.read',
+  testimonials: 'content.read',
+};
+const configs = {
+  articles: {
+    title: 'Makaleler',
+    table: 'articles',
+    fields: [
+      { key: 'title', label: 'Başlık' },
+      { key: 'slug', label: 'Adres kısa adı' },
+      { key: 'category', label: 'Kategori' },
+    ],
+    statusKey: 'status',
+    dateKey: 'updated_at',
+    manageResource: 'articles',
+  },
+  digital: {
+    title: 'Dijital içerikler',
+    table: 'digital_products',
+    fields: [
+      { key: 'name_tr', label: 'Ad' },
+      { key: 'digital_type', label: 'Tür' },
+      { key: 'delivery_mode', label: 'Teslim' },
+    ],
+    statusKey: 'status',
+    manageResource: 'faqs',
+    dateKey: 'updated_at',
+  },
+  experiences: {
+    title: 'Deneyimler',
+    table: 'experiences',
+    fields: [
+      { key: 'name', label: 'Ad' },
+      { key: 'slug', label: 'Adres kısa adı' },
+      { key: 'summary', label: 'Özet' },
+    ],
+    statusKey: 'status',
+    dateKey: 'updated_at',
+  },
+  faqs: {
+    title: 'SSS',
+    table: 'faqs',
+    fields: [
+      { key: 'question', label: 'Soru' },
+      { key: 'answer', label: 'Yanıt' },
+      { key: 'category', label: 'Kategori' },
+    ],
+    statusKey: 'status',
+  },
+  galleries: {
+    title: 'Galeriler',
+    table: 'galleries',
+    fields: [
+      { key: 'title', label: 'Başlık' },
+      { key: 'linked_entity_type', label: 'Bağlı tür' },
+      { key: 'media_ids', label: 'Medya' },
+    ],
+    statusKey: 'status',
+    dateKey: 'created_at',
+    manageResource: 'galleries',
+  },
+  memory: {
+    title: 'Hatıra teklifleri',
+    table: 'memory_offerings',
+    fields: [
+      { key: 'title_tr', label: 'Başlık' },
+      { key: 'type', label: 'Tür' },
+      { key: 'base_price', label: 'Fiyat' },
+    ],
+    statusKey: 'status',
+  },
+  portfolio: {
+    title: 'Portfolyo',
+    table: 'portfolio_projects',
+    fields: [
+      { key: 'title', label: 'Başlık' },
+      { key: 'slug', label: 'Adres kısa adı' },
+      { key: 'city', label: 'Şehir' },
+    ],
+    statusKey: 'status',
+    dateKey: 'created_at',
+    manageResource: 'testimonials',
+  },
+  seo: {
+    title: 'Arama görünümü kayıtları',
+    table: 'seo_metadata',
+    fields: [
+      { key: 'title', label: 'Başlık' },
+      { key: 'entity_type', label: 'İçerik türü' },
+      { key: 'canonical_url', label: 'Canonical' },
+    ],
+    dateKey: 'updated_at',
+  },
+  settings: {
+    title: 'Site ayarları',
+    table: 'site_settings',
+    fields: [
+      { key: 'business_name', label: 'İşletme' },
+      { key: 'contact_email', label: 'E-posta' },
+      { key: 'service_area_text', label: 'Hizmet alanı' },
+    ],
+    dateKey: 'updated_at',
+  },
+  testimonials: {
+    title: 'Müşteri yorumları',
+    table: 'testimonials',
+    fields: [
+      { key: 'client_display_name', label: 'Müşteri' },
+      { key: 'quote', label: 'Yorum' },
+      { key: 'event_type', label: 'Etkinlik' },
+    ],
+    statusKey: 'status',
+    dateKey: 'created_at',
+  },
+} as const;
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ module: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
+  const { module } = await params;
+  const config = configs[module as keyof typeof configs];
+  if (!config) notFound();
+  const query = await searchParams;
+  return (
+    <DataWorkspace
+      config={{
+        path: `/admin/cms/${module}`,
+        capability: CAPS[module] ?? 'system.read',
+        description:
+          'İçerik kayıtlarının gerçek veritabanı görünümü; yayın durumu açıkça gösterilir.',
+        ...config,
+      }}
+      query={query.q}
+      page={Number(query.page ?? 1)}
+    />
+  );
+}

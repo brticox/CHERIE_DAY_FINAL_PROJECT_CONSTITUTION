@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { z } from 'zod';
 
 import {
   forgotPasswordSchema,
@@ -13,6 +14,8 @@ import {
 import { isSupabaseConfigured } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase/server';
 import { mergeGuestCartForCurrentUser } from '@/lib/cart/server';
+import { authCallbackUrl, getAuthConfig } from '@/lib/auth/config';
+import { enqueueAccountNotification } from '@/lib/notifications/account';
 
 const UNAVAILABLE: AuthActionState = {
   status: 'error',
@@ -54,6 +57,25 @@ export async function loginAction(
     };
   }
 
+  const identityRpc = supabase.rpc.bind(supabase) as unknown as (
+    name: string,
+    args?: Record<string, unknown>,
+  ) => Promise<{ data: { status: string } | null; error: { code: string } | null }>;
+  const { data: profile, error: profileError } = await identityRpc(
+    'ensure_current_customer_profile',
+  );
+  if (profileError || !profile || profile.status !== 'active') {
+    await supabase.auth.signOut();
+    return {
+      status: 'error',
+      message: 'Hesabınıza şu anda erişilemiyor. Destek ekibimizle iletişime geçin.',
+    };
+  }
+
+  await identityRpc('record_current_identity_event', {
+    p_provider: 'email',
+    p_event_type: 'signed_in',
+  });
   await mergeGuestCartForCurrentUser();
 
   redirect(safeNextPath(parsed.data.next));
@@ -69,12 +91,17 @@ export async function registerAction(
   if (!isSupabaseConfigured()) return UNAVAILABLE;
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  let siteUrl: URL;
+  try {
+    siteUrl = getAuthConfig().siteUrl;
+  } catch {
+    return UNAVAILABLE;
+  }
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo: `${siteUrl}/auth/callback?next=/hesap`,
+      emailRedirectTo: new URL('/auth/callback?next=/hesap', siteUrl).toString(),
       data: { name: parsed.data.name, phone: parsed.data.phone ?? null },
     },
   });
@@ -87,7 +114,10 @@ export async function registerAction(
     };
   }
 
-  if (data.session) redirect('/hesap');
+  if (data.session && data.user) {
+    await enqueueAccountNotification(data.user.id, 'welcome');
+    redirect('/hesap');
+  }
 
   return {
     status: 'success',
@@ -105,9 +135,17 @@ export async function forgotPasswordAction(
   if (!isSupabaseConfigured()) return UNAVAILABLE;
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  let siteUrl: URL;
+  try {
+    siteUrl = getAuthConfig().siteUrl;
+  } catch {
+    return UNAVAILABLE;
+  }
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${siteUrl}/auth/callback?next=/hesap/sifreyi-yenile`,
+    redirectTo: new URL(
+      '/auth/callback?next=/hesap/sifreyi-yenile',
+      siteUrl,
+    ).toString(),
   });
 
   // Deliberately identical for existing/non-existing accounts to prevent enumeration.
@@ -135,16 +173,26 @@ export async function updatePasswordAction(
     };
   }
 
-  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  const { data: updateData, error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
   if (error)
     return {
       status: 'error',
       message: 'Şifreniz güncellenemedi. Lütfen tekrar deneyin.',
     };
 
+  await enqueueAccountNotification(
+    userData.user.id,
+    'password_changed',
+    updateData.user.updated_at,
+  );
+
+  await supabase.auth.signOut({ scope: 'global' });
+
   return {
     status: 'success',
-    message: 'Şifreniz güvenle güncellendi. Hesabınıza dönebilirsiniz.',
+    message: 'Şifreniz güvenle güncellendi. Tüm oturumlar kapatıldı; yeni şifrenizle giriş yapın.',
   };
 }
 
@@ -154,4 +202,38 @@ export async function logoutAction() {
     await supabase.auth.signOut();
   }
   redirect('/hesap/giris');
+}
+
+const oauthSchema = z.object({
+  provider: z.enum(['google', 'apple']),
+  next: z.string().optional(),
+});
+
+export async function beginOAuthAction(formData: FormData) {
+  const parsed = oauthSchema.safeParse(values(formData));
+  if (!parsed.success || !isSupabaseConfigured()) {
+    redirect('/hesap/giris?reason=provider_unavailable');
+  }
+
+  const next = safeNextPath(parsed.data.next);
+  let config: ReturnType<typeof getAuthConfig>;
+  try {
+    config = getAuthConfig();
+  } catch {
+    redirect('/hesap/giris?reason=provider_unavailable');
+  }
+  if (!config.providers[parsed.data.provider]) {
+    redirect('/hesap/giris?reason=provider_unavailable');
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: parsed.data.provider,
+    options: {
+      redirectTo: authCallbackUrl(next, parsed.data.provider),
+      skipBrowserRedirect: true,
+    },
+  });
+  if (error || !data.url) redirect('/hesap/giris?reason=provider_error');
+  redirect(data.url);
 }

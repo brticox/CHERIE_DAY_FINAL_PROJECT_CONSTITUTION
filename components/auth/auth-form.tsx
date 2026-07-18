@@ -17,6 +17,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/lib/data/routes';
 import { INITIAL_AUTH_STATE, type AuthActionState } from '@/lib/validation/auth';
+import type { CustomerAuthProvider } from '@/lib/auth/config';
+import { SocialAuthButtons } from './social-auth-buttons';
 
 type Mode = 'login' | 'register' | 'forgot' | 'update';
 type Action = (state: AuthActionState, formData: FormData) => Promise<AuthActionState>;
@@ -26,11 +28,13 @@ export function AuthForm({
   action,
   available,
   next,
+  providers,
 }: {
   mode: Mode;
   action: Action;
   available: boolean;
   next?: string;
+  providers?: Record<CustomerAuthProvider, boolean>;
 }) {
   const [state, formAction] = useActionState(action, INITIAL_AUTH_STATE);
   const [showPassword, setShowPassword] = useState(false);
@@ -55,8 +59,13 @@ export function AuthForm({
   const needsPassword = mode === 'login' || mode === 'register' || mode === 'update';
 
   return (
-    <form action={formAction} className="space-y-5" noValidate>
-      {next && <input type="hidden" name="next" value={next} />}
+    <>
+      {(mode === 'login' || mode === 'register') && providers && (
+        <SocialAuthButtons next={next ?? '/hesap'} providers={providers} />
+      )}
+
+      <form action={formAction} className="mt-5 space-y-5" noValidate>
+        {next && <input type="hidden" name="next" value={next} />}
 
       {mode === 'register' && (
         <Field label="Ad Soyad" error={error('name')} icon={<UserRound />}>
@@ -111,7 +120,7 @@ export function AuthForm({
               type="button"
               onClick={() => setShowPassword((value) => !value)}
               aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
-              className="absolute right-1 top-1 grid size-9 place-items-center rounded-control text-cherie-soft-ink hover:bg-cherie-paper"
+              className="absolute right-0 top-0 grid size-11 place-items-center rounded-control text-cherie-soft-ink hover:bg-cherie-paper"
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
@@ -164,7 +173,7 @@ export function AuthForm({
         <div className="text-right">
           <Link
             href={ROUTES.hesapSifremiUnuttum}
-            className="text-sm text-cherie-burgundy hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center text-sm text-cherie-burgundy hover:underline"
           >
             Şifremi Unuttum
           </Link>
@@ -192,7 +201,7 @@ export function AuthForm({
           Henüz hesabınız yok mu?{' '}
           <Link
             href={ROUTES.hesapKayit}
-            className="font-medium text-cherie-burgundy hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center font-medium text-cherie-burgundy hover:underline"
           >
             Üye Ol
           </Link>
@@ -203,13 +212,14 @@ export function AuthForm({
           Zaten hesabınız var mı?{' '}
           <Link
             href={ROUTES.hesapGiris}
-            className="font-medium text-cherie-burgundy hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center font-medium text-cherie-burgundy hover:underline"
           >
             Giriş Yap
           </Link>
         </p>
       )}
-    </form>
+      </form>
+    </>
   );
 }
 

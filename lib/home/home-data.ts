@@ -15,9 +15,9 @@ import type {
 /**
  * Homepage data assembly (Phase 2A — cinematic foundation).
  *
- * Wraps existing seeds/getters; introduces no new backend. Every list keeps
- * the seed-fallback philosophy of `readPublic` so the homepage renders fully
- * even before Supabase is live.
+ * Wraps existing narrative seeds and public-data getters; introduces no new
+ * backend. Narrative art direction remains local, while operational lists use
+ * the canonical database in hosted environments.
  */
 
 /** Occasion tiles (Söz/Nişan → Düğün arc) sourced from the experiences seed. */

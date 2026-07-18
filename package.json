@@ -11,6 +11,22 @@
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run typecheck && npm run build",
     "security:audit": "npm audit --omit=dev --audit-level=high",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:phase1:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/phase1_legal_notifications.sql",
+    "test:phase2:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/phase1_legal_notifications.sql -f supabase/tests/rls_verification.sql -f supabase/tests/phase2_admin_permissions.sql",
+    "test:phase3:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/phase3_payment_integrity.sql",
+    "test:integration:db": "npm run test:phase2:db && npm run test:phase3:db",
+    "test:identity:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/identity_email_services.sql",
+    "test:reviews:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/review_moderation_operations.sql",
+    "test:inventory:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/inventory_adjustment_operations.sql",
+    "test:e2e:product-cart": "sh scripts/run-product-cart-e2e.sh",
+    "test:e2e:auth-email": "sh scripts/run-auth-email-e2e.sh",
+    "test:notifications:db": "supabase test db supabase/tests/notification_event_coverage.sql",
+    "test:phase3:burst": "sh scripts/test-payment-callback-burst.sh",
+    "test:phase3:replay": "sh scripts/replay-phase3-test-db.sh",
+    "email:preview": "vite-node scripts/generate-email-previews.ts",
+    "payment:simulate": "vite-node scripts/run-paytr-simulator.ts",
     "db:types:local": "supabase gen types --local --schema public > lib/supabase/database.types.ts",
     "db:types:linked": "supabase gen types --linked --schema public > lib/supabase/database.types.ts",
     "db:test:rls": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/rls_verification.sql",
@@ -23,8 +39,9 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@react-three/postprocessing": "^3.0.4",
-    "@supabase/ssr": "0.5.2",
-    "@supabase/supabase-js": "2.110.0",
+    "@sentry/nextjs": "10.65.0",
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.110.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^11.15.0",
@@ -43,6 +60,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
@@ -54,6 +72,12 @@
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.7"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.10"
+    }
   }
 }

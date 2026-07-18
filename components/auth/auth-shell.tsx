@@ -72,7 +72,7 @@ export function AuthShell({
         <main className="rounded-card-lg border border-cherie-lace bg-cherie-ivory/95 p-6 shadow-lift backdrop-blur-sm lg:rounded-l-none lg:p-12">
           <Link
             href={ROUTES.home}
-            className="inline-flex items-center gap-2 text-sm text-cherie-soft-ink hover:text-cherie-burgundy"
+            className="inline-flex min-h-11 min-w-11 items-center gap-2 text-sm text-cherie-soft-ink hover:text-cherie-burgundy"
           >
             <ArrowLeft className="size-4" /> Ana sayfaya dön
           </Link>

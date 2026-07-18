@@ -1,0 +1,15 @@
+{
+  "doc_key": "kvkk_aydinlatma",
+  "locale": "tr-TR",
+  "version": "2026-01",
+  "title": "KVKK Aydınlatma Metni",
+  "summary": "Hukuk danışmanı tarafından sağlanacak kısa özet.",
+  "body": "Bu alan yalnızca hukuk danışmanı tarafından onaylanan tam metinle değiştirilmelidir. Örnek dosya doğrudan yayımlanamaz ve en az yüz karakterlik doğrulanmış içerik bekler.",
+  "effective_from": null,
+  "source": {
+    "author": "Hukuk danışmanı / kaynak adı",
+    "reference": "Teslim dosyası veya kayıt referansı"
+  },
+  "lifecycle_state": "draft",
+  "needs_lawyer_review": true
+}

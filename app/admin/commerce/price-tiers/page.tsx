@@ -1,11 +1,31 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
-
-export default function Page() {
+import { ResourceList } from '@/components/admin/resource-list';
+import { requireCapability } from '@/lib/auth/guards';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { formatTRY } from '@/lib/format';
+export const dynamic = 'force-dynamic';
+export default async function Page() {
+  await requireCapability('catalog.read', '/admin/commerce/price-tiers');
+  const { data, count, error } = await createAdminClient()
+    .from('product_price_tiers')
+    .select('id,min_qty,unit_price,products(name),product_variants(title)', {
+      count: 'exact',
+    })
+    .order('min_qty')
+    .limit(100);
   return (
-    <PagePlaceholder
-      title="Ticaret · price-tiers"
-      eyebrow="Yönetim"
-      note="Yönetim modülü — iş mantığı sonraki fazda eklenecek."
+    <ResourceList
+      eyebrow="Katalog"
+      title="Fiyat Katmanları"
+      description="Adet bazlı birim fiyatlarını ürün ve varyant ilişkileriyle doğrulayın."
+      rows={data ?? []}
+      total={count ?? 0}
+      error={error ? 'Fiyat katmanları okunamadı.' : undefined}
+      columns={[
+        { label: 'Ürün', value: (r) => <strong>{r.products?.name ?? '—'}</strong> },
+        { label: 'Varyant', value: (r) => r.product_variants?.title ?? 'Tümü' },
+        { label: 'Minimum adet', value: (r) => r.min_qty },
+        { label: 'Birim fiyat', value: (r) => formatTRY(r.unit_price) },
+      ]}
     />
   );
 }
