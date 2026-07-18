@@ -138,3 +138,87 @@ The following required phases were not performed and therefore remain merge bloc
 **NOT SAFE TO MERGE INTO CANONICAL**
 
 Reason: Staging schema parity and migration application are complete, but no Preview deployment or hosted acceptance suite has yet proven the deployed runtime, environment isolation, or customer journeys. Production remains untouched.
+
+## Final Hosted Preview & Staging acceptance gate — 2026-07-18
+
+This gate was resumed from the exact requested reconciliation SHA
+`c2f45d93148897f5aba0a169497a8228addf67fe` on
+`integration/p0-reconciliation-20260718`. At the start and end of this gate,
+the worktree was clean. No production ref, URL, credentials, deployment,
+database, or payment endpoint was read or changed.
+
+### Phase 0: release and tooling evidence
+
+| Check | Evidence | Result |
+| --- | --- | --- |
+| Exact source | Branch `integration/p0-reconciliation-20260718`; `HEAD` is exactly `c2f45d93148897f5aba0a169497a8228addf67fe` | Pass |
+| Staging migration state | The preceding staging-only continuation records all six reconciled migrations, including `20260718110000_fix_inventory_reservation_fk_lock_deadlock`, as applied once | Pass (historical hosted evidence) |
+| Production exclusion | Only the distinct Staging ref `hdafztkhkyhqziqayerz` was used for prior hosted work; this gate made no production call | Pass |
+| Tool versions | Node `v22.11.0`; npm `10.9.0`; Supabase CLI `2.109.1`; Vercel CLI `50.28.0`; Playwright `1.61.1` | Blocked for runtime requirement |
+| Hosted project | Vercel project `cherie-day-web` (`prj_NCMWdLqi0GOV4S5iKTdMRAKSIVbB`) reports framework `nextjs`, runtime selector `22.x`, and no live target | Partial only |
+
+The acceptance gate requires a Preview Node runtime at or above `22.12.0`.
+The inspected shell resolves `22.11.0`, while the hosting project reports only
+the non-specific selector `22.x`; neither establishes the exact deployed
+runtime. The repository has no `.vercel/project.json` binding and no local
+environment file beyond `.env.example`.
+
+### Phase 1: Preview-environment isolation
+
+The available authenticated hosting interface exposes project and deployment
+metadata but not a Preview-only environment-variable listing. A local
+`vercel env ls --scope brticoxs-projects` fails closed because this worktree
+is not linked to a Vercel project. No attempt was made to link it, pull secrets,
+create a deployment, or infer values from a different environment.
+
+Therefore the following mandatory assertions are **unproven**, not assumed:
+
+- Preview `NEXT_PUBLIC_SUPABASE_URL` and anon key target only Staging ref
+  `hdafztkhkyhqziqayerz`.
+- Preview server credentials (including service-role capability) belong only to
+  the same Staging project.
+- PayTR is disabled or configured strictly for test mode, and Apple sign-in is
+  disabled for this acceptance run.
+- Preview callback, return, webhook, and app URLs are non-production URLs.
+- No Preview value contains the production ref `rkvubnuwfuocoevayhcd`, a
+  production Supabase host, or live PayTR material.
+
+The project record's `live: false` and `latestDeployment.target: null` are
+consistent with a non-production deployment, but are not a substitute for
+the required variable-level proof.
+
+### Decision and remaining acceptance work
+
+No Preview deployment was created, deliberately. The gate explicitly requires
+environment proof before deploy, and the deploy interface does not expose a
+safe target/environment contract that could prove a Preview-only deployment.
+Consequently there is no deployment URL or ID, no Preview-to-Staging marker,
+no hosted fixtures, no hosted browser run, no hosted cleanup, and no final
+schema-drift comparison to claim.
+
+Required release-owner evidence before resuming:
+
+1. Read-only Preview environment inventory (names and safe classifications,
+   never values) for `cherie-day-web`, proving the Staging-only backend and
+   non-live payment/auth/callback configuration above.
+2. A Preview-only deployment binding for this exact SHA, including its
+   deployment ID/URL, branch, commit SHA, target, and exact Node runtime
+   `>=22.12.0`.
+3. Staging-only test credentials and an approved fixture/cleanup method for
+   the full hosted acceptance matrix. Production must remain excluded.
+
+Once those conditions are supplied, rerun the acceptance phases in order:
+binding marker, legal/inventory/payment/RLS/RPC acceptance, customer browser
+journeys and axe/resilience checks, fixture cleanup, final migration-history
+comparison, and post-cleanup smoke.
+
+## Final gate verdict
+
+**NOT SAFE FOR NEXT PHASE / NOT SAFE TO MERGE**
+
+Local reconciliation and the prior Staging-only migration application remain
+valid evidence. They do not prove that a deployed Preview receives only
+Staging credentials, has a compliant Node runtime, or preserves the
+launch-critical journeys in the hosted runtime. Automatic merging is not
+authorized by this gate; release approval must follow a complete evidence
+record.
