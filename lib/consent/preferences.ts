@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 export const CONSENT_STORAGE_KEY = 'cherie-cookie-consent';
-export const CONSENT_COOKIE_KEY = 'cherie-consent';
 export const CONSENT_VERSION = '2026-07-18';
 export const CONSENT_CHANGED_EVENT = 'cherie:consent-changed';
 
@@ -69,8 +68,6 @@ export function createConsentPreference(
 export async function persistConsentPreference(preference: ConsentPreference) {
   const validated = consentPreferenceSchema.parse(preference);
   window.localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(validated));
-  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-  document.cookie = `${CONSENT_COOKIE_KEY}=${encodeURIComponent(JSON.stringify(validated))}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
   window.dispatchEvent(
     new CustomEvent<ConsentPreference>(CONSENT_CHANGED_EVENT, { detail: validated }),
   );

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 
 import { analyticsEventSchema } from '@/lib/analytics/events';
+import { CONSENT_VERSION } from '@/lib/consent/preferences';
 import {
-  CONSENT_COOKIE_KEY,
-  parseConsentPreference,
-} from '@/lib/consent/preferences';
+  hasAnalyticsConsentEvidence,
+  readConsentReceipt,
+} from '@/lib/consent/server-receipt';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 function sameOrigin(request: Request) {
@@ -18,25 +19,10 @@ function sameOrigin(request: Request) {
   }
 }
 
-function consentCookie(request: Request) {
-  const raw = request.headers.get('cookie') ?? '';
-  const value = raw
-    .split(';')
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(`${CONSENT_COOKIE_KEY}=`))
-    ?.slice(CONSENT_COOKIE_KEY.length + 1);
-  if (!value) return null;
-  try {
-    return parseConsentPreference(decodeURIComponent(value));
-  } catch {
-    return null;
-  }
-}
-
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return new NextResponse(null, { status: 403 });
-  const consent = consentCookie(request);
-  if (!consent?.categories.analytics) return new NextResponse(null, { status: 403 });
+  const sessionRef = readConsentReceipt(request.headers.get('cookie'));
+  if (!sessionRef) return new NextResponse(null, { status: 403 });
 
   let body: unknown;
   try {
@@ -50,16 +36,36 @@ export async function POST(request: Request) {
     return new NextResponse(null, { status: 503 });
   }
 
-  const { error } = await createAdminClient().from('analytics_events').upsert(
+  const db = createAdminClient();
+  const { data: consent, error: consentError } = await db
+    .from('cookie_consent_logs')
+    .select('categories_json,consent_version')
+    .eq('session_ref', sessionRef)
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (consentError) return new NextResponse(null, { status: 503 });
+  if (
+    !consent ||
+    !hasAnalyticsConsentEvidence({
+      categories: consent.categories_json,
+      version: consent.consent_version,
+    })
+  ) {
+    return new NextResponse(null, { status: 403 });
+  }
+
+  const { error } = await db.from('analytics_events').upsert(
     {
       id: event.data.id,
-      session_ref: consent.sessionRef,
+      session_ref: sessionRef,
       event_name: event.data.eventName,
       route: event.data.route,
       entity_type: event.data.entityType ?? null,
       entity_id: event.data.entityId ?? null,
       properties: event.data.properties,
-      consent_version: consent.version,
+      consent_version: CONSENT_VERSION,
       occurred_at: event.data.occurredAt,
     },
     { onConflict: 'id', ignoreDuplicates: true },
