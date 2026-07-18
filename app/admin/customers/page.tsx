@@ -2,26 +2,31 @@ import Link from 'next/link';
 import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AdminDate, StateBadge } from '@/components/admin/resource-list';
+import { AdminPagination } from '@/components/admin/pagination';
+const PAGE_SIZE = 50;
 export const dynamic = 'force-dynamic';
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
 }) {
-  const { q, status } = await searchParams;
+  const { q, status, page: rawPage } = await searchParams;
+  const page = Math.max(1, Number.parseInt(rawPage ?? '1', 10) || 1);
   await requireCapability('crm.read', '/admin/customers');
   const db = createAdminClient();
   let query = db
     .from('customers')
     .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .limit(150);
+    .order('created_at', { ascending: false });
   if (q)
     query = query.or(
       `name.ilike.%${safe(q)}%,email.ilike.%${safe(q)}%,phone.ilike.%${safe(q)}%`,
     );
   if (status) query = query.eq('status', status);
-  const { data, count, error } = await query;
+  const { data, count, error } = await query.range(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE - 1,
+  );
   return (
     <div className="space-y-6 p-4 md:p-8">
       <header>
@@ -101,6 +106,14 @@ export default async function Page({
           </table>
         </div>
       )}
+      <AdminPagination
+        path="/admin/customers"
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={count ?? 0}
+        query={{ q, status }}
+        label="Müşteri sayfalama"
+      />
     </div>
   );
 }

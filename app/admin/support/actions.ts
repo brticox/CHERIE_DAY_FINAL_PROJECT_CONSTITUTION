@@ -1,11 +1,11 @@
 'use server';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { requireStaff } from '@/lib/auth/guards';
+import { requireCapability } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/admin';
 export async function replySupport(fd: FormData) {
   const id = String(fd.get('id'));
-  const { staff } = await requireStaff(`/admin/support/${id}`);
+  const { staff } = await requireCapability('support.write', `/admin/support/${id}`);
   const message = String(fd.get('message') ?? '')
     .trim()
     .slice(0, 4000);
@@ -39,7 +39,7 @@ export async function replySupport(fd: FormData) {
 }
 export async function updateSupport(fd: FormData) {
   const id = String(fd.get('id'));
-  const { staff } = await requireStaff(`/admin/support/${id}`);
+  const { staff } = await requireCapability('support.write', `/admin/support/${id}`);
   const status = String(fd.get('status')) as
     'open' | 'waiting_customer' | 'waiting_team' | 'closed';
   const db = createAdminClient();

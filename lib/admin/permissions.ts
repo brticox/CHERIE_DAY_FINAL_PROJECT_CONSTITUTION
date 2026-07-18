@@ -27,6 +27,7 @@ export type AdminCapability =
   | 'services.write'
   | 'crm.read'
   | 'crm.write'
+  | 'support.write'
   | 'content.read'
   | 'content.write'
   | 'content.publish'
@@ -51,6 +52,7 @@ const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
     'services.write',
     'crm.read',
     'crm.write',
+    'support.write',
     'content.read',
     'content.write',
     'content.publish',
@@ -74,6 +76,7 @@ const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
     'services.write',
     'crm.read',
     'crm.write',
+    'support.write',
     'content.read',
     'content.write',
     'content.publish',
@@ -105,7 +108,13 @@ const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
   ],
   service_operations: ['dashboard.read', 'services.read', 'services.write', 'notifications.manage'],
   proof_designer: ['dashboard.read', 'orders.read', 'proofs.write'],
-  support_agent: ['dashboard.read', 'orders.read', 'crm.read', 'notifications.manage'],
+  support_agent: [
+    'dashboard.read',
+    'orders.read',
+    'crm.read',
+    'support.write',
+    'notifications.manage',
+  ],
   finance_viewer: ['dashboard.read', 'finance.read', 'audit.read', 'notifications.manage'],
   content_editor: [
     'dashboard.read',
@@ -123,7 +132,13 @@ const ROLE_CAPABILITIES: Record<AdminRole, readonly AdminCapability[]> = {
     'content.publish',
     'legal.read',
   ],
-  sales_crm: ['dashboard.read', 'services.read', 'crm.read', 'crm.write'],
+  sales_crm: [
+    'dashboard.read',
+    'services.read',
+    'crm.read',
+    'crm.write',
+    'support.write',
+  ],
   operations: [
     'dashboard.read',
     'orders.read',

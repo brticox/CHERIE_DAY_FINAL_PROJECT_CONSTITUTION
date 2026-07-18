@@ -17,6 +17,9 @@ import {
 } from '@/components/admin/admin-workspace';
 import { adminValueLabel } from '@/lib/admin/presentation';
 import { templateDefinitions } from '@/lib/notifications/templates';
+import { AdminPagination } from '@/components/admin/pagination';
+
+const PAGE_SIZE = 50;
 
 const allowedRoles = new Set([
   'superadmin',
@@ -38,19 +41,21 @@ export default async function Page({
     provider?: string;
     q?: string;
     error?: string;
+    page?: string;
   }>;
 }) {
   const filters = await searchParams;
   const { staff } = await requireStaff('/admin/marketing/notifications');
   if (!allowedRoles.has(staff.role)) notFound();
   const admin = createAdminClient();
+  const page = Math.max(1, Number.parseInt(filters.page ?? '1', 10) || 1);
   let query = admin
     .from('notification_outbox')
     .select(
       'id,status,template_key,channel,aggregate_type,aggregate_id,recipient_email,recipient_kind,attempts,max_attempts,provider_message_id,last_error,last_error_code,created_at,next_attempt_at,sent_at',
+      { count: 'exact' },
     )
-    .order('created_at', { ascending: false })
-    .limit(100);
+    .order('created_at', { ascending: false });
   if (filters.status) query = query.eq('status', filters.status);
   if (filters.channel) query = query.eq('channel', filters.channel as never);
   if (filters.provider) query = query.eq('provider', filters.provider);
@@ -58,16 +63,37 @@ export default async function Page({
     query = query.or(
       `template_key.ilike.%${filters.q.replace(/[,%]/g, '')}%,aggregate_id.ilike.%${filters.q.replace(/[,%]/g, '')}%`,
     );
-  const { data: rows } = await query;
+  const [list, queued, processing, sent, delivered, delayed, deliveryIssues, retry, permanent] =
+    await Promise.all([
+      query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1),
+      statusCount(admin, ['queued']),
+      statusCount(admin, ['processing']),
+      statusCount(admin, ['sent']),
+      statusCount(admin, ['delivered']),
+      statusCount(admin, ['delayed']),
+      statusCount(admin, ['bounced', 'complained', 'failed']),
+      statusCount(admin, ['retry_scheduled']),
+      statusCount(admin, ['permanently_failed']),
+    ]);
+  const rows = list.data ?? [];
   const readiness = notificationReadiness();
-  const counts = countStatuses(rows ?? []);
+  const counts = {
+    Kuyrukta: queued,
+    İşleniyor: processing,
+    Gönderildi: sent,
+    Teslim: delivered,
+    Geciken: delayed,
+    'Teslim sorunu': deliveryIssues,
+    Tekrar: retry,
+    'Kalıcı hata': permanent,
+  };
 
   return (
     <div className="space-y-7 p-5 md:p-8">
       <AdminPageHeader
         eyebrow="İletişim operasyonu"
         title="Bildirim teslimatı"
-        description="Son 100 teslimatın durumunu, yeniden deneme risklerini ve sağlayıcı izini güvenli biçimde yönetin."
+        description="Tüm teslimatların durumunu, yeniden deneme risklerini ve sağlayıcı izini sayfalı olarak yönetin."
         action={
           <div className="flex flex-wrap items-center gap-3">
             <AdminStatus
@@ -158,7 +184,7 @@ export default async function Page({
         </form>
       </AdminToolbar>
 
-      {(rows ?? []).length === 0 ? (
+      {rows.length === 0 ? (
         <AdminEmptyState
           title="Henüz bildirim kaydı yok"
           description="Müşteri veya ekip bildirimi sıraya alındığında teslimat sonucu ve güvenli yeniden deneme bilgisi burada görünecek."
@@ -167,7 +193,7 @@ export default async function Page({
       ) : (
         <div className="admin-surface overflow-hidden">
           <div className="divide-y divide-cherie-lace p-5 md:hidden">
-            {(rows ?? []).map((row) => (
+            {rows.map((row) => (
               <article key={row.id} className="admin-mobile-entity">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -207,7 +233,7 @@ export default async function Page({
                 </tr>
               </thead>
               <tbody className="divide-y divide-cherie-lace">
-                {(rows ?? []).map((row) => (
+                {rows.map((row) => (
                   <tr key={row.id}>
                     <td className="p-3">
                       <AdminStatus value={row.status} label={statusLabel(row.status)} />
@@ -280,33 +306,32 @@ export default async function Page({
           </div>
         </div>
       )}
+      <AdminPagination
+        path="/admin/marketing/notifications"
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={list.count ?? 0}
+        query={{
+          status: filters.status,
+          channel: filters.channel,
+          provider: filters.provider,
+          q: filters.q,
+        }}
+        label="Bildirim sayfalama"
+      />
     </div>
   );
 }
 
-function countStatuses(rows: { status: string }[]) {
-  const result = {
-    Kuyrukta: 0,
-    İşleniyor: 0,
-    Gönderildi: 0,
-    Teslim: 0,
-    Geciken: 0,
-    'Teslim sorunu': 0,
-    Tekrar: 0,
-    'Kalıcı hata': 0,
-  };
-  for (const row of rows) {
-    if (row.status === 'queued') result.Kuyrukta += 1;
-    else if (row.status === 'processing') result.İşleniyor += 1;
-    else if (row.status === 'sent') result.Gönderildi += 1;
-    else if (row.status === 'delivered') result.Teslim += 1;
-    else if (row.status === 'delayed') result.Geciken += 1;
-    else if (['bounced', 'complained', 'failed'].includes(row.status))
-      result['Teslim sorunu'] += 1;
-    else if (row.status === 'retry_scheduled') result.Tekrar += 1;
-    else if (row.status === 'permanently_failed') result['Kalıcı hata'] += 1;
-  }
-  return result;
+async function statusCount(
+  admin: ReturnType<typeof createAdminClient>,
+  statuses: string[],
+) {
+  const { count } = await admin
+    .from('notification_outbox')
+    .select('id', { count: 'exact', head: true })
+    .in('status', statuses);
+  return count ?? 0;
 }
 
 function redactEmail(value: string | null) {

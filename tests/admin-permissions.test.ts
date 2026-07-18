@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   ADMIN_ROLES,
   can,
@@ -23,6 +25,19 @@ describe('admin permission matrix', () => {
   it('fails closed for an unknown database role', () => {
     expect(can('customer', 'dashboard.read')).toBe(false);
     expect(roleLabel('customer')).toBe('customer');
+  });
+  it('limits support mutations to the dedicated write capability', () => {
+    expect(can('support_agent', 'support.write')).toBe(true);
+    expect(can('sales_crm', 'support.write')).toBe(true);
+    expect(can('finance_viewer', 'support.write')).toBe(false);
+    expect(can('product_editor', 'support.write')).toBe(false);
+
+    const actions = readFileSync(
+      resolve(process.cwd(), 'app/admin/support/actions.ts'),
+      'utf8',
+    );
+    expect(actions.match(/requireCapability\('support\.write'/g)).toHaveLength(2);
+    expect(actions).not.toContain('requireStaff(');
   });
 });
 

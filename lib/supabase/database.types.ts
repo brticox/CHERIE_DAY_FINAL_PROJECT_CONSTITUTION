@@ -57,6 +57,45 @@ export type Database = {
           },
         ]
       }
+      analytics_events: {
+        Row: {
+          consent_version: string
+          entity_id: string | null
+          entity_type: string | null
+          event_name: string
+          id: string
+          occurred_at: string
+          properties: Json
+          received_at: string
+          route: string
+          session_ref: string
+        }
+        Insert: {
+          consent_version: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_name: string
+          id: string
+          occurred_at: string
+          properties?: Json
+          received_at?: string
+          route: string
+          session_ref: string
+        }
+        Update: {
+          consent_version?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_name?: string
+          id?: string
+          occurred_at?: string
+          properties?: Json
+          received_at?: string
+          route?: string
+          session_ref?: string
+        }
+        Relationships: []
+      }
       articles: {
         Row: {
           author_display: string
@@ -2447,6 +2486,83 @@ export type Database = {
           },
           {
             foreignKeyName: "inventory_movements_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_reservations: {
+        Row: {
+          checkout_session_id: string
+          conflict_reason: string | null
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          order_id: string
+          quantity: number
+          released_at: string | null
+          reserved_at: string
+          status: string
+          updated_at: string
+          variant_id: string
+        }
+        Insert: {
+          checkout_session_id: string
+          conflict_reason?: string | null
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          order_id: string
+          quantity: number
+          released_at?: string | null
+          reserved_at?: string
+          status?: string
+          updated_at?: string
+          variant_id: string
+        }
+        Update: {
+          checkout_session_id?: string
+          conflict_reason?: string | null
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_id?: string
+          quantity?: number
+          released_at?: string | null
+          reserved_at?: string
+          status?: string
+          updated_at?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_reservations_checkout_session_id_fkey"
+            columns: ["checkout_session_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_variant_id_fkey"
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "product_variants_public"
@@ -8245,6 +8361,15 @@ export type Database = {
         }
         Returns: string
       }
+      admin_dashboard_revenue: {
+        Args: never
+        Returns: {
+          month_amount: number
+          paid_order_count: number
+          today_amount: number
+          week_amount: number
+        }[]
+      }
       admin_delete_review: {
         Args: { p_confirmation: string; p_review_id: string }
         Returns: undefined
@@ -8631,6 +8756,14 @@ export type Database = {
           p_succeeded: boolean
         }
         Returns: undefined
+      }
+      release_expired_inventory_reservations: {
+        Args: { p_batch_size?: number }
+        Returns: number
+      }
+      release_expired_variant_reservations: {
+        Args: { p_variant_id: string }
+        Returns: number
       }
       request_customer_data_action: {
         Args: {

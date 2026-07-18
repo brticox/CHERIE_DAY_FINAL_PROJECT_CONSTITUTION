@@ -39,6 +39,7 @@ const CAPABILITY_MODULE_TR: Partial<Record<AdminCapability, string>> = {
   'orders.read': 'Siparişler',
   'finance.read': 'Ödemeler ve Finans',
   'crm.read': 'Müşteriler ve İlişkiler',
+  'support.write': 'Destek işlemleri',
   'services.read': 'Hizmetler',
   'content.read': 'İçerik',
   'legal.read': 'Hukuk',
@@ -68,9 +69,6 @@ export default async function DashboardPage({
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const week = new Date(today);
-  week.setDate(week.getDate() - 6);
-  const month = new Date(today.getFullYear(), today.getMonth(), 1);
   const isoToday = today.toISOString();
   const dateLabel = new Intl.DateTimeFormat('tr-TR', {
     day: 'numeric',
@@ -86,7 +84,7 @@ export default async function DashboardPage({
     newLeads,
     appointments,
     failedNotifications,
-    ordersMonth,
+    revenueResult,
     productionQueue,
     unassignedLeads,
   ] = await Promise.all([
@@ -147,13 +145,7 @@ export default async function DashboardPage({
         .select('*', { count: 'exact', head: true })
         .eq('status', 'permanently_failed'),
     ),
-    supabase
-      .from('orders')
-      .select('total_amount,payment_status,created_at')
-      .eq('payment_status', 'paid')
-      .gte('created_at', month.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1000),
+    supabase.rpc('admin_dashboard_revenue'),
     countRows(
       supabase
         .from('production_jobs')
@@ -168,19 +160,11 @@ export default async function DashboardPage({
         .neq('status', 'lost'),
     ),
   ]);
-  const revenueRows = (ordersMonth.data ?? []) as {
-    total_amount: number;
-    payment_status: string;
-    created_at: string;
-  }[];
-  const sumSince = (date: Date) =>
-    revenueRows
-      .filter((row) => new Date(row.created_at) >= date)
-      .reduce((sum, row) => sum + Number(row.total_amount), 0);
-  const todayRevenue = sumSince(today),
-    weekRevenue = sumSince(week),
-    monthRevenue = sumSince(month);
-  const partialRevenue = revenueRows.length === 1000;
+  const revenue = revenueResult.data?.[0];
+  const todayRevenue = revenueResult.error ? null : Number(revenue?.today_amount ?? 0);
+  const weekRevenue = revenueResult.error ? null : Number(revenue?.week_amount ?? 0);
+  const monthRevenue = revenueResult.error ? null : Number(revenue?.month_amount ?? 0);
+  const paidOrderCount = revenueResult.error ? null : Number(revenue?.paid_order_count ?? 0);
 
   const todayMetrics: Metric[] = (
     [
@@ -483,16 +467,10 @@ export default async function DashboardPage({
                 <Revenue label="Son 7 gün" value={weekRevenue} />
                 <Revenue label="Bu ay" value={monthRevenue} dominant />
               </div>
-              {partialRevenue && (
-                <p className="mt-5 rounded-control bg-cherie-warning/10 p-3 text-xs text-cherie-warning">
-                  Bu ay 1.000’den fazla ödeme var. Toplam, ilk 1.000 kayıtla sınırlı;
-                  kesin muhasebe raporu değildir.
-                </p>
-              )}
               <div className="mt-7 border-t border-cherie-lace pt-5">
                 <p className="text-sm text-cherie-soft-ink">
                   Ödenen sipariş sayısı{' '}
-                  <strong className="text-cherie-ink">{revenueRows.length}</strong>. Zaman
+                  <strong className="text-cherie-ink">{paidOrderCount ?? '—'}</strong>. Zaman
                   serisi için yeterli ve güvenilir veri oluştuğunda burada trend
                   gösterilecektir.
                 </p>
@@ -593,7 +571,7 @@ function Revenue({
   dominant = false,
 }: {
   label: string;
-  value: number;
+  value: number | null;
   dominant?: boolean;
 }) {
   return (
@@ -602,7 +580,7 @@ function Revenue({
       <p
         className={`mt-2 font-semibold tabular-nums ${dominant ? 'text-4xl text-cherie-burgundy' : 'text-2xl'}`}
       >
-        {formatTRY(value)}
+        {value === null ? '—' : formatTRY(value)}
       </p>
     </div>
   );

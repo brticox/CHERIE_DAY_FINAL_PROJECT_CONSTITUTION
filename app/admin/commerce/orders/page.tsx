@@ -7,50 +7,61 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import type { Database } from '@/lib/supabase/database.types';
 import { SavedOrderViews } from '@/components/admin/saved-order-views';
 import { requireCapability } from '@/lib/auth/guards';
+import { AdminPagination } from '@/components/admin/pagination';
 
 type OrderRow = Database['public']['Tables']['orders']['Row'];
+const PAGE_SIZE = 50;
 export const dynamic = 'force-dynamic';
 
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; payment?: string; view?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; payment?: string; view?: string; page?: string }>;
 }) {
   await requireCapability('orders.read', '/admin/commerce/orders');
   const filters = await searchParams;
   let orders: OrderRow[] = [];
+  let total = 0;
+  let activeCount = 0;
+  let productionCount = 0;
+  let shippingCount = 0;
   let unavailable = false;
+  const page = Math.max(1, Number.parseInt(filters.page ?? '1', 10) || 1);
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const { data, error } = await createAdminClient()
+    const admin = createAdminClient();
+    let query = admin
       .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(100);
-    orders = (data ?? []) as OrderRow[];
-    unavailable = Boolean(error);
-  } else unavailable = true;
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
+    if (filters.q) query = query.ilike('order_number', `%${safe(filters.q)}%`);
+    if (filters.status) query = query.eq('status', filters.status as OrderRow['status']);
+    if (filters.payment)
+      query = query.eq('payment_status', filters.payment as OrderRow['payment_status']);
+    if (filters.view === 'action')
+      query = query.in('status', ['pending_payment', 'revision_requested', 'quality_check']);
 
-  orders = orders.filter(
-    (order) =>
-      (!filters.q ||
-        order.order_number.toLowerCase().includes(filters.q.toLowerCase())) &&
-      (!filters.status || order.status === filters.status) &&
-      (!filters.payment || order.payment_status === filters.payment) &&
-      (!filters.view ||
-        filters.view !== 'action' ||
-        ['pending_payment', 'revision_requested', 'quality_check'].includes(
-          order.status,
-        )),
-  );
-  const active = orders.filter(
-    (order) => !['completed', 'cancelled', 'refunded'].includes(order.status),
-  );
-  const production = orders.filter((order) =>
-    ['in_production', 'quality_check', 'packed'].includes(order.status),
-  );
-  const shipping = orders.filter((order) =>
-    ['shipped', 'delivered'].includes(order.status),
-  );
+    const [list, active, production, shipping] = await Promise.all([
+      query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1),
+      admin
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .not('status', 'in', '(completed,cancelled,refunded)'),
+      admin
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['in_production', 'quality_check', 'packed']),
+      admin
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['shipped', 'delivered']),
+    ]);
+    orders = (list.data ?? []) as OrderRow[];
+    total = list.count ?? 0;
+    activeCount = active.count ?? 0;
+    productionCount = production.count ?? 0;
+    shippingCount = shipping.count ?? 0;
+    unavailable = Boolean(list.error || active.error || production.error || shipping.error);
+  } else unavailable = true;
 
   return (
     <div className="space-y-8 p-5 md:p-8">
@@ -60,13 +71,13 @@ export default async function Page({
         </p>
         <h1 className="mt-2 font-display text-4xl">Siparişler</h1>
         <p className="mt-2 text-sm text-cherie-soft-ink">
-          Ödemeden teslimata kadar son 100 siparişin operasyon görünümü.
+          Ödemeden teslimata kadar tüm siparişlerin sayfalı operasyon görünümü.
         </p>
       </header>
       <section className="grid gap-4 sm:grid-cols-3">
-        <Metric icon={ReceiptText} label="Aktif sipariş" value={active.length} />
-        <Metric icon={PackageCheck} label="Üretim / kalite" value={production.length} />
-        <Metric icon={Truck} label="Kargo / teslimat" value={shipping.length} />
+        <Metric icon={ReceiptText} label="Aktif sipariş" value={activeCount} />
+        <Metric icon={PackageCheck} label="Üretim / kalite" value={productionCount} />
+        <Metric icon={Truck} label="Kargo / teslimat" value={shippingCount} />
       </section>
       <form className="grid gap-3 rounded-card-lg border border-cherie-lace bg-white/60 p-4 md:grid-cols-5">
         <input
@@ -176,9 +187,19 @@ export default async function Page({
           </div>
         </div>
       )}
+      <AdminPagination
+        path="/admin/commerce/orders"
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={total}
+        query={{ q: filters.q, status: filters.status, payment: filters.payment, view: filters.view }}
+        label="Sipariş sayfalama"
+      />
     </div>
   );
 }
+
+const safe = (value: string) => value.replace(/[,%]/g, '').slice(0, 80);
 
 function Metric({
   icon: Icon,
