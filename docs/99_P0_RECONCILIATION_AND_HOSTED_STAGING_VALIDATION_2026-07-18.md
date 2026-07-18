@@ -222,3 +222,33 @@ Staging credentials, has a compliant Node runtime, or preserves the
 launch-critical journeys in the hosted runtime. Automatic merging is not
 authorized by this gate; release approval must follow a complete evidence
 record.
+
+## Preview environment validation continuation — 2026-07-18
+
+With the release owner's explicit approval, the Vercel project was linked
+locally only to obtain a Preview-scoped environment inventory. The downloaded
+file was evaluated in a temporary directory and removed immediately; no
+secret value was printed, committed, or retained.
+
+| Assertion | Result |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` is exactly the Staging API host | Pass |
+| `APP_ENV` is non-production | Pass |
+| PayTR test mode is enabled | Pass |
+| Apple sign-in is disabled | Pass |
+| No known production ref, Supabase host, primary Vercel host, callback, or return URL appears in Preview values | Pass |
+| `SUPABASE_SERVICE_ROLE_KEY` is present and accepted by Staging | **Fail: variable is absent** |
+
+The missing service-role variable prevents the server-side administration,
+checkout, consent, analytics, and authenticated persistence paths from being
+validated in Preview. It is not acceptable to substitute a local key: the
+only discovered local key did not correspond to the Staging API host. An
+attempt to retrieve the Staging key through the already-authorized Safari
+session reached the correct Staging dashboard URL but the dashboard rendered
+no usable content, so no secret was copied and no Vercel value was changed.
+
+**Current P0 blocker:** add the existing `hdafztkhkyhqziqayerz` Staging
+service-role key as `SUPABASE_SERVICE_ROLE_KEY` scoped to **Preview only** in
+`brticoxs-projects/cherie-day-web`, then repeat the non-disclosing binding
+check. Production must remain excluded. No Preview deployment was created
+while this condition was unmet.
