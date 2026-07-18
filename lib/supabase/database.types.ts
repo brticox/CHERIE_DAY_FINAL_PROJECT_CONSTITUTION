@@ -1318,6 +1318,47 @@ export type Database = {
           },
         ]
       }
+      customer_data_requests: {
+        Row: {
+          customer_id: string
+          id: string
+          kind: Database["public"]["Enums"]["data_request_kind"]
+          note: string | null
+          requested_at: string
+          resolution_note: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["data_request_status"]
+        }
+        Insert: {
+          customer_id: string
+          id?: string
+          kind: Database["public"]["Enums"]["data_request_kind"]
+          note?: string | null
+          requested_at?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["data_request_status"]
+        }
+        Update: {
+          customer_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["data_request_kind"]
+          note?: string | null
+          requested_at?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["data_request_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_data_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_digital_projects: {
         Row: {
           access_token_hash: string | null
@@ -8591,6 +8632,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      request_customer_data_action: {
+        Args: {
+          p_kind: Database["public"]["Enums"]["data_request_kind"]
+          p_note?: string
+        }
+        Returns: string
+      }
       request_finance_refund: {
         Args: {
           p_amount_minor: number
@@ -8618,6 +8666,7 @@ export type Database = {
         Args: { p_address_id: string; p_kind: string }
         Returns: undefined
       }
+      set_marketing_consent: { Args: { p_opt_in: boolean }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       soft_delete_address: {
@@ -8716,6 +8765,13 @@ export type Database = {
       contact_status: "new" | "replied" | "closed"
       content_status: "draft" | "published"
       cookie_action: "accept_all" | "reject_optional" | "configure"
+      data_request_kind: "export" | "deletion"
+      data_request_status:
+        | "pending"
+        | "in_review"
+        | "completed"
+        | "rejected"
+        | "cancelled"
       deposit_model: "none" | "fixed" | "percentage"
       digital_behavior: "digital_checkout" | "proof_required" | "quote_required"
       digital_delivery_mode: "link" | "download" | "hosted_page"
@@ -9124,6 +9180,14 @@ export const Constants = {
       contact_status: ["new", "replied", "closed"],
       content_status: ["draft", "published"],
       cookie_action: ["accept_all", "reject_optional", "configure"],
+      data_request_kind: ["export", "deletion"],
+      data_request_status: [
+        "pending",
+        "in_review",
+        "completed",
+        "rejected",
+        "cancelled",
+      ],
       deposit_model: ["none", "fixed", "percentage"],
       digital_behavior: [
         "digital_checkout",

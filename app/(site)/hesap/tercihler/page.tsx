@@ -3,10 +3,12 @@ import Link from 'next/link';
 
 import { requireUser } from '@/lib/auth/guards';
 import { loadPreferences } from '@/lib/account/preferences';
+import { getPrivacyState } from '@/lib/account/privacy';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { PageHeader } from '@/components/layout/page-header';
 import { ROUTES } from '@/lib/data/routes';
 import { PreferencesForm } from '@/components/account/preferences-form';
+import { PrivacyControls } from '@/components/account/privacy-controls';
 
 export const metadata: Metadata = {
   title: 'Tercihlerim',
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   await requireUser('/hesap/tercihler');
-  const preferences = await loadPreferences();
+  const [preferences, privacy] = await Promise.all([loadPreferences(), getPrivacyState()]);
 
   return (
     <div className="cherie-container py-14">
@@ -34,6 +36,13 @@ export default async function Page() {
 
       <div className="mt-10 space-y-10">
         <PreferencesForm notifications={preferences.notifications} />
+
+        <PrivacyControls
+          marketingConsent={privacy.marketingConsent}
+          hasOrders={privacy.hasOrders}
+          exportRequest={privacy.exportRequest}
+          deletionRequest={privacy.deletionRequest}
+        />
 
         <section className="rounded-card-lg border border-cherie-lace bg-cherie-ivory p-6">
           <h2 className="font-display text-2xl text-cherie-ink">Çerez ve gizlilik</h2>
