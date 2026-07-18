@@ -103,3 +103,38 @@ After the P0 access blockers are resolved, perform the remaining hosted phases i
 **NOT SAFE TO MERGE INTO CANONICAL**
 
 Reason: local reconciliation and launch-critical validation are green, but the required staging identity proof and all hosted-staging/Preview acceptance are unperformed because no non-production access or project binding is available. This is an engineering-ready local branch, not evidence of hosted readiness and not authorization for public launch.
+
+## Hosted staging continuation — 2026-07-18
+
+This section supersedes the former statement that staging access was unavailable. It does not supersede the final verdict.
+
+### Identity and production exclusion
+
+The connected Supabase integration listed both named projects. The selected target was proven as Staging by five independent signals: ref `hdafztkhkyhqziqayerz`; display name `CHERIE DAY Staging`; API host `https://hdafztkhkyhqziqayerz.supabase.co`; database host `db.hdafztkhkyhqziqayerz.supabase.co`; and organization/region `wqtfqhzywcnktkakaqvz` / `eu-central-1`. Production was explicitly identified as the separate ref `rkvubnuwfuocoevayhcd`, named `CHERIE DAY`. No command or integration call used that production ref.
+
+The Vercel integration identified team `brticoxs-projects` and project `cherie-day-web` (`prj_NCMWdLqi0GOV4S5iKTdMRAKSIVbB`) through read-only discovery only. No Vercel deployment was created.
+
+### Hosted migration parity and application
+
+Before application, Staging history ended at `20260718100000_kvkk_self_service`. The following six local reconciled migrations were absent; no extra remote P0 migration was present:
+
+- `20260718101350_atomic_inventory_reservations`
+- `20260718101837_first_party_consent_analytics`
+- `20260718103954_authoritative_dashboard_revenue`
+- `20260718104923_fix_notification_rpc_execution_boundary`
+- `20260718105254_restore_legal_public_projection_access`
+- `20260718110000_fix_inventory_reservation_fk_lock_deadlock`
+
+All six were applied once, in order, to **Staging only**, with successful responses. Post-application history contains all six under hosted applied versions `20260718121025` through `20260718121145`. No reset, delete, production migration, or migration-file edit occurred.
+
+Post-application read-only metadata verifies that `inventory_reservations` and `analytics_events` exist, both internal reservation functions are `SECURITY DEFINER` but not executable by `PUBLIC`, `anon`, or `authenticated`, cleanup is service-role-only, and the dashboard/notification RPCs reject anonymous execution. `legal_documents` and `legal_document_versions` have no anonymous grant; the deliberately filtered `legal_documents_public` projection alone is anonymous-readable. Its `security_invoker=false` setting is an intentional compatibility design because the base legal tables remain inaccessible to anonymous users; it remains an advisor warning to track, not a permission widening.
+
+Types were regenerated from Staging for comparison only and not committed. Supabase advisor output includes pre-existing public-view `security_definer_view` and multiple-permissive-policy findings; this continuation did not remediate unrelated historic findings. The new P0 objects' grants/policies matched the reviewed migration contract.
+
+### Remaining hosted blockers
+
+The following required phases were not performed and therefore remain merge blockers: full temporary-fixture/RLS/RPC/inventory/payment acceptance, hosted concurrency execution, Preview deployment of the reviewed SHA, Preview-to-Staging fixture binding proof, Preview environment binding and Node-runtime verification, deployed desktop/mobile browser acceptance, and final hosted cleanup/schema-diff proof.
+
+**NOT SAFE TO MERGE INTO CANONICAL**
+
+Reason: Staging schema parity and migration application are complete, but no Preview deployment or hosted acceptance suite has yet proven the deployed runtime, environment isolation, or customer journeys. Production remains untouched.
