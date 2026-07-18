@@ -16,7 +16,11 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/lib/data/routes';
-import { INITIAL_AUTH_STATE, type AuthActionState } from '@/lib/validation/auth';
+import {
+  authPathWithNext,
+  INITIAL_AUTH_STATE,
+  type AuthActionState,
+} from '@/lib/validation/auth';
 import type { CustomerAuthProvider } from '@/lib/auth/config';
 import { SocialAuthButtons } from './social-auth-buttons';
 
@@ -172,7 +176,7 @@ export function AuthForm({
       {mode === 'login' && (
         <div className="text-right">
           <Link
-            href={ROUTES.hesapSifremiUnuttum}
+            href={authPathWithNext(ROUTES.hesapSifremiUnuttum, next)}
             className="inline-flex min-h-11 min-w-11 items-center text-sm text-cherie-burgundy hover:underline"
           >
             Şifremi Unuttum
@@ -200,7 +204,7 @@ export function AuthForm({
         <p className="text-center text-sm text-cherie-soft-ink">
           Henüz hesabınız yok mu?{' '}
           <Link
-            href={ROUTES.hesapKayit}
+            href={authPathWithNext(ROUTES.hesapKayit, next)}
             className="inline-flex min-h-11 min-w-11 items-center font-medium text-cherie-burgundy hover:underline"
           >
             Üye Ol
@@ -211,7 +215,7 @@ export function AuthForm({
         <p className="text-center text-sm text-cherie-soft-ink">
           Zaten hesabınız var mı?{' '}
           <Link
-            href={ROUTES.hesapGiris}
+            href={authPathWithNext(ROUTES.hesapGiris, next)}
             className="inline-flex min-h-11 min-w-11 items-center font-medium text-cherie-burgundy hover:underline"
           >
             Giriş Yap

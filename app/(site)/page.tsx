@@ -14,6 +14,7 @@ import { MemoriesAlbum } from '@/components/home/sections/MemoriesAlbum';
 import { GalleryProof } from '@/components/home/sections/GalleryProof';
 import { QuoteCta } from '@/components/home/sections/QuoteCta';
 import { FaqPreview } from '@/components/home/sections/FaqPreview';
+import { getPageBySlug, homeSectionVisibility } from '@/lib/data/pages';
 
 /**
  * Homepage — "Bir Dokunuş, Bütün Bir Gün" (Phase 2A: cinematic foundation).
@@ -25,12 +26,13 @@ import { FaqPreview } from '@/components/home/sections/FaqPreview';
  * slots for the Phase 3–4 R3F stages.
  */
 export default async function HomePage() {
-  const data = await getHomeData();
+  const [data, cmsPage] = await Promise.all([getHomeData(), getPageBySlug('home')]);
+  const visible = homeSectionVisibility(cmsPage?.body);
 
   return (
     <CursorField>
       {/* AWE */}
-      <HeroOverture />
+      {visible.hero && <HeroOverture />}
 
       {/* UNDERSTANDING */}
       <BrandClarifier />
@@ -44,14 +46,14 @@ export default async function HomePage() {
 
       {/* TRUST */}
       <OrganizationServices services={data.services} />
-      <CityAvailability cities={data.cities} />
+      {visible.coverage && <CityAvailability cities={data.cities} />}
       <MaterialsCraft />
       <MemoriesAlbum />
-      <GalleryProof testimonials={data.testimonials} />
+      {visible.testimonials && <GalleryProof testimonials={data.testimonials} />}
 
       {/* ACTION */}
       <QuoteCta />
-      <FaqPreview faqs={data.faqs} />
+      {visible.faq && <FaqPreview faqs={data.faqs} />}
     </CursorField>
   );
 }

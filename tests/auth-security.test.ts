@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { safeNextPath } from '@/lib/validation/auth';
+import {
+  appendInternalQuery,
+  authPathWithNext,
+  safeNextPath,
+} from '@/lib/validation/auth';
 
 describe('kimlik yönlendirme güvenliği', () => {
   it.each([
@@ -21,6 +25,16 @@ describe('kimlik yönlendirme güvenliği', () => {
     expect(safeNextPath('/hesap/siparisler?durum=hazirlaniyor')).toBe(
       '/hesap/siparisler?durum=hazirlaniyor',
     );
+  });
+
+  it('giriş, kayıt ve kurtarma geçişlerinde ödeme niyetini iç içe korur', () => {
+    const next = '/odeme?step=shipping';
+    expect(authPathWithNext('/hesap/giris', next)).toBe(
+      '/hesap/giris?next=%2Fodeme%3Fstep%3Dshipping',
+    );
+    expect(
+      appendInternalQuery(authPathWithNext('/hesap/giris', next), 'reason', 'provider_error'),
+    ).toBe('/hesap/giris?next=%2Fodeme%3Fstep%3Dshipping&reason=provider_error');
   });
 
   it.each(['app/auth/callback/route.ts', 'app/(site)/hesap/actions.ts'])(

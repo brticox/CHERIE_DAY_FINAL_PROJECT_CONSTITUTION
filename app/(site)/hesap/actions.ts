@@ -9,6 +9,8 @@ import {
   registerSchema,
   safeNextPath,
   updatePasswordSchema,
+  appendInternalQuery,
+  authPathWithNext,
   type AuthActionState,
 } from '@/lib/validation/auth';
 import { isSupabaseConfigured } from '@/lib/supabase/public';
@@ -91,6 +93,7 @@ export async function registerAction(
   if (!isSupabaseConfigured()) return UNAVAILABLE;
 
   const supabase = await createClient();
+  const next = safeNextPath(parsed.data.next);
   let siteUrl: URL;
   try {
     siteUrl = getAuthConfig().siteUrl;
@@ -101,7 +104,10 @@ export async function registerAction(
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo: new URL('/auth/callback?next=/hesap', siteUrl).toString(),
+      emailRedirectTo: new URL(
+        `/auth/callback?next=${encodeURIComponent(next)}`,
+        siteUrl,
+      ).toString(),
       data: { name: parsed.data.name, phone: parsed.data.phone ?? null },
     },
   });
@@ -116,7 +122,7 @@ export async function registerAction(
 
   if (data.session && data.user) {
     await enqueueAccountNotification(data.user.id, 'welcome');
-    redirect('/hesap');
+    redirect(next);
   }
 
   return {
@@ -135,6 +141,7 @@ export async function forgotPasswordAction(
   if (!isSupabaseConfigured()) return UNAVAILABLE;
 
   const supabase = await createClient();
+  const next = safeNextPath(parsed.data.next);
   let siteUrl: URL;
   try {
     siteUrl = getAuthConfig().siteUrl;
@@ -143,7 +150,7 @@ export async function forgotPasswordAction(
   }
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: new URL(
-      '/auth/callback?next=/hesap/sifreyi-yenile',
+      `/auth/callback?next=${encodeURIComponent(`/hesap/sifreyi-yenile?next=${encodeURIComponent(next)}`)}`,
       siteUrl,
     ).toString(),
   });
@@ -210,20 +217,23 @@ const oauthSchema = z.object({
 });
 
 export async function beginOAuthAction(formData: FormData) {
-  const parsed = oauthSchema.safeParse(values(formData));
+  const raw = values(formData);
+  const next = safeNextPath(typeof raw.next === 'string' ? raw.next : undefined);
+  const loginError = (reason: string) =>
+    appendInternalQuery(authPathWithNext('/hesap/giris', next), 'reason', reason);
+  const parsed = oauthSchema.safeParse(raw);
   if (!parsed.success || !isSupabaseConfigured()) {
-    redirect('/hesap/giris?reason=provider_unavailable');
+    redirect(loginError('provider_unavailable'));
   }
 
-  const next = safeNextPath(parsed.data.next);
   let config: ReturnType<typeof getAuthConfig>;
   try {
     config = getAuthConfig();
   } catch {
-    redirect('/hesap/giris?reason=provider_unavailable');
+    redirect(loginError('provider_unavailable'));
   }
   if (!config.providers[parsed.data.provider]) {
-    redirect('/hesap/giris?reason=provider_unavailable');
+    redirect(loginError('provider_unavailable'));
   }
 
   const supabase = await createClient();
@@ -234,6 +244,6 @@ export async function beginOAuthAction(formData: FormData) {
       skipBrowserRedirect: true,
     },
   });
-  if (error || !data.url) redirect('/hesap/giris?reason=provider_error');
+  if (error || !data.url) redirect(loginError('provider_error'));
   redirect(data.url);
 }

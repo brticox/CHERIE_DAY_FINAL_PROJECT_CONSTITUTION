@@ -105,8 +105,8 @@ export async function setupProductCartFixture() {
     .from('legal_document_versions')
     .select('id,lifecycle_state,approval_status,needs_lawyer_review,content_hash,published_at,effective_from,body,source_metadata,legal_documents!inner(doc_key)')
     .eq('is_current', true)
-    .in('legal_documents.doc_key', ['on_bilgilendirme', 'mesafeli_satis']);
-  if (legal.error || (legal.data?.length ?? 0) !== 2) throw new Error(`E2E legal versions: ${legal.error?.message ?? 'missing'}`);
+    .in('legal_documents.doc_key', ['kvkk_aydinlatma', 'on_bilgilendirme', 'mesafeli_satis']);
+  if (legal.error || (legal.data?.length ?? 0) !== 3) throw new Error(`E2E legal versions: ${legal.error?.message ?? 'missing'}`);
   await mkdir(path.dirname(LEGAL_STATE_PATH), { recursive: true });
   await writeFile(LEGAL_STATE_PATH, JSON.stringify(legal.data, null, 2), 'utf8');
   for (const version of legal.data ?? []) {

@@ -46,6 +46,9 @@ export const checkoutSchema = z
     preInfoConsent: z.literal('on', {
       errorMap: () => ({ message: 'Ön Bilgilendirme Formu onayı zorunludur.' }),
     }),
+    kvkkConsent: z.literal('on', {
+      errorMap: () => ({ message: 'KVKK Aydınlatma Metni’ni okumalısınız.' }),
+    }),
     distanceSalesConsent: z.literal('on', {
       errorMap: () => ({ message: 'Mesafeli Satış Sözleşmesi onayı zorunludur.' }),
     }),

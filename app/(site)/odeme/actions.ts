@@ -130,7 +130,11 @@ export async function prepareCheckoutAction(
       { id: row.id, version: row.version },
     ]),
   );
-  if (!legalVersions.on_bilgilendirme || !legalVersions.mesafeli_satis) {
+  if (
+    !legalVersions.kvkk_aydinlatma ||
+    !legalVersions.on_bilgilendirme ||
+    !legalVersions.mesafeli_satis
+  ) {
     return {
       status: 'error',
       message:
@@ -189,6 +193,11 @@ export async function prepareCheckoutAction(
 
   const requestHeaders = await headers();
   const evidence = [
+    {
+      type: 'kvkk',
+      key: 'kvkk_aydinlatma',
+      label: 'KVKK Aydınlatma Metni’ni okudum.',
+    },
     {
       type: 'pre_info',
       key: 'on_bilgilendirme',

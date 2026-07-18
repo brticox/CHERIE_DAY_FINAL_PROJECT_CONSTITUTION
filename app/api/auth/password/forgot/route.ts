@@ -4,6 +4,7 @@ import { getAuthConfig } from '@/lib/auth/config';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/public';
 import { forgotPasswordSchema } from '@/lib/validation/auth';
+import { safeNextPath } from '@/lib/validation/auth';
 
 const SAFE_MESSAGE =
   'Bu adresle bir hesap varsa şifre yenileme bağlantısı e-postanıza gönderildi.';
@@ -51,8 +52,12 @@ export async function POST(request: Request) {
   try {
     const siteUrl = getAuthConfig().siteUrl;
     const supabase = await createClient();
+    const next = safeNextPath(parsed.data.next);
+    const updatePath = `/hesap/sifreyi-yenile?next=${encodeURIComponent(next)}`;
+    const confirm = new URL('/auth/confirm', siteUrl);
+    confirm.searchParams.set('next', updatePath);
     await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-      redirectTo: new URL('/auth/confirm?next=/hesap/sifreyi-yenile', siteUrl).toString(),
+      redirectTo: confirm.toString(),
     });
   } catch {
     // Deliberately return the same response to prevent account enumeration.

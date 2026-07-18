@@ -54,7 +54,7 @@ test('real product image, pricing, customization, cart, and checkout stay cohere
     page.getByRole('link', { name: /Güvenli Checkout’a Geç/ }).click(),
   ]);
   await expect(page).toHaveURL(/\/odeme$/);
-  await expect(page.getByText('2 ürün', { exact: true })).toBeVisible();
+  await expect(page.getByText('Ara toplam · 2 ürün', { exact: true })).toBeVisible();
   await expect(page.getByText('₺2.900', { exact: false })).toBeVisible();
   await page.getByLabel('Ad Soyad').fill('E2E Müşteri');
   await page.getByLabel('Telefon').fill('+90 555 000 00 00');
@@ -62,8 +62,13 @@ test('real product image, pricing, customization, cart, and checkout stay cohere
   await page.getByRole('textbox', { name: 'İlçe', exact: true }).fill('Kadıköy');
   await page.getByLabel('Açık Adres').fill('E2E Mahallesi Test Sokak No 1');
   await page.locator('input[name="shippingMethodId"]').first().check();
+  await expect(page.getByText('Ödenecek toplam', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('Ödenecek toplam', { exact: true }).locator('..'),
+  ).toContainText('₺');
   await page.getByLabel('Fatura Adı Soyadı').fill('E2E Müşteri');
   await page.getByLabel(/üretimin Tasarım Onayımdan sonra/).check();
+  await page.getByLabel(/KVKK Aydınlatma Metni/).check();
   await page.getByLabel(/Ön Bilgilendirme Formu/).check();
   await page.getByLabel(/Mesafeli Satış Sözleşmesi/).check();
   await page.getByRole('button', { name: /Sipariş Özetini Hazırla/ }).click();

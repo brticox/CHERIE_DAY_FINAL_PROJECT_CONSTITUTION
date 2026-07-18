@@ -83,6 +83,7 @@ export async function savePage(formData: FormData) {
   if (error)
     redirect(`/admin/cms/pages/${id}?error=${encodeURIComponent(error.message)}`);
   revalidatePath('/admin/cms/pages');
+  revalidatePath('/');
   redirect(`/admin/cms/pages/${id}?saved=1`);
 }
 export async function publishPage(formData: FormData) {
@@ -97,6 +98,7 @@ export async function publishPage(formData: FormData) {
   if (error)
     redirect(`/admin/cms/pages/${id}?error=${encodeURIComponent(error.message)}`);
   revalidatePath('/admin/cms/pages');
+  revalidatePath('/');
   redirect(`/admin/cms/pages/${id}?saved=1`);
 }
 export async function rollbackPage(formData: FormData) {
@@ -113,6 +115,7 @@ export async function rollbackPage(formData: FormData) {
   if (error)
     redirect(`/admin/cms/pages/${id}?error=${encodeURIComponent(error.message)}`);
   revalidatePath(`/admin/cms/pages/${id}`);
+  revalidatePath('/');
   redirect(`/admin/cms/pages/${id}?saved=1`);
 }
 const value = (fd: FormData, key: string, max: number) =>

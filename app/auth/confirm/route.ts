@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { getAuthConfig } from '@/lib/auth/config';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/public';
-import { safeNextPath } from '@/lib/validation/auth';
+import { appendInternalQuery, authPathWithNext, safeNextPath } from '@/lib/validation/auth';
 import { enqueueAccountNotification } from '@/lib/notifications/account';
 import { mergeGuestCartForCurrentUser } from '@/lib/cart/server';
 
@@ -29,17 +29,19 @@ export async function GET(request: Request) {
     url.searchParams.get('next'),
     type === 'recovery' ? '/hesap/sifreyi-yenile' : '/hesap',
   );
+  const loginError = (reason: string) =>
+    appendInternalQuery(authPathWithNext('/hesap/giris', next), 'reason', reason);
 
   let appOrigin: string;
   try {
     appOrigin = getAuthConfig().siteUrl.origin;
   } catch {
-    return NextResponse.redirect(new URL('/hesap/giris?reason=unavailable', url.origin));
+    return NextResponse.redirect(new URL(loginError('unavailable'), url.origin));
   }
 
   if (!isSupabaseConfigured() || !tokenHash || !isEmailOtpType(type)) {
     return NextResponse.redirect(
-      new URL('/hesap/giris?reason=callback_error', appOrigin),
+      new URL(loginError('callback_error'), appOrigin),
     );
   }
 
@@ -51,7 +53,7 @@ export async function GET(request: Request) {
 
   if (error) {
     return NextResponse.redirect(
-      new URL('/hesap/giris?reason=callback_error', appOrigin),
+      new URL(loginError('callback_error'), appOrigin),
     );
   }
 
@@ -66,7 +68,7 @@ export async function GET(request: Request) {
     if (profileError || !profile || profile.status !== 'active') {
       await supabase.auth.signOut();
       return NextResponse.redirect(
-        new URL('/hesap/giris?reason=account_blocked', appOrigin),
+        new URL(loginError('account_blocked'), appOrigin),
       );
     }
     await rpc('record_current_identity_event', {
@@ -77,7 +79,9 @@ export async function GET(request: Request) {
     try {
       await mergeGuestCartForCurrentUser();
     } catch {
-      return NextResponse.redirect(new URL('/hesap?warning=cart_merge', appOrigin));
+      return NextResponse.redirect(
+        new URL(appendInternalQuery(next, 'warning', 'cart_merge'), appOrigin),
+      );
     }
   }
 

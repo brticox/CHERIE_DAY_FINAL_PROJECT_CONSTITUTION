@@ -18,6 +18,7 @@ import { INITIAL_CHECKOUT_STATE } from '@/lib/validation/checkout';
 import { formatTRY } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import type { ProviderReadiness } from '@/lib/payments';
+import { checkoutTotal } from '@/lib/checkout/totals';
 
 type Shipping = { id: string; name: string; base_price: number; type: string };
 type Summary = { count: number; total: number; proofRequired: boolean };
@@ -56,6 +57,7 @@ export function CheckoutForm({
     INITIAL_CHECKOUT_STATE,
   );
   const [invoiceType, setInvoiceType] = useState<'bireysel' | 'kurumsal'>('bireysel');
+  const [selectedShippingId, setSelectedShippingId] = useState('');
   // Signed-in customers can pre-fill the delivery fields from a saved address.
   // The fields stay uncontrolled (the order still snapshots whatever is
   // submitted), so editing after selecting — or a one-time manual entry — works
@@ -68,28 +70,34 @@ export function CheckoutForm({
   );
   const fieldValue = (key: keyof SavedAddress) =>
     (selectedAddress?.[key] as string | null | undefined) ?? '';
+  const selectedShipping = shippingMethods.find(
+    (method) => method.id === selectedShippingId,
+  );
+  const payable = checkoutTotal(
+    summary.total,
+    selectedShipping ? selectedShipping.base_price : null,
+  );
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
       <form action={action} className="space-y-8">
-        <ol
-          className="relative grid grid-cols-4 gap-2 rounded-card-lg border border-cherie-lace bg-cherie-paper/55 p-4 sm:p-5"
-          aria-label="Ödeme adımları"
-        >
+        <div className="relative rounded-card-lg border border-cherie-lace bg-cherie-paper/55 p-4 sm:p-5">
           <span
             aria-hidden
-            className="absolute left-[12.5%] right-[12.5%] top-[2.55rem] h-px bg-cherie-lace"
+            className="absolute left-[12.5%] right-[12.5%] top-[2.55rem] h-px bg-cherie-lace sm:top-[2.8rem]"
           />
-          {CHECKOUT_STEPS.map(({ label, Icon }, index) => (
-            <li key={label} className="relative text-center">
-              <span
-                className={`relative mx-auto flex size-11 items-center justify-center rounded-full border-4 border-cherie-paper ${index < 3 ? 'bg-cherie-burgundy text-cherie-ivory' : 'bg-cherie-mist text-cherie-soft-ink'}`}
-              >
-                <Icon />
-              </span>
-              <span className="mt-2 block text-xs text-cherie-soft-ink">{label}</span>
-            </li>
-          ))}
-        </ol>
+          <ol className="relative grid grid-cols-4 gap-2" aria-label="Ödeme adımları">
+            {CHECKOUT_STEPS.map(({ label, Icon }, index) => (
+              <li key={label} className="relative text-center">
+                <span
+                  className={`relative mx-auto flex size-11 items-center justify-center rounded-full border-4 border-cherie-paper ${index < 3 ? 'bg-cherie-burgundy text-cherie-ivory' : 'bg-cherie-mist text-cherie-soft-ink'}`}
+                >
+                  <Icon />
+                </span>
+                <span className="mt-2 block text-xs text-cherie-soft-ink">{label}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
         <Section
           title="Teslimat bilgileri"
           lead="Türkiye içindeki teslimat adresinizi girin."
@@ -187,6 +195,8 @@ export function CheckoutForm({
                     name="shippingMethodId"
                     value={method.id}
                     required
+                    checked={selectedShippingId === method.id}
+                    onChange={() => setSelectedShippingId(method.id)}
                     className="cherie-check"
                   />
                   <span className="flex-1 text-sm text-cherie-ink">{method.name}</span>
@@ -273,6 +283,12 @@ export function CheckoutForm({
                 href="/kurumsal/kisisellestirilmis-urun-sartlari"
               />
             )}
+            <Consent
+              name="kvkkConsent"
+              error={state.fieldErrors?.kvkkConsent}
+              label="KVKK Aydınlatma Metni’ni okudum."
+              href="/kurumsal/kvkk-aydinlatma"
+            />
             <Consent
               name="preInfoConsent"
               error={state.fieldErrors?.preInfoConsent}
@@ -363,13 +379,33 @@ export function CheckoutForm({
       </form>
       <aside className="cherie-surface h-fit rounded-card-lg p-6 lg:sticky lg:top-28">
         <p className="cherie-kicker">Sipariş Özeti</p>
-        <div className="mt-6 flex justify-between text-sm text-cherie-soft-ink">
-          <span>{summary.count} ürün</span>
-          <span>Ara toplam</span>
+        <dl className="mt-6 space-y-3 text-sm">
+          <div className="flex justify-between gap-4 text-cherie-soft-ink">
+            <dt>Ara toplam · {summary.count} ürün</dt>
+            <dd className="cherie-price font-medium text-cherie-ink">
+              {formatTRY(payable.subtotal)}
+            </dd>
+          </div>
+          <div className="flex justify-between gap-4 text-cherie-soft-ink">
+            <dt>Teslimat</dt>
+            <dd className="cherie-price font-medium text-cherie-ink">
+              {payable.shipping == null
+                ? 'Yöntem seçin'
+                : payable.shipping === 0
+                  ? 'Ücretsiz'
+                  : formatTRY(payable.shipping)}
+            </dd>
+          </div>
+        </dl>
+        <div className="mt-5 flex items-end justify-between gap-4 border-t border-cherie-lace pt-5">
+          <span className="font-semibold text-cherie-ink">Ödenecek toplam</span>
+          <strong
+            aria-live="polite"
+            className="cherie-price text-right font-display text-3xl text-cherie-burgundy"
+          >
+            {payable.total == null ? '—' : formatTRY(payable.total)}
+          </strong>
         </div>
-        <strong className="cherie-price mt-2 block text-right font-display text-3xl text-cherie-burgundy">
-          {formatTRY(summary.total)}
-        </strong>
         <div className="mt-6 space-y-3 border-t border-cherie-lace pt-5 text-xs leading-5 text-cherie-soft-ink">
           <p className="flex gap-2">
             <LockKeyhole className="mt-0.5 size-4 shrink-0" /> Fiyatlar sunucuda yeniden

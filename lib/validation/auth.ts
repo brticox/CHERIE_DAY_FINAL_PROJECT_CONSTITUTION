@@ -41,16 +41,17 @@ export const registerSchema = z
     consent: z
       .boolean()
       .refine((value) => value, 'Devam etmek için KVKK aydınlatmasını okuyun.'),
+    next: z.string().optional(),
   })
   .refine((value) => value.password === value.confirmPassword, {
     path: ['confirmPassword'],
     message: 'Şifreler birbiriyle eşleşmiyor.',
   });
 
-export const forgotPasswordSchema = z.object({ email });
+export const forgotPasswordSchema = z.object({ email, next: z.string().optional() });
 
 export const updatePasswordSchema = z
-  .object({ password, confirmPassword: z.string() })
+  .object({ password, confirmPassword: z.string(), next: z.string().optional() })
   .refine((value) => value.password === value.confirmPassword, {
     path: ['confirmPassword'],
     message: 'Şifreler birbiriyle eşleşmiyor.',
@@ -79,4 +80,20 @@ export function safeNextPath(value: string | null | undefined, fallback = '/hesa
     return fallback;
   }
   return value;
+}
+
+export function authPathWithNext(path: string, next: string | null | undefined) {
+  const safe = safeNextPath(next);
+  return `${path}?next=${encodeURIComponent(safe)}`;
+}
+
+export function appendInternalQuery(
+  path: string,
+  key: string,
+  value: string,
+) {
+  const safe = safeNextPath(path);
+  const url = new URL(safe, 'https://internal.cherieday.invalid');
+  url.searchParams.set(key, value);
+  return `${url.pathname}${url.search}${url.hash}`;
 }

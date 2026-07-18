@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/public';
-import { safeNextPath } from '@/lib/validation/auth';
+import { appendInternalQuery, authPathWithNext, safeNextPath } from '@/lib/validation/auth';
 import { mergeGuestCartForCurrentUser } from '@/lib/cart/server';
 import { getAuthConfig } from '@/lib/auth/config';
 import { enqueueAccountNotification } from '@/lib/notifications/account';
@@ -14,21 +14,30 @@ export async function GET(request: Request) {
   const code = url.searchParams.get('code');
   const next = safeNextPath(url.searchParams.get('next'));
   const requestedProvider = url.searchParams.get('provider');
+  const loginError = (reason: string) =>
+    appendInternalQuery(authPathWithNext('/hesap/giris', next), 'reason', reason);
   let appOrigin: string;
   try {
     appOrigin = getAuthConfig().siteUrl.origin;
   } catch {
-    return NextResponse.redirect(new URL('/hesap/giris?reason=unavailable', url.origin));
+    return NextResponse.redirect(new URL(loginError('unavailable'), url.origin));
   }
 
   if (url.searchParams.has('error')) {
     return NextResponse.redirect(
-      new URL('/hesap/giris?reason=provider_cancelled', appOrigin),
+      new URL(
+        appendInternalQuery(
+          authPathWithNext('/hesap/giris', next),
+          'reason',
+          'provider_cancelled',
+        ),
+        appOrigin,
+      ),
     );
   }
 
   if (!isSupabaseConfigured()) {
-    return NextResponse.redirect(new URL('/hesap/giris?reason=unavailable', appOrigin));
+    return NextResponse.redirect(new URL(loginError('unavailable'), appOrigin));
   }
 
   if (code) {
@@ -49,7 +58,7 @@ export async function GET(request: Request) {
       if (!userData.user || !PROVIDERS.has(provider)) {
         await supabase.auth.signOut();
         return NextResponse.redirect(
-          new URL('/hesap/giris?reason=callback_error', appOrigin),
+          new URL(loginError('callback_error'), appOrigin),
         );
       }
 
@@ -63,7 +72,7 @@ export async function GET(request: Request) {
       if (profileError || !profile || profile.status !== 'active') {
         await supabase.auth.signOut();
         return NextResponse.redirect(
-          new URL('/hesap/giris?reason=account_blocked', appOrigin),
+          new URL(loginError('account_blocked'), appOrigin),
         );
       }
 
@@ -75,11 +84,13 @@ export async function GET(request: Request) {
       try {
         await mergeGuestCartForCurrentUser();
       } catch {
-        return NextResponse.redirect(new URL('/hesap?warning=cart_merge', appOrigin));
+        return NextResponse.redirect(
+          new URL(appendInternalQuery(next, 'warning', 'cart_merge'), appOrigin),
+        );
       }
       return NextResponse.redirect(new URL(next, appOrigin));
     }
   }
 
-  return NextResponse.redirect(new URL('/hesap/giris?reason=callback_error', appOrigin));
+  return NextResponse.redirect(new URL(loginError('callback_error'), appOrigin));
 }

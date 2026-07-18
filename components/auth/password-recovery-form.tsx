@@ -7,6 +7,7 @@ import { Check, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, X } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/lib/data/routes';
 import type { AuthActionState } from '@/lib/validation/auth';
+import { authPathWithNext, safeNextPath } from '@/lib/validation/auth';
 
 type Mode = 'forgot' | 'update';
 
@@ -27,9 +28,11 @@ const PASSWORD_RULES = [
 export function PasswordRecoveryForm({
   mode,
   available,
+  next,
 }: {
   mode: Mode;
   available: boolean;
+  next?: string;
 }) {
   const [state, setState] = useState<AuthActionState>({ status: 'idle' });
   const [pending, setPending] = useState(false);
@@ -61,7 +64,10 @@ export function PasswordRecoveryForm({
       setState(result);
 
       if (mode === 'update' && response.ok && result.status === 'success') {
-        window.location.assign('/hesap/giris?reason=password_updated');
+        const login = new URL('/hesap/giris', window.location.origin);
+        login.searchParams.set('reason', 'password_updated');
+        login.searchParams.set('next', safeNextPath(next));
+        window.location.assign(`${login.pathname}${login.search}`);
       }
     } catch {
       setState({
@@ -79,6 +85,7 @@ export function PasswordRecoveryForm({
 
   return (
     <form onSubmit={submit} className="mt-5 space-y-5" noValidate>
+      <input type="hidden" name="next" value={safeNextPath(next)} />
       {mode === 'forgot' ? (
         <Field label="E-posta" error={error('email')} icon={<Mail />}>
           <input
@@ -190,7 +197,7 @@ export function PasswordRecoveryForm({
         <p className="text-center text-sm text-cherie-soft-ink">
           Bağlantı çalışmıyor mu?{' '}
           <Link
-            href={ROUTES.hesapSifremiUnuttum}
+            href={authPathWithNext(ROUTES.hesapSifremiUnuttum, next)}
             className="text-cherie-burgundy underline"
           >
             Yeni bağlantı isteyin
