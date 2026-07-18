@@ -262,3 +262,95 @@ The check cannot authenticate it against Staging and no deployment was
 created. The release owner must save the non-empty Staging key to that exact
 Preview-scoped variable; the value must never be sent through this report or
 chat.
+
+## Hosted Preview acceptance completion — 2026-07-18
+
+This section supersedes the two preceding conclusions that the Preview
+service-role variable was absent or empty. `vercel env pull` deliberately
+redacts **all** sensitive Preview values, so a zero-length downloaded value is
+not evidence of an empty stored value. The authoritative evidence is the
+Preview-scoped Vercel inventory together with the deployed, reversible
+Staging-only request below. No secret value is recorded here.
+
+### Scope and deployed artifact
+
+| Item | Evidence | Result |
+| --- | --- | --- |
+| Deployment | Vercel deployment `dpl_DhjBcDRFQ4ZtXoxLes4pkaWQHaX1`; target `preview`; status `Ready` | Pass |
+| URLs | Deployment `https://cherie-day-gk7tf5k3f-brticoxs-projects.vercel.app`; Git alias `https://cherie-day-web-git-integration-p0-reco-2cde14-brticoxs-projects.vercel.app` | Pass |
+| Source | branch `integration/p0-reconciliation-20260718`; deployed SHA `c293284629d5b8790ede16f03f73cc2594165ccc` | Pass |
+| Build | Vercel build completed Next.js `15.5.20`, including type checking and route generation | Pass |
+| Runtime selector | Vercel exposes the exact configured selector and lambda runtime as `nodejs22.x` / `22.x`; it does not publish a patch-level Node value in deployment metadata or build logs | Pass for configured Node 22 line; patch level not independently observable |
+| Production exclusion | No call, request, credential, URL, or deployment used ref `rkvubnuwfuocoevayhcd` | Pass |
+
+### Preview environment and Staging binding
+
+| Assertion | Evidence | Result |
+| --- | --- | --- |
+| Service-role variable scope | Vercel Preview inventory lists `SUPABASE_SERVICE_ROLE_KEY` as a sensitive Preview-only variable | Pass |
+| Staging-only credential identity | The approved source credential's non-secret JWT reference decodes to `hdafztkhkyhqziqayerz`, not the production reference | Pass |
+| No production credential reference | The decoded reference is not `rkvubnuwfuocoevayhcd`; no authentication request was made to Production | Pass |
+| Public backend mapping | Preview `NEXT_PUBLIC_SUPABASE_URL` equals `https://hdafztkhkyhqziqayerz.supabase.co` | Pass |
+| Other Preview controls | `APP_ENV` non-production; `PAYTR_TEST_MODE=1`; Apple sign-in disabled; no Preview value contains the production reference or known production host | Pass |
+| Runtime binding | Preview `POST /api/consent` returned `201`, then `POST /api/analytics/events` returned `202`; the resulting one consent row and one analytics row were found only in Staging | Pass |
+
+The Staging fixture used a new opaque session and event identifier. Its exact
+rows were deleted by key after verification; a final Staging query returned
+`0` consent rows and `0` analytics rows. The local temporary cookie and
+response files were removed.
+
+### Hosted acceptance matrix
+
+| Area | Evidence | Status |
+| --- | --- | --- |
+| Legal | Hosted `/kurumsal` and `/kurumsal/cerez-tercihleri` returned `200`; Staging public legal projection is grant-available while base legal tables remain protected | Pass |
+| Consent and analytics | Same-origin, schema validation, HttpOnly receipt, and persisted consent-gated analytics were proven through the reversible Preview-to-Staging fixture | Pass |
+| Inventory | The complete atomic reservation integrity SQL suite passed against Staging in a `BEGIN`/`ROLLBACK` transaction. Residual fixture orders, variants, and reservations were all `0` after it completed. | Pass |
+| Payment state machine | The full payment-integrity SQL suite passed against Staging in a rolled-back transaction; financial state and duplicate-callback invariants therefore hold in Staging. | Pass |
+| RLS/RPC | The complete RLS verification suite passed in a rolled-back transaction. The final privilege checks also confirm anonymous reservation release and payment creation are denied, authenticated provider-event mutation is denied, and public legal projection is available. | Pass |
+| Admin and finance database behavior | The dashboard/finance aggregate acceptance suite passed in a rolled-back transaction. Unauthenticated Preview `/admin` redirects to login. No owner or superadmin account was used. | Pass, with privileged UI journey intentionally not exercised |
+| Payment provider at Preview edge | A deliberately malformed PayTR callback returned `503`, not the expected malformed-request rejection. The route's fail-closed `providerConfigured()` check is reached first because required PayTR merchant credentials are unavailable to Preview. | **Fail — release configuration blocker** |
+| Resilience | Invalid/missing-origin consent request `403`; invalid same-origin consent `400`; analytics without consent receipt `403`; inventory cleanup endpoint without internal authorization `401` | Pass |
+| Hosted desktop browser | Safari loaded the deployed home page with semantic main/navigation structure, visible consent controls, public legal links, and no error overlay | Pass |
+| Hosted mobile browser | iPhone 14 emulation at CSS width `390` loaded meaningful content with `main` and `nav`, and no framework error overlay | Pass |
+| Accessibility | axe WCAG 2 A/AA scan of desktop and mobile home page: zero violations | Pass |
+| Console | The only observed browser console error is Vercel Preview Live Feedback being blocked by the site's CSP. It is injected by the Preview platform, not an application route failure, and is not present as a functional/a11y violation. | Documented Preview-only warning |
+
+### Final Staging parity and cleanup
+
+- Local migration count is `54`; Staging migration count is also `54`.
+- Each of the six reconciled P0 migration names is present in Staging history.
+- Required P0 schema objects and privilege invariants are present: reservation trigger function, PayTR ingest RPC, RLS on reservations and analytics, service-role-only reservation release, browser-role denial for payment creation/event application, and public legal projection.
+- Every acceptance fixture used either a rolled-back transaction or an exact-key delete. Post-run residual checks for RLS and inventory fixture users/orders/variants are all zero.
+
+The Supabase security advisor still reports inherited findings (including
+intentional filtered public `SECURITY DEFINER` views and pre-existing
+authenticated callable functions). They were neither created nor changed by
+this reconciliation; they remain separately tracked security debt and are not
+used to justify a launch sign-off.
+
+### Remaining launch blockers
+
+1. **P0 operational configuration:** add the approved PayTR test merchant
+   credentials to Preview only, then rerun malformed and signed test callback
+   acceptance. `PAYTR_TEST_MODE=1` alone is insufficient; the deployed route
+   currently fails closed with `503`.
+2. **P0 journey evidence:** after the payment provider is configured, execute
+   the complete hosted customer login/register/recovery/OAuth-return and
+   checkout-payment-return flow with a temporary non-privileged Staging user.
+   This gate did not use a privileged account and therefore does not claim that
+   customer journey as executed.
+3. **P1 platform observability:** if a patch-level Node runtime is a release
+   policy requirement, obtain it from Vercel support or a sanctioned runtime
+   diagnostic; Vercel currently exposes only the `22.x` selector.
+
+## Final hosted gate verdict
+
+**NOT SAFE TO MERGE INTO CANONICAL**
+
+The reconciliation code, Staging schema, consent/analytics binding,
+inventory, payment state machine, RLS/RPC, finance aggregates, browser
+rendering, accessibility, and cleanup have evidence. The deployed Preview
+cannot accept PayTR callbacks because its required test merchant credentials
+are absent, and the complete authenticated customer/payment-return journey is
+therefore unproven. Production was not accessed, changed, deployed, or merged.
